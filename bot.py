@@ -57,7 +57,7 @@ async def afficher(ctx):
 @bot.command()
 async def verify(ctx):
     if not (ctx.guild.get_role(settings["roleBefore"]) in ctx.author.roles)  :
-        await ctx.send(":warning: !!! Vous avez déjà effectué la vérification")
+        await ctx.send(":warning: Vous avez déjà effectué la vérification")
     elif settings["verificationChannel"] == 0 or settings["roleBefore"] == 0 or settings["roleAfter"] == 0:
         await ctx.send(":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une vérifcation")
     else:
@@ -134,4 +134,4 @@ def loading():
 
 
 settings = loading()
-bot.run("MTIzMDg3MTE4Mzk0ODI1MTIwNg.GHuaO0._tOPpvXSzG3QHB-q01fax0yVdDpd6fYPiQGxfY")
+bot.run("YOUR_TOKEN")
