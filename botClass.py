@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import captcha as c
-toke_beta = "ODQzMDQ5MzA0OTA1NjEzMzIy.GmkF_E.xn23x5Yrk4HwDUz6PWCHZGu_9pQA83ryMzr1mM"
+toke_beta = "YOUR_TOKEN"
 class SpoonCAPTCHA(commands.Bot):
     def __init__(self,intents,token):
         super().__init__(command_prefix="!", intents=intents)
@@ -53,6 +53,6 @@ class SpoonCAPTCHA(commands.Bot):
         self.add_command(self.verify)
         super().run(self.token)
 
-bot = SpoonCAPTCHA(discord.Intents.all(),"MTIzMDg3MTE4Mzk0ODI1MTIwNg.GHuaO0._tOPpvXSzG3QHB-q01fax0yVdDpd6fYPiQGxfY")
+bot = SpoonCAPTCHA(discord.Intents.all(),"YOUR_TOKEN")
 
 bot.run()
