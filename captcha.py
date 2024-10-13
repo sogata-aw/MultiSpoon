@@ -2,12 +2,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import numpy as np
 import random
 
-def creer_captcha(code,width=400,height=200):
-    # Créer une image blanche
-    img = Image.new('RGB', (width, height), (255, 255, 255))
 
-    # Dessiner des lignes et des points pour rendre l'image plus difficile à lire
-    draw = ImageDraw.Draw(img)
+def brouiller(draw, width, height, nblignes=10, nbpoints=17500):
     for _ in range(10):
         x1, y1 = random.randint(0, width), random.randint(0, height)
         x2, y2 = random.randint(0, width), random.randint(0, height)
@@ -16,7 +12,7 @@ def creer_captcha(code,width=400,height=200):
         x, y = random.randint(0, width), random.randint(0, height)
         draw.point((x, y), fill=(0, 0, 0))
 
-    # Dessiner les caractères du code de captcha
+def ecrire(draw,code,height):
     fonts = ['arial.ttf', 'times.ttf', 'cour.ttf', 'verdana.ttf']
     font_sizes = [28, 30, 32, 34]
     x = 50
@@ -33,6 +29,15 @@ def creer_captcha(code,width=400,height=200):
         # Ajouter un espace suffisant pour éviter les chevauchements
         x += font_size + random.randint(15, 30)
 
+def creer_captcha(code, width=400, height=200):
+    # Créer une image blanche
+    img = Image.new('RGB', (width, height), (255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    brouiller(draw, width, height)
+
+    # Dessiner les caractères du code de captcha
+    ecrire(draw, code, height)
+
     # Appliquer un filtre de flou pour rendre l'image plus difficile à lire
     img = img.filter(ImageFilter.GaussianBlur(radius=0.80))
 
@@ -41,5 +46,8 @@ def creer_captcha(code,width=400,height=200):
     img.close()
     return img
 
+
 def generer_code(taille=6):
     return ''.join(random.choice('abcdefghijklmnopqrsxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(taille))
+
+creer_captcha("123456")

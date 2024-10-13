@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import captcha as c
-import json
+import settings as s
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
@@ -12,11 +12,14 @@ async def on_ready():
     print("Je suis prêt")
     for server in bot.guilds:
         print(f'{server.name}(id: {server.id})')
+    print("Début de la synchronisation")
+    await bot.tree.sync()
+    print("Synchronisation terminée")
 
 
 @bot.event
 async def on_member_join(member):
-    try :
+    try:
         channel = member.guild.get_channel(settings["verificationChannel"])
         print(member.guild.get_role(settings["roleBefore"]))
         await member.add_roles(member.guild.get_role(settings["roleBefore"]))
@@ -26,49 +29,62 @@ async def on_member_join(member):
         except discord.Forbidden:
             await channel.send(
                 "Le bot n'a pas les permissions nécessaires ! Essayez de mettre son rôle au-dessus des autres")
-    except AttributeError :
+    except AttributeError:
         await channel.send(":warning: Le bot ne trouve pas le rôle d'arrivée")
 
 
-@bot.command()
+@bot.tree.command(name="set", description="Permet de configurer le bot")
 @commands.has_permissions(administrator=True)
-async def set(ctx, option: str, value: int):
+async def set(interaction, option: str, value: int):
     if option == "role_before":
-        await set_role_before(ctx, value)
+        await s.set_role_before(interaction, value)
     elif option == "role_after":
-        await set_role_after(ctx, value)
+        await s.set_role_after(interaction, value)
     elif option == "channel":
-        await set_verification_channel(ctx, value)
+        await s.set_verification_channel(interaction, value)
     elif option == "time":
-        await set_timeout(ctx, value)
+        await s.set_timeout(interaction, value)
     else:
-        await ctx.send(":warning: La commande est invalide \n Veuillez lire la documentation avec la commande `!aide`")
-    await save()
+        await interaction.response.send_message(":warning: La commande est invalide \n Veuillez lire la documentation avec la commande `!aide`")
+    await s.save()
 
+set.options = [
+    {"name" : "option", "type" : 3, "description" : "Sélectionnez quelle paramètre modifier"},
+    {"name" : "value", "type" : 4, "description" : "Rentrez un ID ou un temps en seconde en fonction de l'option choisie"}
+]
 
-@bot.command()
+@bot.tree.command(name="afficher", description="Affiche les différents paramètres mis en place (admin uniquement)")
 @commands.has_permissions(administrator=True)
-async def afficher(ctx):
-    await ctx.send("Voici les différents paramètres")
-    for key,value in settings.items():
-        await ctx.send(f"{key} : {value}")
+async def afficher(interaction):
+    out = ""
+    for key in settings:
+        if not key == "token" :
+            out += (f"{key} : {settings[key]}\n")
+    await interaction.response.send_message(f"Voici les différents paramètres :\n{out}")
+
 
 @bot.command()
 async def verify(ctx):
-    if not (ctx.guild.get_role(settings["roleBefore"]) in ctx.author.roles)  :
+    if not (ctx.guild.get_role(settings["roleBefore"]) in ctx.author.roles):
         await ctx.send(":warning: Vous avez déjà effectué la vérification")
     elif settings["verificationChannel"] == 0 or settings["roleBefore"] == 0 or settings["roleAfter"] == 0:
-        await ctx.send(":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une vérifcation")
+        await ctx.send(
+            ":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une vérifcation"
+        )
     else:
         width, height = 400, 200
         taille = 6
         continuer = True
+        tmps = settings["timeout"] / 60
+        nb = settings["nbEssais"]
         while continuer:
             code = c.generer_code(taille)
             print(code)
             c.creer_captcha(code, width, height)
             attachement = discord.File("captcha.png", filename="captcha.png")
-            await ctx.send("Veuillez rentrer le code du captcha, vous avez 5 minutes pour le faire", file=attachement)
+            await ctx.send(
+                f"Veuillez rentrer le code du captcha, vous avez {tmps} minutes pour le faire et {nb} avant de devoir contacter un administrateur ",
+                file=attachement)
 
             def check(msg):
                 return msg.author == ctx.author and msg.channel == ctx.channel
@@ -84,53 +100,14 @@ async def verify(ctx):
                 await ctx.author.remove_roles(ctx.guild.get_role(settings["roleBefore"]))
                 await ctx.author.add_roles(ctx.guild.get_role(settings["roleAfter"]))
                 continuer = False
+                await ctx.purge()
             else:
                 await ctx.send("Code incorrect... Veuillez recommencer.")
+                await ctx.purge()
 
 
-async def set_timeout(ctx, sec):
-    if sec < 30:
-        await ctx.send(":warning: Le temps est invalide ! Il doit être supérieur à 30 secondes")
-    else:
-        settings["timeout"] = sec
 
 
-async def set_role_before(ctx, id):
-    role = ctx.guild.get_role(id)
-    if role is None or not isinstance(role, discord.Role):
-        await ctx.send(":warning: Le rôle sélectionné n'est pas valide")
-    else:
-        settings["roleBefore"] = id
-        await ctx.send("✅ Le rôle d'arrivée a été mis à jour")
 
-
-async def set_role_after(ctx, id):
-    role = ctx.guild.get_role(id)
-    if role is None or not isinstance(role, discord.Role):
-        await ctx.send(":warning: Le rôle sélectionné n'est pas valide")
-    else:
-        settings["roleAfter"] = id
-        await ctx.send("✅ Le rôle après vérification a été mis à jour")
-
-
-async def set_verification_channel(ctx, id):
-    salon = ctx.guild.get_channel(id)
-    if salon is None or not isinstance(salon, discord.TextChannel):
-        await ctx.send(":warning: Le salon selectionné n'est pas valide")
-    else:
-        settings["verificationChannel"] = id
-        await ctx.send("✅ Le salon des vérifications a été mis à jour")
-
-
-async def save():
-    with open("settings.json", "w") as file:
-        json.dump(settings, file)
-
-
-def loading():
-    with open("settings.json", "r") as file:
-        return json.load(file)
-
-
-settings = loading()
-bot.run("YOUR_TOKEN")
+settings = s.loading()
+bot.run(settings["token"])
