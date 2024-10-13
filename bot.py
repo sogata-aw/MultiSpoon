@@ -3,7 +3,6 @@ from discord.ext import commands
 import captcha as c
 import json
 
-token = "MTIzMDg3MTE4Mzk0ODI1MTIwNg.GHuaO0._tOPpvXSzG3QHB-q01fax0yVdDpd6fYPiQGxfY"
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
