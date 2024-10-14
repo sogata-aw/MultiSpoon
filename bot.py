@@ -1,5 +1,8 @@
+import typing
+
 import discord
 from discord.ext import commands
+
 import captcha as c
 import settings as s
 
@@ -15,6 +18,11 @@ async def on_ready():
     print("Début de la synchronisation")
     await bot.tree.sync()
     print("Synchronisation terminée")
+    commandes = bot.tree.get_commands()
+    for command in commandes:
+        print(f"Commande : {command.name}")
+        print(f"Description : {command.description}")
+        print("------------------------")
 
 
 @bot.event
@@ -33,25 +41,26 @@ async def on_member_join(member):
         await channel.send(":warning: Le bot ne trouve pas le rôle d'arrivée")
 
 
-@bot.tree.command(name="set", description="Permet de configurer le bot")
+@bot.tree.command(name="setrole", description="Permet de configurer le rôle d'arrivée et celui après la vérification")
 @commands.has_permissions(administrator=True)
-async def set(interaction, option: str, value: int):
-    if option == "role_before":
+async def setrole(interaction, option: str, value: discord.Role):
+    if option == "before":
         await s.set_role_before(interaction, value)
-    elif option == "role_after":
+    elif option == "after":
         await s.set_role_after(interaction, value)
-    elif option == "channel":
-        await s.set_verification_channel(interaction, value)
-    elif option == "time":
-        await s.set_timeout(interaction, value)
-    else:
-        await interaction.response.send_message(":warning: La commande est invalide \n Veuillez lire la documentation avec la commande `!aide`")
+
     await s.save()
 
-set.options = [
-    {"name" : "option", "type" : 3, "description" : "Sélectionnez quelle paramètre modifier"},
-    {"name" : "value", "type" : 4, "description" : "Rentrez un ID ou un temps en seconde en fonction de l'option choisie"}
-]
+@setrole.autocomplete("option")
+async def autocomplete_option(interaction : discord.Interaction, option : str) -> typing.List[discord.app_commands.Choice[str]]:
+    liste = []
+    for choice in ["before","after"]:
+        liste.append(discord.app_commands.Choice(name=choice, value=choice))
+    return liste
+
+@bot.tree.command(name="aide", description="affiche les informations sur les différentes commandes")
+async def aide(interaction : discord.Interaction, commande : str = None):
+    return 0
 
 @bot.tree.command(name="afficher", description="Affiche les différents paramètres mis en place (admin uniquement)")
 @commands.has_permissions(administrator=True)
@@ -62,7 +71,12 @@ async def afficher(interaction):
             out += (f"{key} : {settings[key]}\n")
     await interaction.response.send_message(f"Voici les différents paramètres :\n{out}")
 
-
+    # elif option == "channel":
+    #     await s.set_verification_channel(interaction, value)
+    # elif option == "time":
+    #     await s.set_timeout(interaction, value)
+    # else:
+    #     await interaction.response.send_message(":warning: La commande est invalide \n Veuillez lire la documentation avec la commande `!aide`")
 @bot.command()
 async def verify(ctx):
     if not (ctx.guild.get_role(settings["roleBefore"]) in ctx.author.roles):
@@ -106,8 +120,10 @@ async def verify(ctx):
                 await ctx.purge()
 
 
+def run():
+    bot.run(settings["token"])
 
+if __name__ == "__main__":
+    settings = s.loading()
+    run()
 
-
-settings = s.loading()
-bot.run(settings["token"])

@@ -10,30 +10,27 @@ async def set_timeout(interaction, sec):
         settings["timeout"] = sec
 
 
-async def set_role_before(interaction, id):
-    role = interaction.guild.get_role(id)
+async def set_role_before(interaction, role):
     if role is None or not isinstance(role, discord.Role):
         await interaction.response.send_message(":warning: Le rôle sélectionné n'est pas valide")
     else:
-        settings["roleBefore"] = id
+        settings["roleBefore"] = role.id
         await interaction.response.send_message("✅ Le rôle d'arrivée a été mis à jour")
 
 
-async def set_role_after(interaction, id):
-    role = interaction.guild.get_role(id)
+async def set_role_after(interaction, role):
     if role is None or not isinstance(role, discord.Role):
         await interaction.response.send_message(":warning: Le rôle sélectionné n'est pas valide")
     else:
-        settings["roleAfter"] = id
+        settings["roleAfter"] = role.id
         await interaction.response.send_message("✅ Le rôle après vérification a été mis à jour")
 
 
-async def set_verification_channel(interaction, id):
-    salon = interaction.guild.get_channel(id)
-    if salon is None or not isinstance(salon, discord.TextChannel):
+async def set_verification_channel(interaction, channel):
+    if channel is None or not isinstance(channel, discord.TextChannel):
         await interaction.response.send_message(":warning: Le salon selectionné n'est pas valide")
     else:
-        settings["verificationChannel"] = id
+        settings["verificationChannel"] = channel.id
         await interaction.response.send_message("✅ Le salon des vérifications a été mis à jour")
 
 
