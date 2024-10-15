@@ -48,7 +48,6 @@ async def setrole(interaction, option: str, value: discord.Role):
         await s.set_role_before(interaction, value)
     elif option == "after":
         await s.set_role_after(interaction, value)
-
     await s.save()
 
 @setrole.autocomplete("option")
@@ -60,7 +59,24 @@ async def autocomplete_option(interaction : discord.Interaction, option : str) -
 
 @bot.tree.command(name="aide", description="affiche les informations sur les différentes commandes")
 async def aide(interaction : discord.Interaction, commande : str = None):
-    return 0
+    roleBefore = interaction.guild.get_role(settings["roleBefore"])
+    roleAfter = interaction.guild.get_role(settings["roleAfter"])
+    logo = discord.File("logo.png", filename="logo.png")
+    embed=discord.Embed(title="Commande disponible",description="Affiche la description de toutes les commandes disponibles")
+    embed.set_thumbnail(url="attachment://logo.png")
+    embed.add_field(name="setrole", value="Configure le rôle choisi par l'utilisateur avec les paramètres before(rôle à l'arrivée) et after(rôle après captcha)",inline=True)
+    embed.add_field(name="setchannel", value="Configure le salon ou seront envoyés les messages de bienvenue incitant à utiliser la commande `/verify`", inline=True)
+    embed.add_field(name=" ", value=" ", inline=False)
+    embed.add_field(name="settimeout", value="Configure le temps avant expiration de la commande `/verify`", inline=False)
+    embed.add_field(name=" ", value=" ", inline=False)
+    embed.add_field(name=" ", value=" ", inline=False)
+    embed.add_field(name="verify",value=f"Commande utilisé par les personnes possédant le rôle {roleBefore.mention} et d'obtenir le rôle {roleAfter.mention}")
+    embed.set_footer(text=f"Informations demandées par : {interaction.user.display_name}")
+    embed.add_field(name=" ", value=" ", inline=False)
+    embed.add_field(name=" ", value=" ", inline=False)
+    embed.add_field(name="afficher",value="affiche les différents paramètres du bot",inline=True)
+    embed.add_field(name="aide", value="affiche les commandes disponibles pour le bot")
+    await interaction.response.send_message(file=logo, embed=embed)
 
 @bot.tree.command(name="afficher", description="Affiche les différents paramètres mis en place (admin uniquement)")
 @commands.has_permissions(administrator=True)
