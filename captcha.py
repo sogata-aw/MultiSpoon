@@ -1,6 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import numpy as np
 import random
+import os
 
 
 def brouiller(draw, width, height, nblignes=10, nbpoints=17500):
@@ -13,7 +14,7 @@ def brouiller(draw, width, height, nblignes=10, nbpoints=17500):
         draw.point((x, y), fill=(0, 0, 0))
 
 def ecrire(draw,code,height):
-    fonts = ['arial.ttf', 'times.ttf', 'cour.ttf', 'verdana.ttf']
+    fonts = [os.path.join(os.getcwd(), 'fonts', 'arial.ttf'), os.path.join(os.getcwd(), 'fonts', 'arial.ttf'), os.path.join(os.getcwd(), 'fonts', 'arial.ttf'), os.path.join(os.getcwd(), 'fonts', 'arial.ttf')]
     font_sizes = [28, 30, 32, 34]
     x = 50
     for char in code:
