@@ -8,6 +8,7 @@ async def set_timeout(interaction, sec):
         await interaction.response.send_message(":warning: Le temps est invalide ! Il doit être supérieur à 30 secondes")
     else:
         settings["timeout"] = sec
+        await interaction.response.send_message("✅ Le temps avant expiration du captcha a été mis à jour")
 
 
 async def set_role_before(interaction, role):

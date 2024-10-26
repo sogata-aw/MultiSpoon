@@ -3,20 +3,25 @@ import numpy as np
 import random
 import os
 
+width, height = 400, 200
+taille = 6
 
-def brouiller(draw, width, height, nblignes=10, nbpoints=17500):
+def brouiller(draw, nblignes=10, nbpoints=17500):
     for _ in range(10):
         x1, y1 = random.randint(0, width), random.randint(0, height)
         x2, y2 = random.randint(0, width), random.randint(0, height)
         draw.line((x1, y1, x2, y2), fill=(0, 0, 0), width=2)
-    for _ in range(17500):
+    for _ in range(17000):
         x, y = random.randint(0, width), random.randint(0, height)
         draw.point((x, y), fill=(0, 0, 0))
 
-def ecrire(draw,code,height):
-    fonts = [os.path.join(os.getcwd(), 'fonts', 'arial.ttf'), os.path.join(os.getcwd(), 'fonts', 'arial.ttf'), os.path.join(os.getcwd(), 'fonts', 'arial.ttf'), os.path.join(os.getcwd(), 'fonts', 'arial.ttf')]
+
+def ecrire(draw, code, height):
+    fonts = [os.path.join(os.getcwd(), 'fonts', 'arial.ttf'), os.path.join(os.getcwd(), 'fonts', 'arial.ttf'),
+             os.path.join(os.getcwd(), 'fonts', 'arial.ttf'),
+             os.path.join(os.getcwd(), 'fonts', 'arial.ttf')]
     font_sizes = [28, 30, 32, 34]
-    x = 50
+    x = 30
     for char in code:
         font_name = random.choice(fonts)
         font_size = random.choice(font_sizes)
@@ -28,7 +33,8 @@ def ecrire(draw,code,height):
             angle = random.uniform(-10, 10)
             draw.text((x, y), char, font=font, fill=(0, 0, 0), angle=angle)
         # Ajouter un espace suffisant pour éviter les chevauchements
-        x += font_size + random.randint(15, 30)
+        x += font_size + random.randint(15, 35)
+
 
 def creer_captcha(code, width=400, height=200):
     # Créer une image blanche
@@ -51,4 +57,5 @@ def creer_captcha(code, width=400, height=200):
 def generer_code(taille=6):
     return ''.join(random.choice('abcdefghijklmnopqrsxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(taille))
 
-creer_captcha("123456")
+
+creer_captcha("Ifjis4")
