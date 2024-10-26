@@ -1,5 +1,6 @@
 import asyncio
 import typing
+import logging
 
 import discord
 from discord.ext import commands
@@ -34,7 +35,7 @@ async def on_member_join(member):
         await member.add_roles(member.guild.get_role(settings["roleBefore"]))
         try:
             await channel.send(
-                f"Bienvenue {member.mention} ! Veuillez utiliser la commande `!verify`")
+                f"Bienvenue {member.mention} ! Veuillez utiliser la commande `/verify`")
         except discord.Forbidden:
             await channel.send(
                 "Le bot n'a pas les permissions nécessaires ! Essayez de mettre son rôle au-dessus des autres")
@@ -43,12 +44,13 @@ async def on_member_join(member):
 
 
 @bot.tree.command(name="setrole", description="Permet de configurer le rôle d'arrivée et celui après la vérification")
+@discord.app_commands.describe(option = "Before : rôle à l'arrivée, After : rôle après vérification",role = "Le rôle que vous voulez sélectionner" )
 @commands.has_permissions(administrator=True)
-async def setrole(interaction, option: str, value: discord.Role):
+async def setrole(interaction, option: str, role: discord.Role):
     if option == "before":
-        await s.set_role_before(interaction, value)
+        await s.set_role_before(interaction, role)
     elif option == "after":
-        await s.set_role_after(interaction, value)
+        await s.set_role_after(interaction, role)
     await s.save()
 
 
@@ -63,6 +65,7 @@ async def autocomplete_option(interaction: discord.Interaction, option: str) -> 
 
 @bot.tree.command(name="setchannel",
                   description="Permet de configurer le salon ou sera envoyé le message quand quelqu'un arrive")
+@discord.app_commands.describe(channel = "Le salon dans lequel vous voulez envoyer le message de bienvenue")
 @commands.has_permissions(administrator=True)
 async def setchannel(interaction, channel: discord.TextChannel):
     await s.set_verification_channel(interaction, channel)
@@ -70,10 +73,12 @@ async def setchannel(interaction, channel: discord.TextChannel):
 
 
 @bot.tree.command(name="settimeout", description="Permet de configurer le temps en seconde avant expiration du captcha")
+@discord.app_commands.describe(time = "Le temps en secondes avant expiration de `/verify`")
 @commands.has_permissions(administrator=True)
 async def settimeout(interaction, time: int):
     await s.set_timeout(interaction, time)
     await s.save()
+
 
 
 @bot.tree.command(name="aide", description="affiche les informations sur les différentes commandes")
