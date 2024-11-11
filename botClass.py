@@ -1,7 +1,11 @@
 import discord
 from discord.ext import commands
 import captcha as c
-toke_beta = "YOUR_TOKEN"
+import settings
+import os
+
+tokenBeta = os.getenv('DTB')
+
 class SpoonCAPTCHA(commands.Bot):
     def __init__(self,intents,token):
         super().__init__(command_prefix="!", intents=intents)
@@ -12,6 +16,14 @@ class SpoonCAPTCHA(commands.Bot):
         print("Je suis prêt")
         for server in self.guilds:
             print(f'{server.name}(id: {server.id})')
+        print("Début de la synchronisation")
+        await bot.tree.sync()
+        print("Synchronisation terminée")
+        commandes = bot.tree.get_commands()
+        for command in commandes:
+            print(f"Commande : {command.name}")
+            print(f"Description : {command.description}")
+            print("------------------------")
 
     async def on_member_join(self,member):
         channel = member.guild.get_channel(1272201109259157568)
@@ -50,9 +62,9 @@ class SpoonCAPTCHA(commands.Bot):
                 await ctx.send("Code incorrect... Veuillez recommencer.")
 
     def run(self):
-        self.add_command(self.verify)
         super().run(self.token)
 
-bot = SpoonCAPTCHA(discord.Intents.all(),"YOUR_TOKEN")
-
-bot.run()
+if __name__ == "__main__":
+    settings = settings.loading()
+    bot = SpoonCAPTCHA(discord.Intents.all(),tokenBeta)
+    bot.run()
