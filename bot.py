@@ -209,6 +209,7 @@ async def play(interaction: discord.Interaction, url: str):
     if state is None:
         await interaction.response.send_message("Vous devez être dans un salon vocal pour utiliser cette commande")
     else:
+
         if interaction.guild.voice_client is None:
             vc = await state.channel.connect()
             embed = await p.add_audio(interaction, url, 0, settings)
@@ -232,7 +233,11 @@ async def boucle_musique(interaction, vc):
                 if not first:
                     embed = p.create_embed(interaction, "Now playing : " + query[0].title, query[0].url, settings)
                     await interaction.channel.send(embed=embed)
-                p.play_audio(interaction, vc, settings)
+                try :
+                    p.play_audio(interaction, vc, settings)
+                except discord.app_commands.errors.CommandInvokeError:
+                    await interaction.channel.send(":warning: le bot ne peut actuellement pas lancer l'audio")
+                    await vc.disconnect()
                 while vc.is_playing():
                     await asyncio.sleep(1)
                 await asyncio.sleep(1)
