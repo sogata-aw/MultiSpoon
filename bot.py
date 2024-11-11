@@ -3,6 +3,7 @@ import typing
 import os
 
 import discord
+import pytubefix.exceptions
 from discord.ext import commands
 
 import captcha as c
@@ -214,14 +215,14 @@ async def play(interaction: discord.Interaction, url: str):
             vc = await state.channel.connect()
             try:
                 embed = await p.add_audio(interaction, url, 0, settings)
-            except discord.app_commands.errors.CommandInvokeError:
+            except pytubefix.exceptions.BotDetection:
                 await interaction.channel.send(":warning: le bot ne peut actuellement pas lancer l'audio")
                 await vc.disconnect()
             await interaction.response.send_message(embed=embed)
         else:
             try:
                 embed = await p.add_audio(interaction, url, 1, settings)
-            except discord.app_commands.errors.CommandInvokeError:
+            except pytubefix.exceptions.BotDetection:
                 await interaction.channel.send(":warning: le bot ne peut actuellement pas lancer l'audio")
                 await interaction.guild.voice_client.disconnect()
 
