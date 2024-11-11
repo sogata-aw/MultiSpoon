@@ -215,18 +215,18 @@ async def play(interaction: discord.Interaction, url: str):
             vc = await state.channel.connect()
             try:
                 embed = await p.add_audio(interaction, url, 0, settings)
+                await interaction.response.send_message(embed=embed)
             except pytubefix.exceptions.BotDetection:
-                await interaction.channel.send(":warning: le bot ne peut actuellement pas lancer l'audio")
+                await interaction.response.send_message(":warning: le bot ne peut actuellement pas lancer l'audio")
                 await vc.disconnect()
-            await interaction.response.send_message(embed=embed)
+
         else:
             try:
                 embed = await p.add_audio(interaction, url, 1, settings)
+                await interaction.response.send_message(embed=embed)
             except pytubefix.exceptions.BotDetection:
-                await interaction.channel.send(":warning: le bot ne peut actuellement pas lancer l'audio")
+                await interaction.channel.send_message(":warning: le bot ne peut actuellement pas lancer l'audio")
                 await interaction.guild.voice_client.disconnect()
-
-            await interaction.response.send_message(embed=embed)
 
         if play_task is None:
             play_task = asyncio.create_task(boucle_musique(interaction, vc))
