@@ -27,8 +27,11 @@ async def on_ready():
     print("Début de la synchronisation")
 
     for guild in bot.guilds:
-        if settings[guild.name]["query"] is not None:
-            settings[guild.name]["query"] = []
+        try :
+            if settings[guild.name]["query"] is not None:
+                settings[guild.name]["query"] = []
+        except KeyError:
+            pass
 
     await bot.tree.sync()
 
@@ -45,13 +48,32 @@ async def on_ready():
 @bot.event
 async def on_guild_join(guild: discord.Guild):
     await s.create_settings(guild)
-    print("nouveau serveur ajouté à la configuration")
+    print(f" Le serveur {guild.name} a été ajouté à la configuration")
 
+    user = await bot.fetch_user(649268058652672051)
+    dm_channel = await user.create_dm()
+    await dm_channel.send(embed=await embed("Un serveur a ajouté le bot",guild))
 
 @bot.event
 async def on_guild_remove(guild: discord.Guild):
     await s.delete_settings(guild)
-    print(f"le serveur {guild.name} a été supprimé des de la config")
+    print(f"le serveur {guild.name} a été supprimé de la configuration")
+
+    user = await bot.fetch_user(649268058652672051)
+    dm_channel = await user.create_dm()
+    await dm_channel.send(embed=await embed("Un serveur a supprimé le bot", guild))
+
+
+async def embed(title,guild):
+    embed = discord.Embed(title=title, color=0x00ff00)
+    embed.set_thumbnail(url=guild.icon)
+    embed.set_author(name=guild.name)
+    embed.add_field(name="Nom du serveur", value=guild.name, inline=False)
+    embed.add_field(name="ID du serveur", value=guild.id, inline=False)
+    embed.add_field(name="Propriétaire du serveur", value=f"{guild.owner},{guild.owner.mention}, {guild.owner_id}", inline=False)
+    embed.add_field(name="Nombre de membres", value=guild.member_count, inline=False)
+    embed.set_footer(text=f"Date de création du serveur : {guild.created_at}")
+    return embed
 
 
 @bot.event
@@ -247,7 +269,8 @@ async def boucle_musique(interaction, vc):
                 while vc.is_playing():
                     await asyncio.sleep(1)
                 await asyncio.sleep(1)
-                query = p.supprimer_musique(interaction, query)
+                if len(query) > 0:
+                    query = p.supprimer_musique(interaction, query)
         first = False
         await asyncio.sleep(1)
     play_task = None
