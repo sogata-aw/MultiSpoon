@@ -1,8 +1,0 @@
-{
-  "verificationChannel": 0,
-  "roleBefore": 0,
-  "roleAfter": 0,
-  "logChannel": 0,
-  "timeout": 300,
-  "logActive": false
-}
