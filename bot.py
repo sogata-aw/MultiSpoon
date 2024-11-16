@@ -3,8 +3,7 @@ from discord.ext import commands
 
 import os
 
-import captcha as c
-import settings as s
+from utilities import settings as s
 
 tokenBeta = os.getenv('DTB')
 token = os.getenv('DT')
@@ -94,5 +93,5 @@ class MultiSpoon(commands.Bot):
 
 
 if __name__ == "__main__":
-    bot = MultiSpoon(discord.Intents.all(), token)
+    bot = MultiSpoon(discord.Intents.all(), tokenBeta)
     bot.run()

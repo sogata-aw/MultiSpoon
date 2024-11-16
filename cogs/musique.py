@@ -3,8 +3,7 @@ from discord.ext import commands
 
 import asyncio
 
-import play as p
-import settings as s
+from utilities import play as p
 import pytubefix.exceptions
 
 play_task = None

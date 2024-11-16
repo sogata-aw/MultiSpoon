@@ -52,10 +52,10 @@ async def delete_settings(guild, settings):
 
 
 def save(settings):
-    with open("settings.json", "w") as file:
+    with open("./settings.json", "w") as file:
         json.dump(settings, file)
 
 
 def loading():
-    with open("settings.json", "r") as file:
+    with open("./settings.json", "r") as file:
         return json.load(file)

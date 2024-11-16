@@ -4,8 +4,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-import settings as s
-import captcha as c
+from utilities import captcha as c, settings as s
 
 
 class ModerationCog(commands.Cog):
