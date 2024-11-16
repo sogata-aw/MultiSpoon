@@ -4,6 +4,7 @@ from discord.ext import commands
 import asyncio
 
 from utilities import play as p
+from utilities import music as m
 import pytubefix.exceptions
 
 play_task = None
