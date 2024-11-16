@@ -6,6 +6,7 @@ import os
 width, height = 400, 200
 taille = 6
 
+
 def brouiller(draw, nblignes=10, nbpoints=17500):
     for _ in range(10):
         x1, y1 = random.randint(0, width), random.randint(0, height)
@@ -49,13 +50,10 @@ def creer_captcha(code, width=400, height=200):
     img = img.filter(ImageFilter.GaussianBlur(radius=0.80))
 
     # Enregistrer l'image
-    img.save('captcha.png')
+    img.save('./img/captcha.png')
     img.close()
     return img
 
 
 def generer_code(taille=6):
     return ''.join(random.choice('abcdefghijklmnopqrsxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(taille))
-
-
-creer_captcha("Ifjis4")
