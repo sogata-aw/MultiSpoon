@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 
 import os
-from keep_alive import keep_alive
 
 import captcha as c
 import settings as s
@@ -95,6 +94,5 @@ class MultiSpoon(commands.Bot):
 
 
 if __name__ == "__main__":
-    keep_alive()
     bot = MultiSpoon(discord.Intents.all(), token)
     bot.run()
