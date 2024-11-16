@@ -2,7 +2,7 @@ import discord
 from pytubefix import YouTube
 import os
 
-import music as m
+from utilities import music as m
 
 ffmpeg = "/ProgramData/chocolatey/lib/ffmpeg-full/tools/ffmpeg/bin/ffmpeg.exe"
 
