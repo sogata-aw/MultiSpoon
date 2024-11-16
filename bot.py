@@ -96,9 +96,5 @@ class MultiSpoon(commands.Bot):
 
 if __name__ == "__main__":
     keep_alive()
-    choix = int(input("Quelle mode voulez vous lancer ?\n 1. Normal (SpoonCAPTCHA)\n 2. Bêta (SogataBot)"))
-    if choix == 1:
-        bot = MultiSpoon(discord.Intents.all(), token)
-    elif choix == 2:
-        bot = MultiSpoon(discord.Intents.all(), tokenBeta)
+    bot = MultiSpoon(discord.Intents.all(), token)
     bot.run()
