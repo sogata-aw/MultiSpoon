@@ -50,8 +50,8 @@ class ModerationCog(commands.Cog):
     @commands.hybrid_command(name="aide", description="affiche les informations sur les différentes commandes")
     async def aide(self, ctx, commande: str = None):
         print(self.bot.settings)
-        roleBefore = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleBefore"])
-        roleAfter = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleAfter"])
+        rolebefore = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleBefore"])
+        roleafter = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleAfter"])
         logo = discord.File("img/logo.png", filename="img/logo.png")
         embed = discord.Embed(title="Commande disponible",
                               description="Affiche la description de toutes les commandes disponibles")
@@ -68,7 +68,7 @@ class ModerationCog(commands.Cog):
         embed.add_field(name=" ", value=" ", inline=False)
         embed.add_field(name=" ", value=" ", inline=False)
         embed.add_field(name="verify",
-                        value=f"Commande utilisé par les personnes possédant le rôle {roleBefore.mention} et d'obtenir le rôle {roleAfter.mention}")
+                        value=f"Commande utilisé par les personnes possédant le rôle {rolebefore.mention} et d'obtenir le rôle {roleafter.mention}")
         embed.set_footer(text=f"Informations demandées par : {ctx.author.display_name}")
         embed.add_field(name=" ", value=" ", inline=False)
         embed.add_field(name=" ", value=" ", inline=False)
@@ -81,18 +81,19 @@ class ModerationCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def settings(self, ctx):
         salon = ctx.guild.get_channel(self.bot.settings[ctx.guild.name]["verificationChannel"])
-        roleBefore = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleBefore"])
-        roleAfter = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleAfter"])
+        rolebefore = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["rolebefore"])
+        roleafter = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleafter"])
         embed = discord.Embed(title="paramètre du bot :")
         embed.add_field(name="Salon de vérification : ", value=salon.mention)
-        embed.add_field(name="Rôle d'arrivée : ", value=roleBefore.mention)
-        embed.add_field(name="Rôle après vérification : ", value=roleAfter.mention)
+        embed.add_field(name="Rôle d'arrivée : ", value=rolebefore.mention)
+        embed.add_field(name="Rôle après vérification : ", value=roleafter.mention)
         embed.add_field(name="Temps de la commande vérification : ", value=self.bot.settings[ctx.guild.name]["timeout"])
         embed.add_field(name="Nombre d'essais : ", value=self.bot.settings[ctx.guild.name]["nbEssais"])
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="verify", description="Permet de lancer la vérification")
     async def verify(self, ctx):
+        reponse = None
         if not (ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleBefore"]) in ctx.author.roles):
             await ctx.send(":warning: Vous avez déjà effectué la vérification")
         elif self.bot.settings[ctx.guild.name]["verificationChannel"] == 0 or self.bot.settings[ctx.guild.name][
@@ -138,6 +139,39 @@ class ModerationCog(commands.Cog):
                     await ctx.channel.send("Code incorrect... Veuillez recommencer.")
                     await ctx.channel.purge()
 
+    @commands.hybrid_command(name="salontemporaire", description="Créer un salon pour une durée déterminée")
+    @commands.has_permissions(administrator=True)
+    async def salontemporaire(self, ctx, nom: str,  type: str, categorie: str = None):
+        if type == "textuel":
+            for category in ctx.guild.categories:
+                if category.name == categorie:
+                    salon = await ctx.guild.create_text_channel(name=nom, reason=f"Salon temporaire qui expire dans ...",category=category)
+                    await ctx.send(f"Salon crée ! {salon.mention}")
+        elif type == "vocal":
+            for category in ctx.guild.categories:
+                if category.name == categorie:
+                    salon = await ctx.guild.create_text_channel(name=nom,
+                                                                reason=f"Salon temporaire qui expire dans ...",
+                                                                category=category)
+                    await ctx.send(f"Salon crée ! {salon.mention}")
+        else:
+            await ctx.send(":warning: Le type de salon est invalide")
+
+    @salontemporaire.autocomplete("type")
+    async def autocomplete_option(self, ctx, type: str) -> typing.List[
+        discord.app_commands.Choice[str]]:
+        liste = []
+        for choice in ["textuel", "vocal"]:
+            liste.append(discord.app_commands.Choice(name=choice, value=choice))
+        return liste
+
+    @salontemporaire.autocomplete("categorie")
+    async def autocomplete_option(self, ctx, categorie: str) -> typing.List[
+        discord.app_commands.Choice[str]]:
+        liste = []
+        for category in ctx.guild.categories:
+            liste.append(discord.app_commands.Choice(name=category.name, value=category.name))
+        return liste
 
 async def setup(bot):
     await bot.add_cog(ModerationCog(bot))

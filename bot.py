@@ -2,25 +2,28 @@ import discord
 from discord.ext import commands
 
 import os
+from dotenv import load_dotenv
 
 from utilities import settings as s
 
-tokenBeta = os.getenv('DTB')
+load_dotenv('.env')
 token = os.getenv('DT')
+
+tokenBeta = os.getenv('DTB')
 
 
 class MultiSpoon(commands.Bot):
     def __init__(self, intents, token):
         super().__init__(command_prefix="!", intents=intents)
-        self.token = token
-        self.settings = s.loading()
+        self.token: str = token
+        self.settings: dict = s.loading()
+        self.createur: int = 649268058652672051
 
     async def on_ready(self):
         print("Je suis prêt")
 
         for server in bot.guilds:
             print(f'{server.name}(id: {server.id})')
-        print("Début de la synchronisation")
 
         for guild in bot.guilds:
             try:
@@ -28,6 +31,8 @@ class MultiSpoon(commands.Bot):
                     self.settings[guild.name]["query"] = []
             except KeyError:
                 pass
+
+        print("Début de la synchronisation")
 
         await bot.tree.sync()
 
@@ -44,7 +49,7 @@ class MultiSpoon(commands.Bot):
         await s.create_settings(guild, self.settings)
         print(f"Le serveur {guild.name} a été ajouté à la configuration")
 
-        user = await bot.fetch_user(649268058652672051)
+        user = await bot.fetch_user(self.createur)
         dm_channel = await user.create_dm()
         await dm_channel.send(embed=await self.embed("Un serveur a ajouté le bot", guild))
 
@@ -52,11 +57,12 @@ class MultiSpoon(commands.Bot):
         await s.delete_settings(guild, self.settings)
         print(f"Le serveur {guild.name} a été supprimé de la configuration")
 
-        user = await bot.fetch_user(649268058652672051)
+        user = await bot.fetch_user(self.createur)
         dm_channel = await user.create_dm()
         await dm_channel.send(embed=await self.embed("Un serveur a supprimé le bot", guild))
 
-    async def embed(self, title, guild):
+    @staticmethod
+    async def embed(title, guild):
         embed = discord.Embed(title=title, color=0x00ff00)
         embed.set_thumbnail(url=guild.icon)
         embed.set_author(name=guild.name)
@@ -69,6 +75,7 @@ class MultiSpoon(commands.Bot):
         return embed
 
     async def on_member_join(self, member):
+        channel = None
         try:
             channel = member.guild.get_channel(self.settings[member.guild.name]["verificationChannel"])
             print(member.guild.get_role(self.settings[member.guild.name]["roleBefore"]))

@@ -4,7 +4,6 @@ from discord.ext import commands
 import asyncio
 
 from utilities import play as p
-from utilities import music as m
 import pytubefix.exceptions
 
 play_task = None
@@ -96,6 +95,22 @@ class MusiqueCog(commands.Cog):
                 embed.add_field(name=str(i + 1) + ". " + query[i].title, value="", inline=False)
             await ctx.send(embed=embed)
 
+    @commands.hybrid_command(name="request", description="Envoie une demande au modérateur du bot pour pouvoir activer les commandes musicales")
+    @discord.app_commands.describe(raison="Si vous souhaitez vous justifier")
+    async def request(self, ctx, raison: str = None):
+        user = await self.bot.fetch_user(self.bot.createur)
+        dm_channel = await user.create_dm()
+        await dm_channel.send(embed=self.embed(ctx, raison))
+        await ctx.send("Votre demande a bien été transmise")
+
+    def embed(self, ctx, raison):
+        embed = discord.Embed(title="Quelqu'un demande l'activation du bot pour la musique")
+        embed.add_field(name="Demandé par ", value=f"{ctx.author.mention}, {ctx.author.name}")
+        embed.set_image(url=ctx.author.display_icon)
+        embed.add_field(name="Sur le serveur ", value=ctx.guild.name)
+        if raison is not None:
+            embed.add_field(name="Raison :", value=raison)
+        return embed
 
 async def setup(bot):
     await bot.add_cog(MusiqueCog(bot))
