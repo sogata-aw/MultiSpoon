@@ -13,13 +13,13 @@ class ModerationCog(commands.Cog):
 
     @commands.hybrid_command(name="setrole",
                              description="Permet de configurer le rôle d'arrivée et celui après la vérification")
-    @discord.app_commands.describe(option="Before : rôle à l'arrivée, After : rôle après vérification",
+    @discord.app_commands.describe(option="Arrivée : rôle à l'arrivée, vérifié : rôle après vérification",
                                    role="Le rôle que vous voulez sélectionner")
     @commands.has_permissions(administrator=True)
     async def setrole(self, ctx, option: str, role: discord.Role):
-        if option == "before":
+        if option == "arrivée":
             await s.set_role_before(ctx, role, self.bot.settings)
-        elif option == "after":
+        elif option == "vérifié":
             await s.set_role_after(ctx, role, self.bot.settings)
         s.save(self.bot.settings)
 
@@ -27,7 +27,7 @@ class ModerationCog(commands.Cog):
     async def autocomplete_option(self, ctx, option: str) -> typing.List[
         discord.app_commands.Choice[str]]:
         liste = []
-        for choice in ["before", "after"]:
+        for choice in ["arrivée", "vérifié"]:
             liste.append(discord.app_commands.Choice(name=choice, value=choice))
         return liste
 
@@ -158,7 +158,7 @@ class ModerationCog(commands.Cog):
             await ctx.send(":warning: Le type de salon est invalide")
 
     @salontemporaire.autocomplete("type")
-    async def autocomplete_option(self, ctx, type: str) -> typing.List[
+    async def autocomplete_type(self, ctx, type: str) -> typing.List[
         discord.app_commands.Choice[str]]:
         liste = []
         for choice in ["textuel", "vocal"]:
@@ -166,7 +166,7 @@ class ModerationCog(commands.Cog):
         return liste
 
     @salontemporaire.autocomplete("categorie")
-    async def autocomplete_option(self, ctx, categorie: str) -> typing.List[
+    async def autocomplete_category(self, ctx, categorie: str) -> typing.List[
         discord.app_commands.Choice[str]]:
         liste = []
         for category in ctx.guild.categories:

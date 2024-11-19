@@ -23,7 +23,6 @@ class MusiqueCog(commands.Cog):
         if state is None:
             await ctx.send("Vous devez être dans un salon vocal pour utiliser cette commande")
         else:
-
             if ctx.guild.voice_client is None:
                 vc = await state.channel.connect()
                 try:
@@ -32,7 +31,8 @@ class MusiqueCog(commands.Cog):
                 except pytubefix.exceptions.BotDetection:
                     await ctx.send(":warning: le bot ne peut actuellement pas lancer l'audio")
                     await vc.disconnect()
-
+                except pytubefix.exceptions.RegexMatchError:
+                    await ctx.channel.send_message(":warning: l'audio est introuvable")
             else:
                 try:
                     embed = await p.add_audio(ctx, url, 1, self.bot.settings)
@@ -40,6 +40,8 @@ class MusiqueCog(commands.Cog):
                 except pytubefix.exceptions.BotDetection:
                     await ctx.channel.send_message(":warning: le bot ne peut actuellement pas lancer l'audio")
                     await ctx.guild.voice_client.disconnect()
+                except pytubefix.exceptions.RegexMatchError:
+                    await ctx.channel.send_message(":warning: l'audio est introuvable")
 
             if play_task is None:
                 play_task = asyncio.create_task(self.boucle_musique(ctx, vc))
