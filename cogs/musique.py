@@ -4,6 +4,7 @@ from discord.ext import commands
 import asyncio
 
 from utilities import play as p
+from utilities import embeds as e
 import pytubefix.exceptions
 
 play_task = None
@@ -14,6 +15,7 @@ class MusiqueCog(commands.Cog):
         self.bot = bot
 
     @commands.hybrid_command(name="play", description="Lance un audio via l'URL youtube")
+    @discord.app_commands.describe(url="Lien de la vidéo youtube que vous voulez lancer")
     async def play(self, ctx, url: str):
         if ctx.guild.name not in self.bot.settings["authorized"]:
             await ctx.send(":warning: Ce serveur n'est pas autorisé à utiliser cette commande")
@@ -54,14 +56,14 @@ class MusiqueCog(commands.Cog):
             if not vc.is_playing():
                 if len(query) > 0:
                     if not first:
-                        embed = p.create_embed(ctx, "Now playing : " + query[0].title, query[0].url, self.bot.settings)
+                        embed = e.embed_musique(ctx, "Now playing : " + query[0].title, query[0].url, self.bot.settings)
                         await ctx.channel.send(embed=embed)
                     p.play_audio(ctx, vc, self.bot.settings)
                     while vc.is_playing():
                         await asyncio.sleep(1)
                     await asyncio.sleep(1)
                     if len(query) > 0:
-                        query = p.supprimer_musique(ctx, query)
+                        p.supprimer_musique(ctx, query)
             first = False
             await asyncio.sleep(1)
         play_task = None
@@ -102,17 +104,10 @@ class MusiqueCog(commands.Cog):
     async def request(self, ctx, raison: str = None):
         user = await self.bot.fetch_user(self.bot.createur)
         dm_channel = await user.create_dm()
-        await dm_channel.send(embed=self.embed(ctx, raison))
+        await dm_channel.send(embed=e.embed_request(ctx, raison))
         await ctx.send("Votre demande a bien été transmise")
 
-    def embed(self, ctx, raison):
-        embed = discord.Embed(title="Quelqu'un demande l'activation du bot pour la musique")
-        embed.add_field(name="Demandé par ", value=f"{ctx.author.mention}, {ctx.author.name}")
-        embed.set_image(url=ctx.author.display_icon)
-        embed.add_field(name="Sur le serveur ", value=ctx.guild.name)
-        if raison is not None:
-            embed.add_field(name="Raison :", value=raison)
-        return embed
+
 
 async def setup(bot):
     await bot.add_cog(MusiqueCog(bot))

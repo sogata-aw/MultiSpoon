@@ -4,6 +4,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
+from selection import aideSelect as a
 from utilities import captcha as c, settings as s
 
 
@@ -32,7 +33,7 @@ class ModerationCog(commands.Cog):
         return liste
 
     @commands.hybrid_command(name="setchannel",
-                             description="Permet de configurer le salon ou sera envoyé le message quand quelqu'un arrive")
+                             description="Permet de configurer le salon ou sera envoyé le message quand quelqu'un arrive sur le serveur")
     @discord.app_commands.describe(channel="Le salon dans lequel vous voulez envoyer le message de bienvenue")
     @commands.has_permissions(administrator=True)
     async def setchannel(self, ctx, channel: discord.TextChannel):
@@ -49,32 +50,10 @@ class ModerationCog(commands.Cog):
 
     @commands.hybrid_command(name="aide", description="affiche les informations sur les différentes commandes")
     async def aide(self, ctx, commande: str = None):
-        print(self.bot.settings)
-        rolebefore = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleBefore"])
-        roleafter = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleAfter"])
-        logo = discord.File("img/logo.png", filename="img/logo.png")
-        embed = discord.Embed(title="Commande disponible",
-                              description="Affiche la description de toutes les commandes disponibles")
-        embed.set_thumbnail(url="attachment://logo.png")
-        embed.add_field(name="setrole",
-                        value="Configure le rôle choisi par l'utilisateur avec les paramètres before(rôle à l'arrivée) et after(rôle après captcha)",
-                        inline=True)
-        embed.add_field(name="setchannel",
-                        value="Configure le salon ou seront envoyés les messages de bienvenue incitant à utiliser la commande `/verify`",
-                        inline=True)
-        embed.add_field(name=" ", value=" ", inline=False)
-        embed.add_field(name="settimeout", value="Configure le temps avant expiration de la commande `/verify`",
-                        inline=False)
-        embed.add_field(name=" ", value=" ", inline=False)
-        embed.add_field(name=" ", value=" ", inline=False)
-        embed.add_field(name="verify",
-                        value=f"Commande utilisé par les personnes possédant le rôle {rolebefore.mention} et d'obtenir le rôle {roleafter.mention}")
-        embed.set_footer(text=f"Informations demandées par : {ctx.author.display_name}")
-        embed.add_field(name=" ", value=" ", inline=False)
-        embed.add_field(name=" ", value=" ", inline=False)
-        embed.add_field(name="afficher", value="affiche les différents paramètres du bot", inline=True)
-        embed.add_field(name="aide", value="affiche les commandes disponibles pour le bot")
-        await ctx.send(embed=embed)
+        if commande is None:
+            embed = discord.Embed(title="Choisissez une catégorie")
+            await ctx.send(embed=embed, view=a.AideSelectView())
+
 
     @commands.hybrid_command(name="settings",
                              description="Affiche les différents paramètres mis en place (admin uniquement)")  # à améliorer
@@ -141,13 +120,13 @@ class ModerationCog(commands.Cog):
 
     @commands.hybrid_command(name="salontemporaire", description="Créer un salon pour une durée déterminée")
     @commands.has_permissions(administrator=True)
-    async def salontemporaire(self, ctx, nom: str,  type: str, categorie: str = None):
-        if type == "textuel":
+    async def salontemporaire(self, ctx, nom: str, typesalon: str, categorie: str = None):
+        if typesalon == "textuel":
             for category in ctx.guild.categories:
                 if category.name == categorie:
                     salon = await ctx.guild.create_text_channel(name=nom, reason=f"Salon temporaire qui expire dans ...",category=category)
                     await ctx.send(f"Salon crée ! {salon.mention}")
-        elif type == "vocal":
+        elif typesalon == "vocal":
             for category in ctx.guild.categories:
                 if category.name == categorie:
                     salon = await ctx.guild.create_text_channel(name=nom,
@@ -157,8 +136,8 @@ class ModerationCog(commands.Cog):
         else:
             await ctx.send(":warning: Le type de salon est invalide")
 
-    @salontemporaire.autocomplete("type")
-    async def autocomplete_type(self, ctx, type: str) -> typing.List[
+    @salontemporaire.autocomplete("typesalon")
+    async def autocomplete_type(self, ctx, typesalon: str) -> typing.List[
         discord.app_commands.Choice[str]]:
         liste = []
         for choice in ["textuel", "vocal"]:
@@ -172,6 +151,7 @@ class ModerationCog(commands.Cog):
         for category in ctx.guild.categories:
             liste.append(discord.app_commands.Choice(name=category.name, value=category.name))
         return liste
+
 
 async def setup(bot):
     await bot.add_cog(ModerationCog(bot))

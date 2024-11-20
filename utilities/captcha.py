@@ -2,17 +2,17 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import random
 import os
 
-width, height = 400, 200
-taille = 6
+widthbase, heightbase = 400, 200
+taillebase = 6
 
 
 def brouiller(draw, nblignes=10, nbpoints=17000):
     for _ in range(nblignes):
-        x1, y1 = random.randint(0, width), random.randint(0, height)
-        x2, y2 = random.randint(0, width), random.randint(0, height)
+        x1, y1 = random.randint(0, widthbase), random.randint(0, heightbase)
+        x2, y2 = random.randint(0, widthbase), random.randint(0, heightbase)
         draw.line((x1, y1, x2, y2), fill=(0, 0, 0), width=2)
     for _ in range(nbpoints):
-        x, y = random.randint(0, width), random.randint(0, height)
+        x, y = random.randint(0, widthbase), random.randint(0, heightbase)
         draw.point((x, y), fill=(0, 0, 0))
 
 

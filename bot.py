@@ -5,9 +5,10 @@ import os
 from dotenv import load_dotenv
 
 from utilities import settings as s
+from utilities import embeds as e
 
 load_dotenv('.env')
-token = os.getenv('DT')
+tokenbase = os.getenv('DT')
 
 tokenBeta = os.getenv('DTB')
 
@@ -51,7 +52,7 @@ class MultiSpoon(commands.Bot):
 
         user = await bot.fetch_user(self.createur)
         dm_channel = await user.create_dm()
-        await dm_channel.send(embed=await self.embed("Un serveur a ajouté le bot", guild))
+        await dm_channel.send(embed=await e.embed_add("Un serveur a ajouté le bot", guild))
 
     async def on_guild_remove(self, guild: discord.Guild):
         await s.delete_settings(guild, self.settings)
@@ -59,20 +60,9 @@ class MultiSpoon(commands.Bot):
 
         user = await bot.fetch_user(self.createur)
         dm_channel = await user.create_dm()
-        await dm_channel.send(embed=await self.embed("Un serveur a supprimé le bot", guild))
+        await dm_channel.send(embed=await e.embed_add("Un serveur a supprimé le bot", guild))
 
-    @staticmethod
-    async def embed(title, guild):
-        embed = discord.Embed(title=title, color=0x00ff00)
-        embed.set_thumbnail(url=guild.icon)
-        embed.set_author(name=guild.name)
-        embed.add_field(name="Nom du serveur", value=guild.name, inline=False)
-        embed.add_field(name="ID du serveur", value=guild.id, inline=False)
-        embed.add_field(name="Propriétaire du serveur", value=f"{guild.owner},{guild.owner.mention}, {guild.owner_id}",
-                        inline=False)
-        embed.add_field(name="Nombre de membres", value=guild.member_count, inline=False)
-        embed.set_footer(text=f"Date de création du serveur : {guild.created_at}")
-        return embed
+
 
     async def on_member_join(self, member):
         channel = None
@@ -95,7 +85,7 @@ class MultiSpoon(commands.Bot):
             await self.load_extension(f'cogs.{extension}')
         print("Ajout des commandes terminée")
 
-    def run(self):
+    def run(self, **kwargs):
         super().run(self.token)
 
 
