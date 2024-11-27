@@ -6,11 +6,14 @@ from discord.ext import commands
 
 from selection import aideSelect as a
 from utilities import captcha as c, settings as s
+from utilities import embeds as e
 
 
 class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    # -----Commandes-----
 
     @commands.hybrid_command(name="setrole",
                              description="Permet de configurer le rôle d'arrivée et celui après la vérification")
@@ -23,14 +26,6 @@ class ModerationCog(commands.Cog):
         elif option == "vérifié":
             await s.set_role_after(ctx, role, self.bot.settings)
         s.save(self.bot.settings)
-
-    @setrole.autocomplete("option")
-    async def autocomplete_option(self, ctx, option: str) -> typing.List[
-        discord.app_commands.Choice[str]]:
-        liste = []
-        for choice in ["arrivée", "vérifié"]:
-            liste.append(discord.app_commands.Choice(name=choice, value=choice))
-        return liste
 
     @commands.hybrid_command(name="setchannel",
                              description="Permet de configurer le salon ou sera envoyé le message quand quelqu'un arrive sur le serveur")
@@ -53,7 +48,12 @@ class ModerationCog(commands.Cog):
         if commande is None:
             embed = discord.Embed(title="Choisissez une catégorie")
             await ctx.send(embed=embed, view=a.AideSelectView())
-
+        elif commande == "music":
+            await ctx.send(embed=await e.embed_aide(commande, self.bot.settings["commands"]["music"]),
+                           view=a.AideSelectView())
+        elif commande == "moderation":
+            await ctx.send(embed=await e.embed_aide(commande, self.bot.settings["commands"]["music"]),
+                           view=a.AideSelectView())
 
     @commands.hybrid_command(name="settings",
                              description="Affiche les différents paramètres mis en place (admin uniquement)")  # à améliorer
@@ -124,7 +124,9 @@ class ModerationCog(commands.Cog):
         if typesalon == "textuel":
             for category in ctx.guild.categories:
                 if category.name == categorie:
-                    salon = await ctx.guild.create_text_channel(name=nom, reason=f"Salon temporaire qui expire dans ...",category=category)
+                    salon = await ctx.guild.create_text_channel(name=nom,
+                                                                reason=f"Salon temporaire qui expire dans ...",
+                                                                category=category)
                     await ctx.send(f"Salon crée ! {salon.mention}")
         elif typesalon == "vocal":
             for category in ctx.guild.categories:
@@ -135,6 +137,30 @@ class ModerationCog(commands.Cog):
                     await ctx.send(f"Salon crée ! {salon.mention}")
         else:
             await ctx.send(":warning: Le type de salon est invalide")
+
+    # -----autocomplete-----
+
+    # Setrole
+    @setrole.autocomplete("option")
+    async def autocomplete_option(self, ctx, option: str) -> typing.List[
+        discord.app_commands.Choice[str]]:
+        liste = []
+        for choice in ["arrivée", "vérifié"]:
+            liste.append(discord.app_commands.Choice(name=choice, value=choice))
+        return liste
+
+    # Aide
+
+    @aide.autocomplete("commande")
+    async def autocomplete_commande(self, ctx, commande: str) -> typing.List[
+        discord.app_commands.Choice[str]]:
+        liste = []
+        for cat in self.bot.settings["commands"]:
+            liste.append(discord.app_commands.Choice(name=cat, value=cat))
+
+        return liste
+
+    # Salon temporaire
 
     @salontemporaire.autocomplete("typesalon")
     async def autocomplete_type(self, ctx, typesalon: str) -> typing.List[

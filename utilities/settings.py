@@ -40,6 +40,8 @@ async def create_settings(guild, settings):
                             "roleAfter": 0,
                             "timeout": 300,
                             "nbEssais": 3,
+                            "tempChannels" : [],
+                            "tempRoles" : [],
                             "logchannel": 0
                             }
     save(settings)
@@ -51,10 +53,10 @@ async def delete_settings(guild, settings):
 
 
 def save(settings):
-    with open("./settings.json", "w") as file:
-        json.dump(settings, file)
+    with open("./settings.json", "w", encoding="utf-8") as file:
+        json.dump(settings, file, indent=4)
 
 
 def loading():
-    with open("./settings.json", "r") as file:
+    with open("./settings.json", "r", encoding="utf-8") as file:
         return json.load(file)

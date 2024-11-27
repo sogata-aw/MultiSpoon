@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+import asyncio
 import os
 from dotenv import load_dotenv
 
@@ -41,6 +42,8 @@ class MultiSpoon(commands.Bot):
 
         commandes = bot.tree.get_commands()
 
+        taskv = asyncio.create_task(self.boucle_verif_temp())
+
         for command in commandes:
             print(f"Commande : {command.name}")
             print(f"Description : {command.description}")
@@ -62,8 +65,6 @@ class MultiSpoon(commands.Bot):
         dm_channel = await user.create_dm()
         await dm_channel.send(embed=await e.embed_add("Un serveur a supprimé le bot", guild))
 
-
-
     async def on_member_join(self, member):
         channel = None
         try:
@@ -84,6 +85,11 @@ class MultiSpoon(commands.Bot):
         for extension in ['moderation', 'musique']:
             await self.load_extension(f'cogs.{extension}')
         print("Ajout des commandes terminée")
+
+    async def boucle_verif_temp(self):
+        while self.is_ready():
+            print("youhou")
+            await asyncio.sleep(5)
 
     def run(self, **kwargs):
         super().run(self.token)

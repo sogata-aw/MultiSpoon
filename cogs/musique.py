@@ -19,32 +19,32 @@ class MusiqueCog(commands.Cog):
     async def play(self, ctx, url: str):
         if ctx.guild.name not in self.bot.settings["authorized"]:
             await ctx.send(":warning: Ce serveur n'est pas autorisé à utiliser cette commande")
-        global play_task
-        vc = None
-        state = ctx.author.voice
-        if state is None:
-            await ctx.send("Vous devez être dans un salon vocal pour utiliser cette commande")
         else:
-            if ctx.guild.voice_client is None:
-                vc = await state.channel.connect()
-                try:
-                    embed = await p.add_audio(ctx, url, 0, self.bot.settings)
-                    await ctx.send(embed=embed)
-                except pytubefix.exceptions.BotDetection:
-                    await ctx.send(":warning: le bot ne peut actuellement pas lancer l'audio")
-                    await vc.disconnect()
-                except pytubefix.exceptions.RegexMatchError:
-                    await ctx.channel.send_message(":warning: l'audio est introuvable")
+            global play_task
+            vc = None
+            state = ctx.author.voice
+            if state is None:
+                await ctx.send("Vous devez être dans un salon vocal pour utiliser cette commande")
             else:
-                try:
-                    embed = await p.add_audio(ctx, url, 1, self.bot.settings)
-                    await ctx.send(embed=embed)
-                except pytubefix.exceptions.BotDetection:
-                    await ctx.channel.send_message(":warning: le bot ne peut actuellement pas lancer l'audio")
-                    await ctx.guild.voice_client.disconnect()
-                except pytubefix.exceptions.RegexMatchError:
-                    await ctx.channel.send_message(":warning: l'audio est introuvable")
-
+                if ctx.guild.voice_client is None:
+                    vc = await state.channel.connect()
+                    try:
+                        embed = await p.add_audio(ctx, url, 0, self.bot.settings)
+                        await ctx.send(embed=embed)
+                    except pytubefix.exceptions.BotDetection:
+                        await ctx.send(":warning: le bot ne peut actuellement pas lancer l'audio")
+                        await vc.disconnect()
+                    except pytubefix.exceptions.RegexMatchError:
+                        await ctx.channel.send_message(":warning: l'audio est introuvable")
+                else:
+                    try:
+                        embed = await p.add_audio(ctx, url, 1, self.bot.settings)
+                        await ctx.send(embed=embed)
+                    except pytubefix.exceptions.BotDetection:
+                        await ctx.channel.send_message(":warning: le bot ne peut actuellement pas lancer l'audio")
+                        await ctx.guild.voice_client.disconnect()
+                    except pytubefix.exceptions.RegexMatchError:
+                        await ctx.channel.send_message(":warning: l'audio est introuvable")
             if play_task is None:
                 play_task = asyncio.create_task(self.boucle_musique(ctx, vc))
 
@@ -99,14 +99,14 @@ class MusiqueCog(commands.Cog):
                 embed.add_field(name=str(i + 1) + ". " + query[i].title, value="", inline=False)
             await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="request", description="Envoie une demande au modérateur du bot pour pouvoir activer les commandes musicales")
+    @commands.hybrid_command(name="request",
+                             description="Envoie une demande au modérateur du bot pour pouvoir activer les commandes musicales")
     @discord.app_commands.describe(raison="Si vous souhaitez vous justifier")
     async def request(self, ctx, raison: str = None):
         user = await self.bot.fetch_user(self.bot.createur)
         dm_channel = await user.create_dm()
         await dm_channel.send(embed=e.embed_request(ctx, raison))
         await ctx.send("Votre demande a bien été transmise")
-
 
 
 async def setup(bot):
