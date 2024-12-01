@@ -4,7 +4,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-from selection import aideSelect as a
+from selection.aideSelect import AideSelectView
 from utilities import captcha as c, settings as s
 from utilities import embeds as e
 
@@ -47,13 +47,13 @@ class ModerationCog(commands.Cog):
     async def aide(self, ctx, commande: str = None):
         if commande is None:
             embed = discord.Embed(title="Choisissez une catégorie")
-            await ctx.send(embed=embed, view=a.AideSelectView())
+            await ctx.send(embed=embed, view=AideSelectView())
         elif commande == "music":
             await ctx.send(embed=await e.embed_aide(commande, self.bot.settings["commands"]["music"]),
-                           view=a.AideSelectView())
+                           view=AideSelectView())
         elif commande == "moderation":
             await ctx.send(embed=await e.embed_aide(commande, self.bot.settings["commands"]["music"]),
-                           view=a.AideSelectView())
+                           view=AideSelectView())
 
     @commands.hybrid_command(name="settings",
                              description="Affiche les différents paramètres mis en place (admin uniquement)")  # à améliorer
@@ -119,24 +119,14 @@ class ModerationCog(commands.Cog):
                     await ctx.channel.purge()
 
     @commands.hybrid_command(name="salontemporaire", description="Créer un salon pour une durée déterminée")
+    @discord.app_commands.describe(nom="Le nom du salon que vous voulez créer", typesalon="Le type de salon que vous voulez créer", temps="La date à laquelle le salon sera supprimé en format  ")
     @commands.has_permissions(administrator=True)
-    async def salontemporaire(self, ctx, nom: str, typesalon: str, categorie: str = None):
-        if typesalon == "textuel":
-            for category in ctx.guild.categories:
-                if category.name == categorie:
-                    salon = await ctx.guild.create_text_channel(name=nom,
-                                                                reason=f"Salon temporaire qui expire dans ...",
-                                                                category=category)
-                    await ctx.send(f"Salon crée ! {salon.mention}")
-        elif typesalon == "vocal":
-            for category in ctx.guild.categories:
-                if category.name == categorie:
-                    salon = await ctx.guild.create_text_channel(name=nom,
-                                                                reason=f"Salon temporaire qui expire dans ...",
-                                                                category=category)
-                    await ctx.send(f"Salon crée ! {salon.mention}")
-        else:
-            await ctx.send(":warning: Le type de salon est invalide")
+    async def salontemporaire(self, ctx, nom: str, typesalon: str ,categorie: str = None, duree : str = None , date_expiration : str = None , heure : str = None):
+        cat = None
+        for category in ctx.guild.categories:
+            if category.name == categorie:
+                cat = category
+        await s.create_channel(ctx,nom, typesalon, self.bot.settings, cat, duree, date_expiration, heure)
 
     # -----autocomplete-----
 

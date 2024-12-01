@@ -1,11 +1,14 @@
 import discord
 from pytubefix import YouTube
 import os
+from dotenv import load_dotenv
 
 from utilities import music as m
 from utilities import embeds as e
 
-ffmpeg = "/ProgramData/chocolatey/lib/ffmpeg-full/tools/ffmpeg/bin/ffmpeg.exe"
+load_dotenv('../.env')
+
+ffmpeg = os.getenv('FFMPEG')
 
 
 async def get_audio(ctx, url: str, settings: dict):

@@ -1,6 +1,9 @@
+import datetime as d
 import discord
 import json
+import re as r
 
+pattern = r'^(\d+\s?(an|ans))?\s?(\d+\s?(mois))?\s?(\d+\s?(j|jour|jours))?\s?(\d+\s?(heures|heure|h))?\s?(\d+\s?(minutes|minute|min|m)?)?$'
 
 async def set_timeout(ctx, sec, settings):
     if sec < 30:
@@ -46,6 +49,22 @@ async def create_settings(guild, settings):
                             }
     save(settings)
 
+async def create_channel(ctx, nom, type, settings, categorie = None, duree = None, date = None, heure = None):
+    nombre = None
+    if duree is None and date is None and heure is None:
+        await ctx.send(embed=discord.Embed(title=":warning: vous devez au moins mettre la duree ou la date et l'heure"))
+    elif duree is not None:
+        duree_match = r.findall(pattern, duree)
+        total_duration = d.datetime.now()
+        if duree_match == None:
+            await ctx.send(embed=discord.Embed(title=":warning: la durée est invalide"))
+        else:
+            for i in range(len(duree_match[0])):
+                if duree_match[0][i] in ['an','ans']:
+                    total_duration += d.timedelta(y)
+
+    else:
+        pass
 
 async def delete_settings(guild, settings):
     del settings[guild.name]

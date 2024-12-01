@@ -88,8 +88,7 @@ class MultiSpoon(commands.Bot):
 
     async def boucle_verif_temp(self):
         while self.is_ready():
-            print("youhou")
-            await asyncio.sleep(5)
+            await asyncio.sleep(10)
 
     def run(self, **kwargs):
         super().run(self.token)
