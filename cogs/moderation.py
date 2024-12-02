@@ -115,7 +115,9 @@ class ModerationCog(commands.Cog):
 
                     await ctx.channel.purge()
                 else:
+
                     await ctx.channel.send("Code incorrect... Veuillez recommencer.")
+                    await asyncio.sleep(3)
                     await ctx.channel.purge()
 
     @commands.hybrid_command(name="salontemporaire", description="Créer un salon pour une durée déterminée")

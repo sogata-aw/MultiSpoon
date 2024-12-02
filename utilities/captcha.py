@@ -6,7 +6,7 @@ widthbase, heightbase = 400, 200
 taillebase = 6
 
 
-def brouiller(draw, nblignes=10, nbpoints=17000):
+def brouiller(draw, nblignes=10, nbpoints=12500):
     for _ in range(nblignes):
         x1, y1 = random.randint(0, widthbase), random.randint(0, heightbase)
         x2, y2 = random.randint(0, widthbase), random.randint(0, heightbase)
@@ -40,7 +40,7 @@ def creer_captcha(code, width=400, height=200):
     # Créer une image blanche
     img = Image.new('RGB', (width, height), (255, 255, 255))
     draw = ImageDraw.Draw(img)
-    brouiller(draw, width, height)
+    brouiller(draw)
 
     # Dessiner les caractères du code de captcha
     ecrire(draw, code, height)
@@ -49,10 +49,12 @@ def creer_captcha(code, width=400, height=200):
     img = img.filter(ImageFilter.GaussianBlur(radius=0.80))
 
     # Enregistrer l'image
-    img.save('./img/captcha.png')
+    img.save('./../img/captcha.png')
     img.close()
     return img
 
 
 def generer_code(taille=6):
     return ''.join(random.choice('abcdefghijklmnopqrsxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(taille))
+
+creer_captcha("123456", 400, 200)
