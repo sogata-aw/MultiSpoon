@@ -30,9 +30,25 @@ class SalonsCog(commands.Cog):
     @commands.hybrid_command(name="supprimersalontemporaire", description="Supprime un salon temporaire crée")
     @discord.app_commands.describe()
     @commands.has_permissions(administrator=True)
-    async def supprimersalontemporaire(self, nom : str):
-        pass
+    async def supprimersalontemporaire(self,ctx, nom : str):
+        suppr = False
+        for chan in self.bot.settings[ctx.guild.name]["tempChannels"]:
+            if chan["name"] == nom:
+                channel = ctx.guild.get_channel(chan["id"])
+                if channel is None:
+                    await ctx.send(embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))
+                else:
+                    await channel.delete()
+                    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé"))
+                    suppr = True
+        if not suppr:
+            await ctx.send(embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas ou n'est pas un salon temporaire"))
 
+
+
+    # -----Autocomplete-----
+
+    # creersalontemporaire
     @creersalontemporaire.autocomplete("typesalon")
     async def autocomplete_type(self, ctx, typesalon: str) -> typing.List[
         discord.app_commands.Choice[str]]:
@@ -47,6 +63,14 @@ class SalonsCog(commands.Cog):
         liste = []
         for category in ctx.guild.categories:
             liste.append(discord.app_commands.Choice(name=category.name, value=category.name))
+        return liste
+
+    # supprimersalontemporaire
+    @supprimersalontemporaire.autocomplete("nom")
+    async def autocomplete_nom(self, ctx, nom: str) -> typing.List[discord.app_commands.Choice[str]]:
+        liste = []
+        for chan in self.bot.settings[ctx.guild.name]["tempChannels"]:
+            liste.append(discord.app_commands.Choice(name=chan["name"], value=chan["name"]))
         return liste
 
 async def setup(bot):
