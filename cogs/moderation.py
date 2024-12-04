@@ -120,15 +120,7 @@ class ModerationCog(commands.Cog):
                     await asyncio.sleep(3)
                     await ctx.channel.purge()
 
-    @commands.hybrid_command(name="salontemporaire", description="Créer un salon pour une durée déterminée")
-    @discord.app_commands.describe(nom="Le nom du salon que vous voulez créer", typesalon="Le type de salon que vous voulez créer", temps="La date à laquelle le salon sera supprimé en format  ")
-    @commands.has_permissions(administrator=True)
-    async def salontemporaire(self, ctx, nom: str, typesalon: str ,categorie: str = None, duree : str = None , date_expiration : str = None , heure : str = None):
-        cat = None
-        for category in ctx.guild.categories:
-            if category.name == categorie:
-                cat = category
-        await s.create_channel(ctx,nom, typesalon, self.bot.settings, cat, duree, date_expiration, heure)
+
 
     # -----autocomplete-----
 
@@ -152,23 +144,6 @@ class ModerationCog(commands.Cog):
 
         return liste
 
-    # Salon temporaire
-
-    @salontemporaire.autocomplete("typesalon")
-    async def autocomplete_type(self, ctx, typesalon: str) -> typing.List[
-        discord.app_commands.Choice[str]]:
-        liste = []
-        for choice in ["textuel", "vocal"]:
-            liste.append(discord.app_commands.Choice(name=choice, value=choice))
-        return liste
-
-    @salontemporaire.autocomplete("categorie")
-    async def autocomplete_category(self, ctx, categorie: str) -> typing.List[
-        discord.app_commands.Choice[str]]:
-        liste = []
-        for category in ctx.guild.categories:
-            liste.append(discord.app_commands.Choice(name=category.name, value=category.name))
-        return liste
 
 
 async def setup(bot):

@@ -69,7 +69,6 @@ class MultiSpoon(commands.Bot):
         channel = None
         try:
             channel = member.guild.get_channel(self.settings[member.guild.name]["verificationChannel"])
-            print(member.guild.get_role(self.settings[member.guild.name]["roleBefore"]))
             await member.add_roles(member.guild.get_role(self.settings[member.guild.name]["roleBefore"]))
             try:
                 await channel.send(
@@ -80,9 +79,15 @@ class MultiSpoon(commands.Bot):
         except AttributeError:
             await channel.send(":warning: Le bot ne trouve pas le rôle d'arrivée")
 
+    async def on_guild_channel_delete(self, channel):
+        for i in range(len(self.settings[channel.guild.name]["tempChannels"])):
+            if self.settings[channel.guild.name]["tempChannels"][i]["id"] == channel.id:
+                self.settings[channel.guild.name]["tempChannels"].pop(i)
+        s.save(self.settings)
+
     async def setup_hook(self):
         print("Début de l'ajout des commandes")
-        for extension in ['moderation', 'musique']:
+        for extension in ['moderation', 'musique','salons']:
             await self.load_extension(f'cogs.{extension}')
         print("Ajout des commandes terminée")
 

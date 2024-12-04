@@ -49,12 +49,10 @@ def creer_captcha(code, width=400, height=200):
     img = img.filter(ImageFilter.GaussianBlur(radius=0.80))
 
     # Enregistrer l'image
-    img.save('./../img/captcha.png')
+    img.save('../img/captcha.png')
     img.close()
     return img
 
 
 def generer_code(taille=6):
     return ''.join(random.choice('abcdefghijklmnopqrsxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(taille))
-
-creer_captcha("123456", 400, 200)
