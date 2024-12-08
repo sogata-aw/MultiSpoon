@@ -92,8 +92,7 @@ class MultiSpoon(commands.Bot):
         print("Ajout des commandes terminée")
 
     async def boucle_verif_temp(self):
-        while self.is_ready():
-            await asyncio.sleep(10)
+        return 0
 
     def run(self, **kwargs):
         super().run(self.token)

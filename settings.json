@@ -39,6 +39,7 @@
         "nbEssais": 3,
         "logChannel": 0,
         "query": [],
+        "queryGlobal" : [],
         "tempChannels": [],
         "tempRoles": [],
         "playTask": null

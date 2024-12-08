@@ -53,17 +53,16 @@ class MusiqueCog(commands.Cog):
         first = True
         while vc.is_connected():
             query = self.bot.settings[ctx.guild.name]["query"]
-            if not vc.is_playing():
-                if len(query) > 0:
-                    if not first:
-                        embed = e.embed_musique(ctx, "Now playing : " + query[0].title, query[0].url, self.bot.settings)
-                        await ctx.channel.send(embed=embed)
-                    p.play_audio(ctx, vc, self.bot.settings)
-                    while vc.is_playing():
-                        await asyncio.sleep(1)
+            if not vc.is_playing() and len(query) > 0:
+                current_audio = query.pop(0)
+                if not first:
+                    embed = await e.embed_musique(ctx, "Now playing : " + current_audio.title, current_audio.url, current_audio)
+                    await ctx.channel.send(embed=embed)
+                p.play_audio(ctx, vc, current_audio)
+                while vc.is_playing():
                     await asyncio.sleep(1)
-                    if len(query) > 0:
-                        p.supprimer_musique(ctx, query)
+                if len(query) > 0:
+                    p.supprimer_musique(ctx, current_audio)
             first = False
             await asyncio.sleep(1)
         play_task = None
@@ -84,8 +83,10 @@ class MusiqueCog(commands.Cog):
             await ctx.send("Le bot est connecté à aucun salon vocal")
         else:
             await state.disconnect()
-            p.supprimer_musique(ctx, self.bot.settings[ctx.guild.name]["query"])
             self.bot.settings[ctx.guild.name]["query"].clear()
+            for music in self.bot.settings[ctx.guild.name]["queryGlobal"]:
+                p.supprimer_musique(ctx,music)
+            play_task = None
             await ctx.send("Déconnecté")
 
     @commands.hybrid_command(name="queue", description="Affiche la liste de lecture")
