@@ -59,32 +59,32 @@ class ModerationCog(commands.Cog):
                              description="Affiche les différents paramètres mis en place (admin uniquement)")  # à améliorer
     @commands.has_permissions(administrator=True)
     async def settings(self, ctx):
-        salon = ctx.guild.get_channel(self.bot.settings[ctx.guild.name]["verificationChannel"])
-        rolebefore = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["rolebefore"])
-        roleafter = ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleafter"])
+        salon = ctx.guild.get_channel(self.bot.settings["guild"][ctx.guild.name]["verificationChannel"])
+        rolebefore = ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["rolebefore"])
+        roleafter = ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleafter"])
         embed = discord.Embed(title="paramètre du bot :")
         embed.add_field(name="Salon de vérification : ", value=salon.mention)
         embed.add_field(name="Rôle d'arrivée : ", value=rolebefore.mention)
         embed.add_field(name="Rôle après vérification : ", value=roleafter.mention)
-        embed.add_field(name="Temps de la commande vérification : ", value=self.bot.settings[ctx.guild.name]["timeout"])
-        embed.add_field(name="Nombre d'essais : ", value=self.bot.settings[ctx.guild.name]["nbEssais"])
+        embed.add_field(name="Temps de la commande vérification : ", value=self.bot.settings["guild"][ctx.guild.name]["timeout"])
+        embed.add_field(name="Nombre d'essais : ", value=self.bot.settings["guild"][ctx.guild.name]["nbEssais"])
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="verify", description="Permet de lancer la vérification")
     async def verify(self, ctx):
         reponse = None
-        if not (ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleBefore"]) in ctx.author.roles):
+        if not (ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleBefore"]) in ctx.author.roles):
             await ctx.send(":warning: Vous avez déjà effectué la vérification")
-        elif self.bot.settings[ctx.guild.name]["verificationChannel"] == 0 or self.bot.settings[ctx.guild.name][
-            "roleBefore"] == 0 or self.bot.settings[ctx.guild.name]["roleAfter"] == 0:
+        elif self.bot.settings["guild"][ctx.guild.name]["verificationChannel"] == 0 or self.bot.settings[ctx.guild.name][
+            "roleBefore"] == 0 or self.bot.settings["guild"][ctx.guild.name]["roleAfter"] == 0:
             print(self.bot.settings)
             await ctx.send(
                 ":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une vérifcation"
             )
         else:
             continuer = True
-            tmps = self.bot.settings[ctx.guild.name]["timeout"] / 60
-            nb = self.bot.settings[ctx.guild.name]["nbEssais"]
+            tmps = self.bot.settings["guild"][ctx.guild.name]["timeout"] / 60
+            nb = self.bot.settings["guild"][ctx.guild.name]["nbEssais"]
             while continuer:
                 code = c.generer_code()
                 print(code)
@@ -107,10 +107,10 @@ class ModerationCog(commands.Cog):
                 if reponse.content == code:
                     await ctx.channel.send(f"Le code est bon ! Bienvenue sur {ctx.guild.name}")
                     await ctx.author.add_roles(
-                        ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleAfter"]))
+                        ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleAfter"]))
                     await asyncio.sleep(0.5)
                     await ctx.author.remove_roles(
-                        ctx.guild.get_role(self.bot.settings[ctx.guild.name]["roleBefore"]))
+                        ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleBefore"]))
                     continuer = False
 
                     await ctx.channel.purge()

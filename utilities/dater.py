@@ -3,27 +3,13 @@ import datetime as d
 
 from utilities import settings as s
 
+
 async def mois_en_jours(mois):
     return mois * 30
 
 
 async def annee_en_jours(annee):
     return mois_en_jours(12 * annee)
-
-async def verif_format_channel(ctx, nom, typesalon, settings, categorie=None, duree=None):
-    if duree is None:
-        await ctx.send(embed=discord.Embed(title=":warning: vous devez au moins rentrer une durée"))
-
-    else:
-        duree_de_base = d.datetime.now()
-
-        duree_split = duree.split()
-        total_duration = await ajouter_temps(duree_split)
-
-        if total_duration == duree_de_base:
-            await ctx.send(embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
-        else:
-            await create_channel_duree(ctx, nom, typesalon, settings, categorie, total_duration)
 
 
 async def create_channel_duree(ctx, nom, typesalon, settings, categorie=None, duree=None):
@@ -38,15 +24,15 @@ async def create_channel_duree(ctx, nom, typesalon, settings, categorie=None, du
 
 
 async def add_channel(ctx, settings, salon, nom, typesalon, categorie=None, duree=None):
-    settings[ctx.guild.name]["tempChannels"].append({
+    settings["guild"][ctx.guild.name]["tempChannels"].append({
         "name": nom,
         "id": salon.id,
-        "categorie": categorie.id,
+        "categorie": categorie.id if categorie is not None else None,
         "type": typesalon,
         "duree": duree.strftime("%Y-%m-%d %H:%M:%S:%f")
     })
     s.save(settings)
-    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le salon a été crée"))
+    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le salon a été crée", colour=0x008001))
 
 
 async def ajouter_temps(duree_split):
@@ -68,6 +54,14 @@ async def ajouter_temps(duree_split):
             minutes += duree_split[i]
     duration += d.timedelta(weeks=semaines, days=jours, hours=heures, minutes=minutes)
     return duration
+
+
+async def delete_channel(channel, settings, guild):
+    for salon in settings["guild"][guild.name]["tempChannels"]:
+        if salon["id"] == channel.id:
+            await channel.delete()
+            s.save(settings)
+            print("salon supprimé")
 
 
 def str_to_int(liste):

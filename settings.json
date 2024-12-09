@@ -19,29 +19,33 @@
         "JTLB2",
         "Spoon 3"
     ],
-    "Spoon 3": {
-        "verificationChannel": 1294722038916841623,
-        "roleBefore": 1294722248036581459,
-        "roleAfter": 1230102406885277696,
-        "timeout": 300,
-        "nbEssais": 3,
-        "query": [],
-        "tempChannels": [],
-        "tempRoles": [],
-        "logChannel": 0,
-        "playTask": null
-    },
-    "JTLB2": {
-        "verificationChannel": 1299660506889584710,
-        "roleBefore": 1294299065193992223,
-        "roleAfter": 1294342786874871869,
-        "timeout": 300,
-        "nbEssais": 3,
-        "logChannel": 0,
-        "query": [],
-        "queryGlobal" : [],
-        "tempChannels": [],
-        "tempRoles": [],
-        "playTask": null
+    "guild": {
+        "Spoon 3": {
+            "id": 1229735033850429524,
+            "verificationChannel": 1294722038916841623,
+            "roleBefore": 1294722248036581459,
+            "roleAfter": 1230102406885277696,
+            "timeout": 300,
+            "nbEssais": 3,
+            "query": [],
+            "tempChannels": [],
+            "tempRoles": [],
+            "logChannel": 0,
+            "playTask": null
+        },
+        "JTLB2": {
+            "id": 1272201109259157565,
+            "verificationChannel": 1299660506889584710,
+            "roleBefore": 1294299065193992223,
+            "roleAfter": 1294342786874871869,
+            "timeout": 300,
+            "nbEssais": 3,
+            "logChannel": 0,
+            "query": [],
+            "queryGlobal": [],
+            "tempChannels": [],
+            "tempRoles": [],
+            "playTask": null
+        }
     }
 }

@@ -1,12 +1,14 @@
 import discord
 from discord.ext import commands
 
+import datetime as d
 import asyncio
 import os
 from dotenv import load_dotenv
 
 from utilities import settings as s
 from utilities import embeds as e
+from utilities import dater as dat
 
 load_dotenv('.env')
 tokenbase = os.getenv('DT')
@@ -25,14 +27,13 @@ class MultiSpoon(commands.Bot):
         print("Je suis prêt")
 
         for server in bot.guilds:
-            print(f'{server.name}(id: {server.id})')
-
-        for guild in bot.guilds:
             try:
-                if self.settings[guild.name]["query"] is not None:
-                    self.settings[guild.name]["query"] = []
+                if self.settings[server.name]["query"] is not None:
+                    self.settings[server.name]["query"] = []
             except KeyError:
                 pass
+            print(f'{server.name}(id: {server.id})')
+
 
         print("Début de la synchronisation")
 
@@ -68,8 +69,8 @@ class MultiSpoon(commands.Bot):
     async def on_member_join(self, member):
         channel = None
         try:
-            channel = member.guild.get_channel(self.settings[member.guild.name]["verificationChannel"])
-            await member.add_roles(member.guild.get_role(self.settings[member.guild.name]["roleBefore"]))
+            channel = member.guild.get_channel(self.settings["guild"][member.guild.name]["verificationChannel"])
+            await member.add_roles(member.guild.get_role(self.settings["guild"][member.guild.name]["roleBefore"]))
             try:
                 await channel.send(
                     f"Bienvenue {member.mention} ! Veuillez utiliser la commande `/verify`")
@@ -80,9 +81,9 @@ class MultiSpoon(commands.Bot):
             await channel.send(":warning: Le bot ne trouve pas le rôle d'arrivée")
 
     async def on_guild_channel_delete(self, channel):
-        for i in range(len(self.settings[channel.guild.name]["tempChannels"])):
-            if self.settings[channel.guild.name]["tempChannels"][i]["id"] == channel.id:
-                self.settings[channel.guild.name]["tempChannels"].pop(i)
+        for i in range(len(self.settings["guild"][channel.guild.name]["tempChannels"])):
+            if self.settings["guild"][channel.guild.name]["tempChannels"][i]["id"] == channel.id:
+                self.settings["guild"][channel.guild.name]["tempChannels"].pop(i)
         s.save(self.settings)
 
     async def setup_hook(self):
@@ -92,7 +93,19 @@ class MultiSpoon(commands.Bot):
         print("Ajout des commandes terminée")
 
     async def boucle_verif_temp(self):
-        return 0
+        while True :
+            guilds = self.settings["guild"]
+            for guild in guilds:
+                temp_salons = self.settings["guild"][guild]["tempChannels"]
+                await asyncio.sleep(1)
+                for salon in temp_salons:
+                    date_final = d.datetime.strptime(salon["duree"],"%Y-%m-%d %H:%M:%S:%f")
+                    if d.datetime.now() > date_final :
+                        serveur = self.get_guild(self.settings["guild"][guild]["id"])
+                        channel = serveur.get_channel(salon["id"])
+                        await dat.delete_channel(channel, self.settings, serveur)
+                    await asyncio.sleep(1)
+
 
     def run(self, **kwargs):
         super().run(self.token)

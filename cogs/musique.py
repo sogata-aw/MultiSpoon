@@ -52,7 +52,7 @@ class MusiqueCog(commands.Cog):
         global play_task
         first = True
         while vc.is_connected():
-            query = self.bot.settings[ctx.guild.name]["query"]
+            query = self.bot.settings["guild"][ctx.guild.name]["query"]
             if not vc.is_playing() and len(query) > 0:
                 current_audio = query.pop(0)
                 if not first:
@@ -69,7 +69,7 @@ class MusiqueCog(commands.Cog):
 
     @commands.hybrid_command(name="skip", description="Passe à la musique suivante")
     async def skip(self, ctx):
-        if len(self.bot.settings[ctx.guild.name]["query"]) < 1:
+        if len(self.bot.settings["guild"][ctx.guild.name]["query"]) < 1:
             await ctx.send(":warning: Il n'y a pas de musique après celle-ci")
         else:
             ctx.guild.voice_client.stop()
@@ -83,8 +83,8 @@ class MusiqueCog(commands.Cog):
             await ctx.send("Le bot est connecté à aucun salon vocal")
         else:
             await state.disconnect()
-            self.bot.settings[ctx.guild.name]["query"].clear()
-            for music in self.bot.settings[ctx.guild.name]["queryGlobal"]:
+            self.bot.settings["guild"][ctx.guild.name]["query"].clear()
+            for music in self.bot.settings["guild"][ctx.guild.name]["queryGlobal"]:
                 p.supprimer_musique(ctx,music)
             play_task = None
             await ctx.send("Déconnecté")
