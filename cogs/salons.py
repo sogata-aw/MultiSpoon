@@ -38,10 +38,13 @@ class SalonsCog(commands.Cog):
         for i in range(len(self.bot.settings["guild"][ctx.guild.name]["tempChannels"])):
             if salon is not None :
                 if salon == self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]["name"]:
-                    embed.title = "Information sur le salon :" + self.bot.settings[ctx.guild.name]["tempChannels"][i]["name"]
-                    for attribut in list(self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i].keys()):
-                        embed.add_field(name=attribut + " : " +
-                                        self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i][attribut], value="")
+                    embed.title = "Information sur le salon : " + self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]["name"]
+                    for attribut in self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]:
+                        if attribut == "duree":
+                            embed.add_field(name="date d'expiration : " + self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i][attribut], value="" , inline=False)
+                        else:
+                            embed.add_field(name=attribut + " : " +
+                                        str(self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i][attribut]), value="", inline=False)
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="supprimersalontemporaire", description="Supprime un salon temporaire crée")
