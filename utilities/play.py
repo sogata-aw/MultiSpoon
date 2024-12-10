@@ -31,12 +31,12 @@ async def add_audio(ctx, url, numero: int, settings: dict) -> discord.Embed:
     return embed
 
 
-def play_audio(ctx, vc, musique : m.Music):
+def play_audio(ctx, vc, musique: m.Music):
     print("yes")
     vc.play(discord.FFmpegPCMAudio(executable=ffmpeg,
-                                   source="./music/" + ctx.guild.name + "/" + musique .title + ".m4a"))
+                                   source="./music/" + ctx.guild.name + "/" + musique.title + ".m4a"))
 
 
-def supprimer_musique(ctx, musique : m.Music):
+def supprimer_musique(ctx, musique: m.Music):
     if os.path.isfile("./music/" + ctx.guild.name + "/" + musique.title + ".m4a"):
         os.remove("./music/" + ctx.guild.name + "/" + musique.title + ".m4a")

@@ -34,7 +34,6 @@ class MultiSpoon(commands.Bot):
                 pass
             print(f'{server.name}(id: {server.id})')
 
-
         print("Début de la synchronisation")
 
         await bot.tree.sync()
@@ -88,24 +87,23 @@ class MultiSpoon(commands.Bot):
 
     async def setup_hook(self):
         print("Début de l'ajout des commandes")
-        for extension in ['moderation', 'musique','salons']:
+        for extension in ['moderation', 'musique', 'salons']:
             await self.load_extension(f'cogs.{extension}')
         print("Ajout des commandes terminée")
 
     async def boucle_verif_temp(self):
-        while True :
+        while True:
             guilds = self.settings["guild"]
             for guild in guilds:
                 temp_salons = self.settings["guild"][guild]["tempChannels"]
                 await asyncio.sleep(1)
                 for salon in temp_salons:
-                    date_final = d.datetime.strptime(salon["duree"],"%Y-%m-%d %H:%M:%S:%f")
-                    if d.datetime.now() > date_final :
+                    date_final = d.datetime.strptime(salon["duree"], "%Y-%m-%d %H:%M:%S:%f")
+                    if d.datetime.now() > date_final:
                         serveur = self.get_guild(self.settings["guild"][guild]["id"])
                         channel = serveur.get_channel(salon["id"])
                         await dat.delete_channel(channel, self.settings, serveur)
                     await asyncio.sleep(1)
-
 
     def run(self, **kwargs):
         super().run(self.token)

@@ -4,7 +4,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-from selection.aideSelect import AideSelectView
+from view.aideView import AideSelectView
 from utilities import captcha as c, settings as s
 from utilities import embeds as e
 
@@ -66,7 +66,8 @@ class ModerationCog(commands.Cog):
         embed.add_field(name="Salon de vérification : ", value=salon.mention)
         embed.add_field(name="Rôle d'arrivée : ", value=rolebefore.mention)
         embed.add_field(name="Rôle après vérification : ", value=roleafter.mention)
-        embed.add_field(name="Temps de la commande vérification : ", value=self.bot.settings["guild"][ctx.guild.name]["timeout"])
+        embed.add_field(name="Temps de la commande vérification : ",
+                        value=self.bot.settings["guild"][ctx.guild.name]["timeout"])
         embed.add_field(name="Nombre d'essais : ", value=self.bot.settings["guild"][ctx.guild.name]["nbEssais"])
         await ctx.send(embed=embed)
 
@@ -75,8 +76,9 @@ class ModerationCog(commands.Cog):
         reponse = None
         if not (ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleBefore"]) in ctx.author.roles):
             await ctx.send(":warning: Vous avez déjà effectué la vérification")
-        elif self.bot.settings["guild"][ctx.guild.name]["verificationChannel"] == 0 or self.bot.settings[ctx.guild.name][
-            "roleBefore"] == 0 or self.bot.settings["guild"][ctx.guild.name]["roleAfter"] == 0:
+        elif self.bot.settings["guild"][ctx.guild.name]["verificationChannel"] == 0 or \
+                self.bot.settings[ctx.guild.name][
+                    "roleBefore"] == 0 or self.bot.settings["guild"][ctx.guild.name]["roleAfter"] == 0:
             print(self.bot.settings)
             await ctx.send(
                 ":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une vérifcation"
@@ -120,8 +122,6 @@ class ModerationCog(commands.Cog):
                     await asyncio.sleep(3)
                     await ctx.channel.purge()
 
-
-
     # -----autocomplete-----
 
     # Setrole
@@ -143,7 +143,6 @@ class ModerationCog(commands.Cog):
             liste.append(discord.app_commands.Choice(name=cat, value=cat))
 
         return liste
-
 
 
 async def setup(bot):

@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 
 from utilities import dater as dat
+from view import salonView as sv
 
 
 class SalonsCog(commands.Cog):
@@ -17,7 +18,8 @@ class SalonsCog(commands.Cog):
                                    categorie="La catégorie dans lequel vous voulez créer le salon(dans aucune par défaut)",
                                    duree="La durée que vous souhaitez mettre (voir /aide sur comment faire)")
     @commands.has_permissions(administrator=True)
-    async def creersalontemporaire(self, ctx, nom: str, typesalon: str, duree: str, categorie: discord.CategoryChannel = None):
+    async def creersalontemporaire(self, ctx, nom: str, typesalon: str, duree: str,
+                                   categorie: discord.CategoryChannel = None):
         if duree is None:
             await ctx.send(embed=discord.Embed(title=":warning: vous devez au moins rentrer une durée"))
 
@@ -33,38 +35,28 @@ class SalonsCog(commands.Cog):
                 await dat.create_channel_duree(ctx, nom, typesalon, self.bot.settings, categorie, total_duration)
 
     @commands.hybrid_command(name="affichersalontemporaire", description="Affiche les salons temporaires crées")
-    async def affichersalontemporaire(self, ctx, salon = None, type : str = None):
-        embed = discord.Embed()
-        for i in range(len(self.bot.settings["guild"][ctx.guild.name]["tempChannels"])):
-            if salon is not None :
-                if salon == self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]["name"]:
-                    embed.title = "Information sur le salon : " + self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]["name"]
-                    for attribut in self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]:
-                        if attribut == "duree":
-                            embed.add_field(name="date d'expiration : " + self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i][attribut], value="" , inline=False)
-                        else:
-                            embed.add_field(name=attribut + " : " +
-                                        str(self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i][attribut]), value="", inline=False)
-        await ctx.send(embed=embed)
+    async def affichersalontemporaire(self, ctx, salon=None, type: str = None):
+        await ctx.send("test",view=sv.SalonsView())
 
     @commands.hybrid_command(name="supprimersalontemporaire", description="Supprime un salon temporaire crée")
     @discord.app_commands.describe()
     @commands.has_permissions(administrator=True)
-    async def supprimersalontemporaire(self,ctx, nom : discord.abc.GuildChannel):
+    async def supprimersalontemporaire(self, ctx, nom: discord.abc.GuildChannel):
         suppr = False
         for chan in self.bot.settings["guild"][ctx.guild.name]["tempChannels"]:
             if chan["name"] == nom.name and chan["id"] == nom.id:
                 channel = ctx.guild.get_channel(chan["id"])
                 if channel is None:
-                    await ctx.send(embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))
+                    await ctx.send(
+                        embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))
                 else:
                     await channel.delete()
-                    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé", colour=0x008001))
+                    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé",
+                                                       colour=0x008001))
                     suppr = True
         if not suppr:
-            await ctx.send(embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas ou n'est pas un salon temporaire"))
-
-
+            await ctx.send(embed=discord.Embed(
+                title=":warning: Le salon que vous souhaitez supprimer n'existe pas ou n'est pas un salon temporaire"))
 
     # -----Autocomplete-----
 
@@ -78,8 +70,24 @@ class SalonsCog(commands.Cog):
         return liste
 
 
-
-
-
 async def setup(bot):
     await bot.add_cog(SalonsCog(bot))
+
+
+# embed = discord.Embed()
+#         for i in range(len(self.bot.settings["guild"][ctx.guild.name]["tempChannels"])):
+#             if salon is not None:
+#                 if salon == self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]["name"]:
+#                     embed.title = "Information sur le salon : " + \
+#                                   self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]["name"]
+#                     for attribut in self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]:
+#                         if attribut == "duree":
+#                             embed.add_field(name="date d'expiration : " +
+#                                                  self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i][
+#                                                      attribut], value="", inline=False)
+#                         else:
+#                             embed.add_field(name=attribut + " : " +
+#                                                  str(self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i][
+#                                                          attribut]), value="", inline=False)
+#             elif type is not None:
+#                 await ctx.send("test", view=sv.SalonsView())

@@ -1,6 +1,7 @@
 import discord
 from utilities import music as m
 
+
 async def embed_aide(option, dico):
     embed = discord.Embed(title=option)
     for value in dico:
@@ -8,7 +9,7 @@ async def embed_aide(option, dico):
     return embed
 
 
-async def embed_musique(ctx, title: str, url: str, musique : m.Music) -> discord.Embed:
+async def embed_musique(ctx, title: str, url: str, musique: m.Music) -> discord.Embed:
     embed = discord.Embed(title=title, url=url)
     embed.set_footer(text="requested by " + ctx.author.name)
     embed.set_image(url=musique.thumbnail_url)

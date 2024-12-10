@@ -56,7 +56,8 @@ class MusiqueCog(commands.Cog):
             if not vc.is_playing() and len(query) > 0:
                 current_audio = query.pop(0)
                 if not first:
-                    embed = await e.embed_musique(ctx, "Now playing : " + current_audio.title, current_audio.url, current_audio)
+                    embed = await e.embed_musique(ctx, "Now playing : " + current_audio.title, current_audio.url,
+                                                  current_audio)
                     await ctx.channel.send(embed=embed)
                 p.play_audio(ctx, vc, current_audio)
                 while vc.is_playing():
@@ -85,7 +86,7 @@ class MusiqueCog(commands.Cog):
             await state.disconnect()
             self.bot.settings["guild"][ctx.guild.name]["query"].clear()
             for music in self.bot.settings["guild"][ctx.guild.name]["queryGlobal"]:
-                p.supprimer_musique(ctx,music)
+                p.supprimer_musique(ctx, music)
             play_task = None
             await ctx.send("Déconnecté")
 
