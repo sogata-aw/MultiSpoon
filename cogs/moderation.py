@@ -77,7 +77,7 @@ class ModerationCog(commands.Cog):
         if not (ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleBefore"]) in ctx.author.roles):
             await ctx.send(":warning: Vous avez déjà effectué la vérification")
         elif self.bot.settings["guild"][ctx.guild.name]["verificationChannel"] == 0 or \
-                self.bot.settings[ctx.guild.name][
+                self.bot.settings["guild"][ctx.guild.name][
                     "roleBefore"] == 0 or self.bot.settings["guild"][ctx.guild.name]["roleAfter"] == 0:
             print(self.bot.settings)
             await ctx.send(
@@ -88,12 +88,12 @@ class ModerationCog(commands.Cog):
             tmps = self.bot.settings["guild"][ctx.guild.name]["timeout"] / 60
             nb = self.bot.settings["guild"][ctx.guild.name]["nbEssais"]
             while continuer:
-                code = c.generer_code()
+                code = c.generer_code().lower()
                 print(code)
                 c.creer_captcha(code)
                 attachement = discord.File("img/captcha.png", filename="img/captcha.png")
                 await ctx.send(
-                    f"Veuillez rentrer le code du captcha, vous avez {int(tmps)} minutes pour le faire et {nb} avant de devoir contacter un administrateur ",
+                    f"Veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire et {nb} avant de devoir contacter un administrateur ",
                     file=attachement)
 
                 def check(msg):
@@ -101,7 +101,7 @@ class ModerationCog(commands.Cog):
 
                 try:
                     reponse = await self.bot.wait_for('message', check=check,
-                                                      timeout=self.bot.settings[ctx.guild.name]["timeout"])
+                                                      timeout=self.bot.settings["guild"][ctx.guild.name]["timeout"])
                 except TimeoutError:
                     await ctx.channel.send("Temps écoulé ! Veuillez recommencer")
 
@@ -115,12 +115,12 @@ class ModerationCog(commands.Cog):
                         ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleBefore"]))
                     continuer = False
 
-                    await ctx.channel.purge()
+                    await ctx.channel.purge(limit=3)
                 else:
 
                     await ctx.channel.send("Code incorrect... Veuillez recommencer.")
                     await asyncio.sleep(3)
-                    await ctx.channel.purge()
+                    await ctx.channel.purge(limit=3)
 
     # -----autocomplete-----
 

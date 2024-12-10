@@ -35,8 +35,24 @@ class SalonsCog(commands.Cog):
                 await dat.create_channel_duree(ctx, nom, typesalon, self.bot.settings, categorie, total_duration)
 
     @commands.hybrid_command(name="affichersalontemporaire", description="Affiche les salons temporaires crées")
-    async def affichersalontemporaire(self, ctx, salon=None, type: str = None):
-        await ctx.send("test",view=sv.SalonsView())
+    async def affichersalontemporaire(self, ctx, salon: discord.abc.GuildChannel):
+        embed = discord.Embed()
+        channel = None
+        for chan in self.bot.settings["guild"][ctx.guild.name]["tempChannels"]:
+            if salon.id == chan["id"]:
+                channel = chan
+        if channel is None:
+            embed.title = ":warning: Le salon , n'est pas valide ou n'est pas un salon temporaire"
+        else:
+            embed.title = "Information sur le salon : " + channel["name"]
+            for attribut in channel:
+                if attribut == "duree":
+                    embed.add_field(name="date d'expiration : " +
+                                         channel[attribut], value="", inline=False)
+                else:
+                    embed.add_field(name=attribut + " : " +
+                                         str(channel[attribut]), value="", inline=False)
+        await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="supprimersalontemporaire", description="Supprime un salon temporaire crée")
     @discord.app_commands.describe()
@@ -72,7 +88,6 @@ class SalonsCog(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(SalonsCog(bot))
-
 
 # embed = discord.Embed()
 #         for i in range(len(self.bot.settings["guild"][ctx.guild.name]["tempChannels"])):

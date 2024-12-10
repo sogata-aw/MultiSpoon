@@ -49,7 +49,7 @@ def creer_captcha(code, width=400, height=200):
     img = img.filter(ImageFilter.GaussianBlur(radius=0.80))
 
     # Enregistrer l'image
-    img.save('../img/captcha.png')
+    img.save('./img/captcha.png')
     img.close()
     return img
 
