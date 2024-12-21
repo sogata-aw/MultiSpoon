@@ -60,8 +60,8 @@ class ModerationCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def settings(self, ctx):
         salon = ctx.guild.get_channel(self.bot.settings["guild"][ctx.guild.name]["verificationChannel"])
-        rolebefore = ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["rolebefore"])
-        roleafter = ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleafter"])
+        rolebefore = ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleBefore"])
+        roleafter = ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleAfter"])
         embed = discord.Embed(title="paramètre du bot :")
         embed.add_field(name="Salon de vérification : ", value=salon.mention)
         embed.add_field(name="Rôle d'arrivée : ", value=rolebefore.mention)
