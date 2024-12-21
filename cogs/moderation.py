@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from view.aideView import AideSelectView
-from utilities import captcha as c, settings as s
+from utilities import captchas as c, settings as s
 from utilities import embeds as e
 
 
@@ -88,9 +88,8 @@ class ModerationCog(commands.Cog):
             tmps = self.bot.settings["guild"][ctx.guild.name]["timeout"] / 60
             nb = self.bot.settings["guild"][ctx.guild.name]["nbEssais"]
             while continuer:
-                code = c.generer_code().lower()
-                print(code)
-                c.creer_captcha(code)
+                code = c.generer_code()
+                c.generer_image(code)
                 attachement = discord.File("img/captcha.png", filename="img/captcha.png")
                 await ctx.send(
                     f"Veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire et {nb} avant de devoir contacter un administrateur ",
@@ -115,11 +114,11 @@ class ModerationCog(commands.Cog):
                         ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleBefore"]))
                     continuer = False
 
-                    await ctx.channel.purge(limit=3)
+                    await ctx.channel.purge(limit=4)
                 else:
 
                     await ctx.channel.send("Code incorrect... Veuillez recommencer.")
-                    await asyncio.sleep(3)
+                    await asyncio.sleep(1)
                     await ctx.channel.purge(limit=3)
 
     # -----autocomplete-----
