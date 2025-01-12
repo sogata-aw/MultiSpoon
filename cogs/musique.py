@@ -29,8 +29,8 @@ class MusiqueCog(commands.Cog):
                 if ctx.guild.voice_client is None:
                     vc = await state.channel.connect()
                     try:
-                        embed = await p.add_audio(ctx, url, 0, self.bot.settings)
-                        await ctx.send(embed=embed)
+                        await p.add_audio(ctx, url, 0, self.bot.settings)
+
                     except pytubefix.exceptions.BotDetection:
                         await ctx.send(":warning: le bot ne peut actuellement pas lancer l'audio")
                         await vc.disconnect()
@@ -93,7 +93,7 @@ class MusiqueCog(commands.Cog):
     @commands.hybrid_command(name="queue", description="Affiche la liste de lecture")
     async def queue(self, ctx):
         embed = discord.Embed(title="Liste de lecture")
-        query = self.bot.settings[ctx.guild.name]["query"]
+        query = self.bot.settings["guild"][ctx.guild.name]["query"]
         if len(query) <= 0:
             await ctx.send(":warning: La liste est vide")
         else:

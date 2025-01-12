@@ -3,6 +3,7 @@ import datetime as d
 
 from utilities import settings as s
 
+import re
 
 async def mois_en_jours(mois):
     return mois * 30
@@ -34,6 +35,15 @@ async def add_channel(ctx, settings, salon, nom, typesalon, categorie=None, dure
     s.save(settings)
     await ctx.send(embed=discord.Embed(title=":white_check_mark: Le salon a été crée", colour=0x008001))
 
+async def create_role_duree(ctx,nom,duree,couleur,separe,mentionable,settings):
+    role = await ctx.guild.create_role(name=nom, colour=discord.Colour.from_str(couleur), hoist=separe,mentionable=mentionable)
+    settings["guild"][ctx.guild.name]["tempRoles"].append({
+        "name": nom,
+        "id": role.id,
+        "duree": duree.strftime("%Y-%m-%d %H:%M:%S:%f")
+    })
+    s.save(settings)
+    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le rôle a été crée", colour=0x008001))
 
 async def ajouter_temps(duree_split):
     duration = d.datetime.now()
@@ -60,9 +70,17 @@ async def delete_channel(channel, settings, guild):
     for salon in settings["guild"][guild.name]["tempChannels"]:
         if salon["id"] == channel.id:
             await channel.delete()
-            s.save(settings)
             print("salon supprimé")
 
+async def delete_role(role, settings, guild):
+    for salon in settings["guild"][guild.name]["tempRoles"]:
+        if salon["id"] == role.id:
+            await role.delete()
+            print("role supprimé")
+
+def est_couleur_hexa(code : str):
+    pattern = r"^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$"
+    return bool(re.match(pattern, code))
 
 def str_to_int(liste):
     for i in range(len(liste)):

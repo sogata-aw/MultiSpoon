@@ -88,21 +88,3 @@ class SalonsCog(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(SalonsCog(bot))
-
-# embed = discord.Embed()
-#         for i in range(len(self.bot.settings["guild"][ctx.guild.name]["tempChannels"])):
-#             if salon is not None:
-#                 if salon == self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]["name"]:
-#                     embed.title = "Information sur le salon : " + \
-#                                   self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]["name"]
-#                     for attribut in self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i]:
-#                         if attribut == "duree":
-#                             embed.add_field(name="date d'expiration : " +
-#                                                  self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i][
-#                                                      attribut], value="", inline=False)
-#                         else:
-#                             embed.add_field(name=attribut + " : " +
-#                                                  str(self.bot.settings["guild"][ctx.guild.name]["tempChannels"][i][
-#                                                          attribut]), value="", inline=False)
-#             elif type is not None:
-#                 await ctx.send("test", view=sv.SalonsView())

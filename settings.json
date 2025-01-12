@@ -1,0 +1,62 @@
+{
+    "commands": {
+        "moderation": {
+            "settings": "Affiche les diff\u00e9rents param\u00e8tres mis en place (admin uniquement)",
+            "setrole": "Permet de configurer le r\u00f4le d'arriv\u00e9e et celui apr\u00e8s la v\u00e9rification",
+            "setchannel": "Permet de configurer le salon ou sera envoy\u00e9 le message quand quelqu'un arrive sur le serveur",
+            "settimeout": "Permet de configurer le temps en seconde avant expiration du captcha",
+            "verify": "Permet de lancer la v\u00e9rification"
+        },
+        "music": {
+            "play": "Lance un audio via l'URL youtube",
+            "skip": "Passe \u00e0 la musique suivante",
+            "stop": "Stop la musique et d\u00e9connecte le bot",
+            "queue": "Affiche la liste de lecture",
+            "request": "Envoie une demande \u00e0 l'administrateur du bot pour pouvoir activer les commandes musicales"
+        }
+    },
+    "authorized": [
+        "JTLB2",
+        "Spoon 3"
+    ],
+    "guild": {
+        "Spoon 3": {
+            "id": 1229735033850429524,
+            "verificationChannel": 1294722038916841623,
+            "roleBefore": 1294722248036581459,
+            "roleAfter": 1230102406885277696,
+            "timeout": 300,
+            "nbEssais": 3,
+            "query": [],
+            "queryGlobal": [],
+            "tempChannels": [],
+            "tempRoles": [],
+            "logChannel": 0,
+            "playTask": null
+        },
+        "JTLB2": {
+            "id": 1272201109259157565,
+            "verificationChannel": 1299660506889584710,
+            "roleBefore": 1294299065193992223,
+            "roleAfter": 1294342786874871869,
+            "timeout": 300,
+            "nbEssais": 3,
+            "logChannel": 0,
+            "query": [],
+            "queryGlobal": [],
+            "tempChannels": [],
+            "tempRoles": [],
+            "playTask": null
+        },
+        "Z\u039eN": {
+            "verificationChannel": 0,
+            "roleBefore": 0,
+            "roleAfter": 0,
+            "timeout": 300,
+            "nbEssais": 3,
+            "logchannel": 0,
+            "tempChannels": [],
+            "tempRoles": []
+        }
+    }
+}
