@@ -14,7 +14,7 @@ from utilities import embeds as e
 load_dotenv('../.env')
 
 ffmpeg = os.getenv('FFMPEG')
-
+taskdl = None
 async def download_music(url, ctx, audio,settings):
     audio.streams.filter(only_audio=True).first().download(output_path="./music/" + ctx.guild.name + "/",
                                                            filename=str(b64encode(audio.title.encode())) + ".m4a")
@@ -30,10 +30,10 @@ async def get_audio(ctx, url: str, settings: dict):
         music = await download_music(url, ctx, yt, settings)
     else:
         yt = Playlist(url)
-        await download_music(url, ctx, yt.videos[0], settings)
+        music = await download_music(url, ctx, yt.videos[0], settings)
         await ctx.send(embed=await e.embed_musique(ctx, "Now playing : " + yt.videos[0].title, url, yt.videos[0]))
-        music = None
-        await asyncio.create_task(download_all(url,ctx,yt,settings))
+
+        taskdl = asyncio.create_task(download_all(url,ctx,yt,settings))
     return music
 
 async def download_all(url, ctx, yt,settings):
@@ -42,6 +42,7 @@ async def download_all(url, ctx, yt,settings):
         await download_music(url, ctx, audio, settings)
         cpt += 1
         print(audio.title + " ajouté à la playlist")
+        await asyncio.sleep(1)
 
 async def add_audio(ctx, url, numero: int, settings: dict) -> discord.Embed:
     current = await get_audio(ctx, url, settings)
@@ -52,6 +53,7 @@ async def add_audio(ctx, url, numero: int, settings: dict) -> discord.Embed:
             embed = await e.embed_musique(ctx, "Added " + current.title + " to queue", url, current)
     else:
         embed = discord.Embed(title="La playlist est vide ou privée")
+
     return embed
 
 
