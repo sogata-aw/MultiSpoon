@@ -107,7 +107,7 @@ class MusiqueCog(commands.Cog):
     async def request(self, ctx, raison: str = None):
         user = await self.bot.fetch_user(self.bot.createur)
         dm_channel = await user.create_dm()
-        await dm_channel.send(embed=e.embed_request(ctx, raison))
+        await dm_channel.send(embed=await e.embed_request(ctx, raison))
         await ctx.send("Votre demande a bien été transmise")
 
 
