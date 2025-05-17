@@ -9,7 +9,7 @@ class RolesCogs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(name="creerroletemporaire", description="Créer un rôle pour une durée déterminée")
+    @commands.hybrid_command(name="creer-role-temporaire", description="Créer un rôle pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du rôle que vous voulez créer",
                                    couleur="La couleur du rôle que vous voulez",
                                    duree="La durée que vous souhaitez mettre (voir /aide sur comment faire)")
@@ -51,7 +51,7 @@ class RolesCogs(commands.Cog):
     #                                      str(channel[attribut]), value="", inline=False)
     #     await ctx.send(embed=embed)
     #
-    @commands.hybrid_command(name="supprimerroletemporaire", description="Supprime un salon temporaire crée")
+    @commands.hybrid_command(name="supprimer-role-temporaire", description="Supprime un salon temporaire crée")
     @discord.app_commands.describe()
     @commands.has_permissions(administrator=True)
     async def supprimersalontemporaire(self, ctx, nom: discord.Role):

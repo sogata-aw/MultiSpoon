@@ -26,7 +26,7 @@ async def create_channel_duree(ctx, nom, typesalon, settings, categorie=None, du
 
 async def add_channel(ctx, settings, salon, nom, typesalon, categorie=None, duree=None):
     settings["guild"][ctx.guild.name]["tempChannels"].append({
-        "name": nom,
+        "name": nom.replace(' ', '-'),
         "id": salon.id,
         "categorie": categorie.id if categorie is not None else None,
         "type": typesalon,
