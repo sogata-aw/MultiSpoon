@@ -12,7 +12,7 @@ class SalonsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(name="creersalontemporaire", description="Créer un salon pour une durée déterminée")
+    @commands.hybrid_command(name="creer-salon-temporaire", description="Créer un salon pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du salon que vous voulez créer",
                                    typesalon="Le type de salon que vous voulez créer",
                                    categorie="La catégorie dans lequel vous voulez créer le salon(dans aucune par défaut)",
@@ -34,7 +34,7 @@ class SalonsCog(commands.Cog):
             else:
                 await dat.create_channel_duree(ctx, nom, typesalon, self.bot.settings, categorie, total_duration)
 
-    @commands.hybrid_command(name="affichersalontemporaire", description="Affiche les salons temporaires crées")
+    @commands.hybrid_command(name="afficher-salon-temporaire", description="Affiche les salons temporaires crées")
     async def affichersalontemporaire(self, ctx, salon: discord.abc.GuildChannel):
         embed = discord.Embed()
         channel = None
@@ -54,7 +54,7 @@ class SalonsCog(commands.Cog):
                                          str(channel[attribut]), value="", inline=False)
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="supprimersalontemporaire", description="Supprime un salon temporaire crée")
+    @commands.hybrid_command(name="supprimer-salon-temporaire", description="Supprime un salon temporaire crée")
     @discord.app_commands.describe()
     @commands.has_permissions(administrator=True)
     async def supprimersalontemporaire(self, ctx, nom: discord.abc.GuildChannel):

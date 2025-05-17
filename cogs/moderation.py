@@ -15,7 +15,7 @@ class ModerationCog(commands.Cog):
 
     # -----Commandes-----
 
-    @commands.hybrid_command(name="setrole",
+    @commands.hybrid_command(name="set-role",
                              description="Permet de configurer le rôle d'arrivée et celui après la vérification")
     @discord.app_commands.describe(option="Arrivée : rôle à l'arrivée, vérifié : rôle après vérification",
                                    role="Le rôle que vous voulez sélectionner")
@@ -27,7 +27,7 @@ class ModerationCog(commands.Cog):
             await s.set_role_after(ctx, role, self.bot.settings)
         s.save(self.bot.settings)
 
-    @commands.hybrid_command(name="setchannel",
+    @commands.hybrid_command(name="set-channel",
                              description="Permet de configurer le salon ou sera envoyé le message quand quelqu'un arrive sur le serveur")
     @discord.app_commands.describe(channel="Le salon dans lequel vous voulez envoyer le message de bienvenue")
     @commands.has_permissions(administrator=True)
@@ -35,7 +35,7 @@ class ModerationCog(commands.Cog):
         await s.set_verification_channel(ctx, channel, self.bot.settings)
         s.save(self.bot.settings)
 
-    @commands.hybrid_command(name="settimeout",
+    @commands.hybrid_command(name="set-timeout",
                              description="Permet de configurer le temps en seconde avant expiration du captcha")
     @discord.app_commands.describe(time="Le temps en secondes avant expiration de `/verify`")
     @commands.has_permissions(administrator=True)
