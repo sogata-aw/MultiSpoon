@@ -76,6 +76,8 @@ class ModerationCog(commands.Cog):
         reponse = None
         if not (ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleBefore"]) in ctx.author.roles):
             await ctx.send(":warning: Vous avez déjà effectué la vérification")
+        elif ctx.author.name in self.bot.settings["guild"][ctx.guild.name]["inVerification"]:
+            await ctx.send(":warning: Vous êtes déjà en train de faire une vérification ! si vous avez raté le code donnée, attendez que le bot regénère un code")
         elif self.bot.settings["guild"][ctx.guild.name]["verificationChannel"] == 0 or \
                 self.bot.settings["guild"][ctx.guild.name][
                     "roleBefore"] == 0 or self.bot.settings["guild"][ctx.guild.name]["roleAfter"] == 0:
@@ -84,6 +86,7 @@ class ModerationCog(commands.Cog):
                 ":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une vérifcation"
             )
         else:
+            self.bot.settings["guild"][ctx.guild.name]["inVerification"].append(ctx.author.name)
             continuer = True
             tmps = self.bot.settings["guild"][ctx.guild.name]["timeout"] / 60
             nb = self.bot.settings["guild"][ctx.guild.name]["nbEssais"]
@@ -92,7 +95,7 @@ class ModerationCog(commands.Cog):
                 c.generer_image(code)
                 attachement = discord.File("img/captcha.png", filename="img/captcha.png")
                 await ctx.send(
-                    f"Veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire et {nb} avant de devoir contacter un administrateur ",
+                    f"Veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
                     file=attachement)
 
                 def check(msg):
@@ -106,10 +109,14 @@ class ModerationCog(commands.Cog):
 
                 # Agir en fonction de la réponse de l'utilisateur
                 if reponse.content == code:
+                    self.bot.settings["guild"][ctx.guild.name]["inVerification"].remove(ctx.author.name)
+
                     await ctx.channel.send(f"Le code est bon ! Bienvenue sur {ctx.guild.name}")
                     await ctx.author.add_roles(
                         ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleAfter"]))
+
                     await asyncio.sleep(0.5)
+
                     await ctx.author.remove_roles(
                         ctx.guild.get_role(self.bot.settings["guild"][ctx.guild.name]["roleBefore"]))
                     continuer = False

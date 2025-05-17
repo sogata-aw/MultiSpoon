@@ -1,7 +1,6 @@
 import discord
 from utilities import music as m
 
-
 async def embed_aide(option, dico):
     embed = discord.Embed(title=option)
     for value in dico:
@@ -27,6 +26,7 @@ async def embed_request(ctx, raison):
 
 
 async def embed_add(title, guild):
+
     embed = discord.Embed(title=title, color=0x00ff00)
     embed.set_thumbnail(url=guild.icon)
     embed.set_author(name=guild.name)

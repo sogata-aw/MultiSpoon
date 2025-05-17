@@ -40,6 +40,7 @@ async def create_settings(guild, settings):
         "verificationChannel": 0,
         "roleBefore": 0,
         "roleAfter": 0,
+        "inVerification": [],
         "timeout": 300,
         "nbEssais": 3,
         "tempChannels": [],
