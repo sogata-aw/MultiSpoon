@@ -56,9 +56,9 @@ class RolesCogs(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def supprimersalontemporaire(self, ctx, nom: discord.Role):
         suppr = False
-        for rolee in self.bot.settings["guild"][ctx.guild.name]["tempRoles"]:
-            if rolee["name"] == nom.name and rolee["id"] == nom.id:
-                role = ctx.guild.get_role(rolee["id"])
+        for temp_role in self.bot.settings["guild"][ctx.guild.name]["tempRoles"]:
+            if temp_role["name"] == nom.name and temp_role["id"] == nom.id:
+                role = ctx.guild.get_role(temp_role["id"])
                 if role is None:
                     await ctx.send(
                         embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))

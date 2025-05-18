@@ -59,9 +59,9 @@ class SalonsCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def supprimersalontemporaire(self, ctx, nom: discord.abc.GuildChannel):
         suppr = False
-        for chan in self.bot.settings["guild"][ctx.guild.name]["tempChannels"]:
-            if chan["name"] == nom.name and chan["id"] == nom.id:
-                channel = ctx.guild.get_channel(chan["id"])
+        for temp_channel in self.bot.settings["guild"][ctx.guild.name]["tempChannels"]:
+            if temp_channel["name"] == nom.name and temp_channel["id"] == nom.id:
+                channel = ctx.guild.get_channel(temp_channel["id"])
                 if channel is None:
                     await ctx.send(
                         embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))

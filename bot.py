@@ -26,17 +26,17 @@ handler.setFormatter(colorlog.ColoredFormatter(
     }
 ))
 
-botLogger = logging.getLogger("BOT_DISCORD")
-botLogger.addHandler(handler)
-botLogger.setLevel(logging.DEBUG)
+bot_logger = logging.getLogger("BOT_DISCORD")
+bot_logger.addHandler(handler)
+bot_logger.setLevel(logging.DEBUG)
 
 
 
 load_dotenv('.env')
 
 #Token
-tokenbase = os.getenv('DT')
-tokenBeta = os.getenv('DTB')
+token_base = os.getenv('DT')
+token_beta = os.getenv('DTB')
 
 
 class MultiSpoon(commands.Bot):
@@ -58,32 +58,33 @@ class MultiSpoon(commands.Bot):
                 pass
             self.settings["guild"][server.name]["inVerification"] = []
 
-            botLogger.debug(f'{server.name}(id: {server.id})')
+            bot_logger.debug(f'{server.name}(id: {server.id})')
 
-        botLogger.info("-----Début de la synchronisation-----")
+        bot_logger.info("-----Début de la synchronisation-----")
 
         await bot.tree.sync()
 
-        botLogger.info("-----Synchronisation terminée-----")
+        bot_logger.info("-----Synchronisation terminée-----")
 
         commandes = self.tree.get_commands()
 
         #Affichage des comandes du bots
         for command in commandes:
-            botLogger.debug(f"Commande : {command.name}\nDescription : {command.description}\n------------------------")
+            bot_logger.debug(f"Commande : {command.name}\nDescription : {command.description}\n------------------------")
 
-        botLogger.debug(self.cogs)
+        bot_logger.debug(self.cogs)
 
         self.verif_temps.start()
         self.sauvegarde.start()
 
-        botLogger.info("Je suis prêt !")
+        bot_logger.debug(self.settings)
+        bot_logger.info("Je suis prêt !")
 
     #-----Event-----
 
     async def on_guild_join(self, guild: discord.Guild):
         await s.create_settings(guild, self.settings)
-        botLogger.info(f"Le serveur {guild.name} a été ajouté à la configuration")
+        bot_logger.info(f"Le serveur {guild.name} a été ajouté à la configuration")
 
         user = await self.fetch_user(self.createur)
         dm_channel = await user.create_dm()
@@ -91,7 +92,7 @@ class MultiSpoon(commands.Bot):
 
     async def on_guild_remove(self, guild: discord.Guild):
         await s.delete_settings(guild, self.settings)
-        botLogger.info(f"Le serveur {guild.name} a été supprimé de la configuration")
+        bot_logger.info(f"Le serveur {guild.name} a été supprimé de la configuration")
 
         user = await bot.fetch_user(self.createur)
         dm_channel = await user.create_dm()
@@ -132,16 +133,16 @@ class MultiSpoon(commands.Bot):
 
     #Synchronisation avec les cogs
     async def setup_hook(self):
-        botLogger.info("-----Début de l'ajout des commandes-----")
+        bot_logger.info("-----Début de l'ajout des commandes-----")
         for extension in ['moderation', 'musique', 'salons', 'roles']:
             await self.load_extension(f'cogs.{extension}')
-        botLogger.info("-----Ajout des commandes terminée-----")
+        bot_logger.info("-----Ajout des commandes terminée-----")
 
     #-----Tasks-----
 
     @tasks.loop(seconds=5)
     async def verif_temps(self):
-        botLogger.info("-----Début de la vérification-----")
+        bot_logger.info("-----Début de la vérification-----")
         #Récupération des guildes
         guilds = self.settings["guild"]
 
@@ -174,13 +175,13 @@ class MultiSpoon(commands.Bot):
                     await dat.delete_role(role, self.settings, serveur)
                 await asyncio.sleep(1)
 
-        botLogger.info("-----Fin de la vérification-----")
+        bot_logger.info("-----Fin de la vérification-----")
         await asyncio.sleep(1)
 
     @tasks.loop(minutes=15)
     async def sauvegarde(self):
         s.save(self.settings)
-        botLogger.info("Sauvegarde effectué !")
+        bot_logger.info("Sauvegarde effectué !")
 
     @verif_temps.before_loop
     @sauvegarde.before_loop
@@ -192,5 +193,5 @@ class MultiSpoon(commands.Bot):
 
 
 if __name__ == "__main__":
-    bot = MultiSpoon(discord.Intents.all(), tokenBeta)
+    bot = MultiSpoon(discord.Intents.all(), token_beta)
     bot.run()
