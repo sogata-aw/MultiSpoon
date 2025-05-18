@@ -139,8 +139,11 @@ class MultiSpoon(commands.Bot):
     #Synchronisation avec les cogs
     async def setup_hook(self):
         bot_logger.info("-----Début de l'ajout des commandes-----")
-        for extension in ['moderation', 'musique', 'salons', 'roles']:
-            await self.load_extension(f'cogs.{extension}')
+        for extension in os.listdir("./cogs"):
+            if extension.endswith(".py") and not extension.startswith("__"):
+                await self.load_extension(f'cogs.{extension[:-3]}')
+                bot_logger.info(f"cogs.{extension[:-3]} chargé avec succès !")
+
         bot_logger.info("-----Ajout des commandes terminée-----")
 
     #-----Tasks-----

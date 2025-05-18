@@ -1,5 +1,6 @@
 import typing
 import asyncio
+import os
 
 import discord
 from discord.ext import commands
@@ -14,6 +15,13 @@ class ModerationCog(commands.Cog):
         self.bot = bot
 
     # -----Commandes-----
+
+    @commands.hybrid_command(name="reload", description="Permet de recharger une partie des fonctions en fonction de l'extension")
+    @commands.is_owner()
+    @discord.app_commands.describe(extension="Le nom de celle que vous voulez recharger")
+    async def reload(self, ctx, extension):
+        await self.bot.reload_extension(f"cogs.{extension}")
+        await ctx.send(f"✅ Extension `{extension}` rechargée !")
 
     @commands.hybrid_command(name="set-role",
                              description="Permet de configurer le rôle d'arrivée et celui après la vérification")
@@ -147,6 +155,15 @@ class ModerationCog(commands.Cog):
 
 
     # -----autocomplete-----
+
+    # Reload
+    @reload.autocomplete("extension")
+    async def autocomplete_extension(self, ctx, extension : str) -> typing.List[discord.app_commands.Choice[str]]:
+        liste = []
+        for cog in os.listdir("./cogs"):
+            if cog.endswith(".py") and not cog.startswith("__"):
+                liste.append(discord.app_commands.Choice(name=cog[:-3], value=cog[:-3]))
+        return liste
 
     # Setrole
     @set_role.autocomplete("option")
