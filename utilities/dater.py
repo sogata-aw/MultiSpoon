@@ -25,7 +25,7 @@ async def create_channel_duree(ctx, nom, typesalon, settings, categorie=None, du
 
 
 async def add_channel(ctx, settings, salon, nom, typesalon, categorie=None, duree=None):
-    settings["guild"][ctx.guild.name]["tempChannels"].append({
+    settings["guilds"][ctx.guild.name]["tempChannels"].append({
         "name": nom.replace(' ', '-'),
         "id": salon.id,
         "categorie": categorie.id if categorie is not None else None,
@@ -37,7 +37,7 @@ async def add_channel(ctx, settings, salon, nom, typesalon, categorie=None, dure
 
 async def create_role_duree(ctx,nom,duree,couleur,separe,mentionable,settings):
     role = await ctx.guild.create_role(name=nom, colour=discord.Colour.from_str(couleur), hoist=separe,mentionable=mentionable)
-    settings["guild"][ctx.guild.name]["tempRoles"].append({
+    settings["guilds"][ctx.guild.name]["tempRoles"].append({
         "name": nom,
         "id": role.id,
         "duree": duree.strftime("%Y-%m-%d %H:%M:%S:%f")
@@ -67,13 +67,13 @@ async def ajouter_temps(duree_split):
 
 
 async def delete_channel(channel, settings, guild):
-    for salon in settings["guild"][guild.name]["tempChannels"]:
+    for salon in settings["guilds"][guild.name]["tempChannels"]:
         if salon["id"] == channel.id:
             await channel.delete()
             print("salon supprimé")
 
 async def delete_role(role, settings, guild):
-    for salon in settings["guild"][guild.name]["tempRoles"]:
+    for salon in settings["guilds"][guild.name]["tempRoles"]:
         if salon["id"] == role.id:
             await role.delete()
             print("role supprimé")

@@ -15,13 +15,14 @@ load_dotenv('../.env')
 
 ffmpeg = os.getenv('FFMPEG')
 taskdl = None
+
 async def download_music(url, ctx, audio,settings):
     audio.streams.filter(only_audio=True).first().download(output_path="./music/" + ctx.guild.name + "/",
                                                            filename=str(b64encode(audio.title.encode())) + ".m4a")
     current = m.Music(url, audio.title, "./music/" + ctx.guild.name + "/" + audio.title + ".m4a", audio.thumbnail_url,
                       audio.length)
-    settings["guild"][ctx.guild.name]["query"].append(current)
-    settings["guild"][ctx.guild.name]["queryGlobal"].append(current)
+    settings["guilds"][ctx.guild.name]["query"].append(current)
+    settings["guilds"][ctx.guild.name]["queryGlobal"].append(current)
     return current
 
 async def get_audio(ctx, url: str, settings: dict):

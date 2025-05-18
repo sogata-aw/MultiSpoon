@@ -14,6 +14,8 @@ from utilities import settings as s
 from utilities import embeds as e
 from utilities import dater as dat
 
+#Configuration des logs
+
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter(
     '%(log_color)s[%(levelname)s] [%(name)s]: %(message)s',
@@ -35,6 +37,9 @@ bot_logger.setLevel(logging.DEBUG)
 load_dotenv('.env')
 
 #Token
+
+mode = os.getenv('DEFAULT_TOKEN')
+
 token_base = os.getenv('DT')
 token_beta = os.getenv('DTB')
 
@@ -52,11 +57,11 @@ class MultiSpoon(commands.Bot):
         #Réinitialisation de la query musical
         for server in bot.guilds:
             try:
-                if self.settings["guild"][server.name]["query"] is not None:
-                    self.settings["guild"][server.name]["query"] = []
+                if self.settings["guilds"][server.name]["query"] is not None:
+                    self.settings["guilds"][server.name]["query"] = []
             except KeyError:
                 pass
-            self.settings["guild"][server.name]["inVerification"] = []
+            self.settings["guilds"][server.name]["inVerification"] = []
 
             bot_logger.debug(f'{server.name}(id: {server.id})')
 
@@ -102,10 +107,10 @@ class MultiSpoon(commands.Bot):
         channel = None
         try:
             #Récupération du salon du serveur si configuré
-            channel = member.guild.get_channel(self.settings["guild"][member.guild.name]["verificationChannel"])
+            channel = member.guild.get_channel(self.settings["guilds"][member.guild.name]["verificationChannel"])
 
             #Attribution du rôle au nouveau membre
-            await member.add_roles(member.guild.get_role(self.settings["guild"][member.guild.name]["roleBefore"]))
+            await member.add_roles(member.guild.get_role(self.settings["guilds"][member.guild.name]["roleBefore"]))
 
             #Gestion des erreurs
             try:
@@ -119,16 +124,16 @@ class MultiSpoon(commands.Bot):
 
     #Suppression automatique du salon dans les données du bot s'il était temporaire
     async def on_guild_channel_delete(self, channel):
-        for i in range(len(self.settings["guild"][channel.guild.name]["tempChannels"])):
-            if self.settings["guild"][channel.guild.name]["tempChannels"][i]["id"] == channel.id:
-                self.settings["guild"][channel.guild.name]["tempChannels"].pop(i)
+        for i in range(len(self.settings["guilds"][channel.guild.name]["tempChannels"])):
+            if self.settings["guilds"][channel.guild.name]["tempChannels"][i]["id"] == channel.id:
+                self.settings["guilds"][channel.guild.name]["tempChannels"].pop(i)
         s.save(self.settings)
 
     #Suppression automatique du rôle dans les données du bot s'il était temporaire
     async def on_guild_role_delete(self, role):
-        for i in range(len(self.settings["guild"][role.guild.name]["tempRoles"])):
-            if self.settings["guild"][role.guild.name]["tempRoles"][i]["id"] == role.id:
-                self.settings["guild"][role.guild.name]["tempRoles"].pop(i)
+        for i in range(len(self.settings["guilds"][role.guild.name]["tempRoles"])):
+            if self.settings["guilds"][role.guild.name]["tempRoles"][i]["id"] == role.id:
+                self.settings["guilds"][role.guild.name]["tempRoles"].pop(i)
         s.save(self.settings)
 
     #Synchronisation avec les cogs
@@ -144,15 +149,15 @@ class MultiSpoon(commands.Bot):
     async def verif_temps(self):
         bot_logger.info("-----Début de la vérification-----")
         #Récupération des guildes
-        guilds = self.settings["guild"]
+        guilds = self.settings["guilds"]
 
         for guild in guilds:
             #Récupération du serveur
-            serveur = self.get_guild(self.settings["guild"][guild]["id"])
+            serveur = self.get_guild(self.settings["guilds"][guild]["id"])
 
             #Récupération des rôles et salons temporaire
-            temp_salons = self.settings["guild"][guild]["tempChannels"]
-            temp_roles = self.settings["guild"][guild]["tempRoles"]
+            temp_salons = self.settings["guilds"][guild]["tempChannels"]
+            temp_roles = self.settings["guilds"][guild]["tempRoles"]
             await asyncio.sleep(1)
 
             for salon in temp_salons:
@@ -193,5 +198,8 @@ class MultiSpoon(commands.Bot):
 
 
 if __name__ == "__main__":
-    bot = MultiSpoon(discord.Intents.all(), token_beta)
+    if(mode == "beta"):
+        bot = MultiSpoon(discord.Intents.all(), token_beta)
+    else:
+        bot = MultiSpoon(discord.Intents.all(), token_base)
     bot.run()

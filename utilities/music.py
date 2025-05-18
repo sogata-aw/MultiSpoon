@@ -1,6 +1,5 @@
 import pytube
 
-
 class Music:
     def __init__(self, url, title, path, thumbnail_url, time):
         self.url = url

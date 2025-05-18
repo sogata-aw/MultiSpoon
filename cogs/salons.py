@@ -38,7 +38,7 @@ class SalonsCog(commands.Cog):
     async def affichersalontemporaire(self, ctx, salon: discord.abc.GuildChannel):
         embed = discord.Embed()
         channel = None
-        for chan in self.bot.settings["guild"][ctx.guild.name]["tempChannels"]:
+        for chan in self.bot.settings["guilds"][ctx.guild.name]["tempChannels"]:
             if salon.id == chan["id"]:
                 channel = chan
         if channel is None:
@@ -59,7 +59,7 @@ class SalonsCog(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def supprimersalontemporaire(self, ctx, nom: discord.abc.GuildChannel):
         suppr = False
-        for temp_channel in self.bot.settings["guild"][ctx.guild.name]["tempChannels"]:
+        for temp_channel in self.bot.settings["guilds"][ctx.guild.name]["tempChannels"]:
             if temp_channel["name"] == nom.name and temp_channel["id"] == nom.id:
                 channel = ctx.guild.get_channel(temp_channel["id"])
                 if channel is None:

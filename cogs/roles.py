@@ -35,7 +35,7 @@ class RolesCogs(commands.Cog):
     # async def affichersalontemporaire(self, ctx, salon: discord.abc.GuildChannel):
     #     embed = discord.Embed()
     #     channel = None
-    #     for chan in self.bot.settings["guild"][ctx.guild.name]["tempChannels"]:
+    #     for chan in self.bot.settings["guilds"][ctx.guild.name]["tempChannels"]:
     #         if salon.id == chan["id"]:
     #             channel = chan
     #     if channel is None:
@@ -56,7 +56,7 @@ class RolesCogs(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def supprimersalontemporaire(self, ctx, nom: discord.Role):
         suppr = False
-        for temp_role in self.bot.settings["guild"][ctx.guild.name]["tempRoles"]:
+        for temp_role in self.bot.settings["guilds"][ctx.guild.name]["tempRoles"]:
             if temp_role["name"] == nom.name and temp_role["id"] == nom.id:
                 role = ctx.guild.get_role(temp_role["id"])
                 if role is None:
