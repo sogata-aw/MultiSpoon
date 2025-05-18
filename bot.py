@@ -1,16 +1,36 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import datetime as d
 import asyncio
 import os
 from dotenv import load_dotenv
+import logging
+import colorlog
 
 from view.verifyView import VerifyView
 
 from utilities import settings as s
 from utilities import embeds as e
 from utilities import dater as dat
+
+handler = colorlog.StreamHandler()
+handler.setFormatter(colorlog.ColoredFormatter(
+    '%(log_color)s[%(levelname)s] [%(name)s]: %(message)s',
+    log_colors={
+        'DEBUG':    'cyan',
+        'INFO':     'green',
+        'WARNING':  'yellow',
+        'ERROR':    'red',
+        'CRITICAL': 'bold_red',
+    }
+))
+
+botLogger = logging.getLogger("BOT_DISCORD")
+botLogger.addHandler(handler)
+botLogger.setLevel(logging.DEBUG)
+
+
 
 load_dotenv('.env')
 
@@ -28,41 +48,42 @@ class MultiSpoon(commands.Bot):
         self.createur: int = 649268058652672051
 
     async def on_ready(self):
-        print("Je suis prêt")
 
         #Réinitialisation de la query musical
         for server in bot.guilds:
             try:
-                if self.settings[server.name]["query"] is not None:
-                    self.settings[server.name]["query"] = []
+                if self.settings["guild"][server.name]["query"] is not None:
+                    self.settings["guild"][server.name]["query"] = []
             except KeyError:
                 pass
-            print(f'{server.name}(id: {server.id})')
+            self.settings["guild"][server.name]["inVerification"] = []
 
-        print("Début de la synchronisation")
+            botLogger.debug(f'{server.name}(id: {server.id})')
+
+        botLogger.info("-----Début de la synchronisation-----")
 
         await bot.tree.sync()
 
-        print("Synchronisation terminée\n")
+        botLogger.info("-----Synchronisation terminée-----")
 
         commandes = self.tree.get_commands()
 
-        #Lancement de la vérification pour les salons temporaires
-        taskv = asyncio.create_task(self.boucle_verif_temp())
-
         #Affichage des comandes du bots
         for command in commandes:
-            print(f"Commande : {command.name}")
-            print(f"Description : {command.description}")
-            print("------------------------")
+            botLogger.debug(f"Commande : {command.name}\nDescription : {command.description}\n------------------------")
 
-        print(self.cogs)
+        botLogger.debug(self.cogs)
+
+        self.verif_temps.start()
+        self.sauvegarde.start()
+
+        botLogger.info("Je suis prêt !")
 
     #-----Event-----
 
     async def on_guild_join(self, guild: discord.Guild):
         await s.create_settings(guild, self.settings)
-        print(f"Le serveur {guild.name} a été ajouté à la configuration")
+        botLogger.info(f"Le serveur {guild.name} a été ajouté à la configuration")
 
         user = await self.fetch_user(self.createur)
         dm_channel = await user.create_dm()
@@ -70,7 +91,7 @@ class MultiSpoon(commands.Bot):
 
     async def on_guild_remove(self, guild: discord.Guild):
         await s.delete_settings(guild, self.settings)
-        print(f"Le serveur {guild.name} a été supprimé de la configuration")
+        botLogger.info(f"Le serveur {guild.name} a été supprimé de la configuration")
 
         user = await bot.fetch_user(self.createur)
         dm_channel = await user.create_dm()
@@ -111,47 +132,60 @@ class MultiSpoon(commands.Bot):
 
     #Synchronisation avec les cogs
     async def setup_hook(self):
-        print("Début de l'ajout des commandes")
+        botLogger.info("-----Début de l'ajout des commandes-----")
         for extension in ['moderation', 'musique', 'salons', 'roles']:
             await self.load_extension(f'cogs.{extension}')
-        print("Ajout des commandes terminée")
+        botLogger.info("-----Ajout des commandes terminée-----")
 
-    #-----Boucles-----
+    #-----Tasks-----
 
-    async def boucle_verif_temp(self):
-        while True:
-            #Récupération des guildes
-            guilds = self.settings["guild"]
+    @tasks.loop(seconds=5)
+    async def verif_temps(self):
+        botLogger.info("-----Début de la vérification-----")
+        #Récupération des guildes
+        guilds = self.settings["guild"]
 
-            for guild in guilds:
-                #Récupération du serveur
-                serveur = self.get_guild(self.settings["guild"][guild]["id"])
+        for guild in guilds:
+            #Récupération du serveur
+            serveur = self.get_guild(self.settings["guild"][guild]["id"])
 
-                #Récupération des rôles et salons temporaire
-                temp_salons = self.settings["guild"][guild]["tempChannels"]
-                temp_roles = self.settings["guild"][guild]["tempRoles"]
+            #Récupération des rôles et salons temporaire
+            temp_salons = self.settings["guild"][guild]["tempChannels"]
+            temp_roles = self.settings["guild"][guild]["tempRoles"]
+            await asyncio.sleep(1)
 
+            for salon in temp_salons:
+                #Récupération de la date à laquelle le salon doit être supprimé
+                date_final = d.datetime.strptime(salon["duree"], "%Y-%m-%d %H:%M:%S:%f")
+
+                #Si la date est dépassé, alors on récupère le salon pour le supprimer
+                if d.datetime.now() > date_final:
+                    channel = serveur.get_channel(salon["id"])
+                    await dat.delete_channel(channel, self.settings, serveur)
                 await asyncio.sleep(1)
 
-                for salon in temp_salons:
-                    #Récupération de la date à laquelle le salon doit être supprimé
-                    date_final = d.datetime.strptime(salon["duree"], "%Y-%m-%d %H:%M:%S:%f")
+            for temp_role in temp_roles:
+                # Récupération de la date à laquelle le rôle doit être supprimé
+                date_final = d.datetime.strptime(temp_role["duree"], "%Y-%m-%d %H:%M:%S:%f")
 
-                    #Si la date est dépassé, alors on récupère le salon pour le supprimer
-                    if d.datetime.now() > date_final:
-                        channel = serveur.get_channel(salon["id"])
-                        await dat.delete_channel(channel, self.settings, serveur)
-                    await asyncio.sleep(1)
+                # Si la date est dépassé, alors on récupère le rôle pour le supprimer
+                if d.datetime.now() > date_final:
+                    role = serveur.get_role(temp_role["id"])
+                    await dat.delete_role(role, self.settings, serveur)
+                await asyncio.sleep(1)
 
-                for temp_role in temp_roles:
-                    # Récupération de la date à laquelle le rôle doit être supprimé
-                    date_final = d.datetime.strptime(temp_role["duree"], "%Y-%m-%d %H:%M:%S:%f")
+        botLogger.info("-----Fin de la vérification-----")
+        await asyncio.sleep(1)
 
-                    # Si la date est dépassé, alors on récupère le rôle pour le supprimer
-                    if d.datetime.now() > date_final:
-                        role = serveur.get_role(temp_role["id"])
-                        await dat.delete_role(role, self.settings, serveur)
-                    await asyncio.sleep(1)
+    @tasks.loop(minutes=15)
+    async def sauvegarde(self):
+        s.save(self.settings)
+        botLogger.info("Sauvegarde effectué !")
+
+    @verif_temps.before_loop
+    @sauvegarde.before_loop
+    async def before_looping(self):
+        await bot.wait_until_ready()
 
     def run(self, **kwargs):
         super().run(self.token)
