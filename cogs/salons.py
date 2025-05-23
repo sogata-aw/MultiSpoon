@@ -12,16 +12,23 @@ class SalonsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(name="creer-salon-temporaire", description="Créer un salon pour une durée déterminée")
+    @staticmethod
+    def is_admin():
+        async def predicate(interaction: discord.Interaction) -> bool:
+            return interaction.user.guild_permissions.administrator
+
+        return discord.app_commands.check(predicate)
+
+    @discord.app_commands.command(name="creer-salon-temporaire", description="Créer un salon pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du salon que vous voulez créer",
                                    typesalon="Le type de salon que vous voulez créer",
                                    categorie="La catégorie dans lequel vous voulez créer le salon(dans aucune par défaut)",
                                    duree="La durée que vous souhaitez mettre (voir /aide sur comment faire)")
-    @commands.has_permissions(administrator=True)
-    async def creersalontemporaire(self, ctx, nom: str, typesalon: str, duree: str,
+    @is_admin()
+    async def creersalontemporaire(self, interaction, nom: str, typesalon: str, duree: str,
                                    categorie: discord.CategoryChannel = None):
         if duree is None:
-            await ctx.send(embed=discord.Embed(title=":warning: vous devez au moins rentrer une durée"))
+            await interaction.response.send_message(embed=discord.Embed(title=":warning: vous devez au moins rentrer une durée"))
 
         else:
             duree_de_base = d.datetime.now()
@@ -30,15 +37,15 @@ class SalonsCog(commands.Cog):
             total_duration = await dat.ajouter_temps(duree_split)
 
             if total_duration == duree_de_base:
-                await ctx.send(embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
+                await interaction.response.send_message(embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
             else:
-                await dat.create_channel_duree(ctx, nom, typesalon, self.bot.settings, categorie, total_duration)
+                await dat.create_channel_duree(interaction, nom, typesalon, self.bot.settings, categorie, total_duration)
 
-    @commands.hybrid_command(name="afficher-salon-temporaire", description="Affiche les salons temporaires crées")
-    async def affichersalontemporaire(self, ctx, salon: discord.abc.GuildChannel):
+    @discord.app_commands.command(name="afficher-salon-temporaire", description="Affiche les salons temporaires crées")
+    async def affichersalontemporaire(self, interaction, salon: discord.abc.GuildChannel):
         embed = discord.Embed()
         channel = None
-        for chan in self.bot.settings["guilds"][ctx.guild.name]["tempChannels"]:
+        for chan in self.bot.settings["guilds"][interaction.guild.name]["tempChannels"]:
             if salon.id == chan["id"]:
                 channel = chan
         if channel is None:
@@ -52,33 +59,33 @@ class SalonsCog(commands.Cog):
                 else:
                     embed.add_field(name=attribut + " : " +
                                          str(channel[attribut]), value="", inline=False)
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @commands.hybrid_command(name="supprimer-salon-temporaire", description="Supprime un salon temporaire crée")
+    @discord.app_commands.command(name="supprimer-salon-temporaire", description="Supprime un salon temporaire crée")
     @discord.app_commands.describe()
-    @commands.has_permissions(administrator=True)
-    async def supprimersalontemporaire(self, ctx, nom: discord.abc.GuildChannel):
+    @is_admin()
+    async def supprimersalontemporaire(self, interaction, nom: discord.abc.GuildChannel):
         suppr = False
-        for temp_channel in self.bot.settings["guilds"][ctx.guild.name]["tempChannels"]:
+        for temp_channel in self.bot.settings["guilds"][interaction.guild.name]["tempChannels"]:
             if temp_channel["name"] == nom.name and temp_channel["id"] == nom.id:
-                channel = ctx.guild.get_channel(temp_channel["id"])
+                channel = interaction.guild.get_channel(temp_channel["id"])
                 if channel is None:
-                    await ctx.send(
+                    await interaction.response.send_message(
                         embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))
                 else:
                     await channel.delete()
-                    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé",
-                                                       colour=0x008001))
+                    await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé",
+                                                               colour=0x008001))
                     suppr = True
         if not suppr:
-            await ctx.send(embed=discord.Embed(
+            await interaction.response.send_message(embed=discord.Embed(
                 title=":warning: Le salon que vous souhaitez supprimer n'existe pas ou n'est pas un salon temporaire"))
 
     # -----Autocomplete-----
 
     # creersalontemporaire
     @creersalontemporaire.autocomplete("typesalon")
-    async def autocomplete_type(self, ctx, typesalon: str) -> typing.List[
+    async def autocomplete_type(self, interaction, typesalon: str) -> typing.List[
         discord.app_commands.Choice[str]]:
         liste = []
         for choice in ["textuel", "vocal"]:

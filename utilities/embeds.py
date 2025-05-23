@@ -8,18 +8,18 @@ async def embed_aide(option, dico):
     return embed
 
 
-async def embed_musique(ctx, title: str, url: str, musique: m.Music) -> discord.Embed:
+async def embed_musique(interaction, title: str, url: str, musique: m.Music) -> discord.Embed:
     embed = discord.Embed(title=title, url=url)
-    embed.set_footer(text="requested by " + ctx.author.name)
+    embed.set_footer(text="requested by " + interaction.user.name)
     embed.set_image(url=musique.thumbnail_url)
     return embed
 
 
-async def embed_request(ctx, raison):
+async def embed_request(interaction, raison):
     embed = discord.Embed(title="Quelqu'un demande l'activation du bot pour la musique")
-    embed.add_field(name="Demandé par ", value=f"{ctx.author.mention}, {ctx.author.name}")
-    embed.set_image(url=ctx.author.display_icon)
-    embed.add_field(name="Sur le serveur ", value=ctx.guild.name)
+    embed.add_field(name="Demandé par ", value=f"{interaction.user.mention}, {interaction.user.name}")
+    embed.set_image(url=interaction.author.display_icon)
+    embed.add_field(name="Sur le serveur ", value=interaction.guild.name)
     if raison is not None:
         embed.add_field(name="Raison :", value=raison)
     return embed

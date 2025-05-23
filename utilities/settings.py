@@ -2,36 +2,36 @@ import discord
 import json
 
 
-async def set_timeout(ctx, sec, settings):
+async def set_timeout(interaction, sec, settings):
     if sec < 30:
-        await ctx.send(":warning: Le temps est invalide ! Il doit être supérieur à 30 secondes")
+        await interaction.response.send_message(":warning: Le temps est invalide ! Il doit être supérieur à 30 secondes")
     else:
-        settings["guilds"][ctx.guild.name]["timeout"] = sec
-        await ctx.send("✅ Le temps avant expiration du captcha a été mis à jour")
+        settings["guilds"][interaction.guild.name]["timeout"] = sec
+        await interaction.response.send_message("✅ Le temps avant expiration du captcha a été mis à jour")
 
 
-async def set_role_before(ctx, role, settings):
+async def set_role_before(interaction, role, settings):
     if role is None or not isinstance(role, discord.Role):
-        await ctx.send(":warning: Le rôle sélectionné n'est pas valide")
+        await interaction.response.send_message(":warning: Le rôle sélectionné n'est pas valide")
     else:
-        settings["guilds"][ctx.guild.name]["roleBefore"] = role.id
-        await ctx.send("✅ Le rôle d'arrivée a été mis à jour")
+        settings["guilds"][interaction.guild.name]["roleBefore"] = role.id
+        await interaction.response.send_message("✅ Le rôle d'arrivée a été mis à jour")
 
 
-async def set_role_after(ctx, role, settings):
+async def set_role_after(interaction, role, settings):
     if role is None or not isinstance(role, discord.Role):
-        await ctx.send(":warning: Le rôle sélectionné n'est pas valide")
+        await interaction.response.send_message(":warning: Le rôle sélectionné n'est pas valide")
     else:
-        settings["guilds"][ctx.guild.name]["roleAfter"] = role.id
-        await ctx.send("✅ Le rôle après vérification a été mis à jour")
+        settings["guilds"][interaction.guild.name]["roleAfter"] = role.id
+        await interaction.response.send_message("✅ Le rôle après vérification a été mis à jour")
 
 
-async def set_verification_channel(ctx, channel, settings):
+async def set_verification_channel(interaction, channel, settings):
     if channel is None or not isinstance(channel, discord.TextChannel):
-        await ctx.send(":warning: Le salon selectionné n'est pas valide")
+        await interaction.response.send_message(":warning: Le salon selectionné n'est pas valide")
     else:
-        settings["guilds"][ctx.guild.name]["verificationChannel"] = channel.id
-        await ctx.send("✅ Le salon des vérifications a été mis à jour")
+        settings["guilds"][interaction.guild.name]["verificationChannel"] = channel.id
+        await interaction.response.send_message("✅ Le salon des vérifications a été mis à jour")
 
 
 async def create_settings(guild, settings):
@@ -42,7 +42,6 @@ async def create_settings(guild, settings):
         "roleAfter": 0,
         "inVerification": [],
         "timeout": 300,
-        "nbEssais": 3,
         "tempChannels": [],
         "tempRoles": [],
         "logchannel": 0

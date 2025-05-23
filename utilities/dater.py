@@ -13,19 +13,19 @@ async def annee_en_jours(annee):
     return mois_en_jours(12 * annee)
 
 
-async def create_channel_duree(ctx, nom, typesalon, settings, categorie=None, duree=None):
+async def create_channel_duree(interaction, nom, typesalon, settings, categorie=None, duree=None):
     if typesalon == "textuel":
-        salon_temp = await ctx.guild.create_text_channel(name=nom, category=categorie)
-        await add_channel(ctx, settings, salon_temp, nom, typesalon, categorie, duree)
+        salon_temp = await interaction.guild.create_text_channel(name=nom, category=categorie)
+        await add_channel(interaction, settings, salon_temp, nom, typesalon, categorie, duree)
     elif typesalon == "vocal":
-        salon_temp = await ctx.guild.create_voice_channel(name=nom, category=categorie)
-        await add_channel(ctx, settings, salon_temp, nom, typesalon, categorie, duree)
+        salon_temp = await interaction.guild.create_voice_channel(name=nom, category=categorie)
+        await add_channel(interaction, settings, salon_temp, nom, typesalon, categorie, duree)
     else:
-        await ctx.send(embed=discord.Embed(title=":warning: Le type n'est pas valide"))
+        await interaction.response.send_message(embed=discord.Embed(title=":warning: Le type n'est pas valide"))
 
 
-async def add_channel(ctx, settings, salon, nom, typesalon, categorie=None, duree=None):
-    settings["guilds"][ctx.guild.name]["tempChannels"].append({
+async def add_channel(interaction, settings, salon, nom, typesalon, categorie=None, duree=None):
+    settings["guilds"][interaction.guild.name]["tempChannels"].append({
         "name": nom.replace(' ', '-'),
         "id": salon.id,
         "categorie": categorie.id if categorie is not None else None,
@@ -33,17 +33,17 @@ async def add_channel(ctx, settings, salon, nom, typesalon, categorie=None, dure
         "duree": duree.strftime("%Y-%m-%d %H:%M:%S:%f")
     })
     s.save(settings)
-    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le salon a été crée", colour=0x008001))
+    await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Le salon a été crée", colour=0x008001))
 
-async def create_role_duree(ctx,nom,duree,couleur,separe,mentionable,settings):
-    role = await ctx.guild.create_role(name=nom, colour=discord.Colour.from_str(couleur), hoist=separe,mentionable=mentionable)
-    settings["guilds"][ctx.guild.name]["tempRoles"].append({
+async def create_role_duree(interaction, nom, duree, couleur, separe, mentionable, settings):
+    role = await interaction.guild.create_role(name=nom, colour=discord.Colour.from_str(couleur), hoist=separe, mentionable=mentionable)
+    settings["guilds"][interaction.guild.name]["tempRoles"].append({
         "name": nom,
         "id": role.id,
         "duree": duree.strftime("%Y-%m-%d %H:%M:%S:%f")
     })
     s.save(settings)
-    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le rôle a été crée", colour=0x008001))
+    await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Le rôle a été crée", colour=0x008001))
 
 async def ajouter_temps(duree_split):
     duration = d.datetime.now()

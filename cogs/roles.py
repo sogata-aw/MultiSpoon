@@ -9,14 +9,21 @@ class RolesCogs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(name="creer-role-temporaire", description="Créer un rôle pour une durée déterminée")
+    @staticmethod
+    def is_admin():
+        async def predicate(interaction: discord.Interaction) -> bool:
+            return interaction.user.guild_permissions.administrator
+
+        return discord.app_commands.check(predicate)
+
+    @discord.app_commands.command(name="creer-role-temporaire", description="Créer un rôle pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du rôle que vous voulez créer",
                                    couleur="La couleur du rôle que vous voulez",
                                    duree="La durée que vous souhaitez mettre (voir /aide sur comment faire)")
-    @commands.has_permissions(administrator=True)
-    async def creerroletemporaire(self, ctx, nom: str, duree: str, couleur : str = "#99a9b5",separe : bool = False, mentionable : bool = False):
+    @is_admin()
+    async def creerroletemporaire(self, interaction, nom: str, duree: str, couleur : str = "#99a9b5", separe : bool = False, mentionable : bool = False):
         if duree is None:
-            await ctx.send(embed=discord.Embed(title=":warning: vous devez au moins rentrer une durée"))
+            await interaction.response.send_message(embed=discord.Embed(title=":warning: vous devez au moins rentrer une durée"))
 
         else:
             duree_de_base = d.datetime.now()
@@ -24,12 +31,12 @@ class RolesCogs(commands.Cog):
             duree_split = duree.split()
             total_duration = await dat.ajouter_temps(duree_split)
             if total_duration == duree_de_base:
-                await ctx.send(embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
+                await interaction.response.send_message(embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
             else:
                 if dat.est_couleur_hexa(couleur):
-                    await dat.create_role_duree(ctx, nom, total_duration, couleur, separe, mentionable, self.bot.settings)
+                    await dat.create_role_duree(interaction, nom, total_duration, couleur, separe, mentionable, self.bot.settings)
                 else:
-                    await ctx.send(embed=discord.Embed(title=":warning: Vous n'avez pas rentré une couleur au format RGB ou RRGGBB"))
+                    await interaction.send(embed=discord.Embed(title=":warning: Vous n'avez pas rentré une couleur au format RGB ou RRGGBB"))
 
     # @commands.hybrid_command(name="affichersalontemporaire", description="Affiche les salons temporaires crées")
     # async def affichersalontemporaire(self, ctx, salon: discord.abc.GuildChannel):
@@ -51,24 +58,24 @@ class RolesCogs(commands.Cog):
     #                                      str(channel[attribut]), value="", inline=False)
     #     await ctx.send(embed=embed)
     #
-    @commands.hybrid_command(name="supprimer-role-temporaire", description="Supprime un salon temporaire crée")
+    @discord.app_commands.command(name="supprimer-role-temporaire", description="Supprime un salon temporaire crée")
     @discord.app_commands.describe()
-    @commands.has_permissions(administrator=True)
-    async def supprimersalontemporaire(self, ctx, nom: discord.Role):
+    @is_admin()
+    async def supprimersalontemporaire(self, interaction, nom: discord.Role):
         suppr = False
-        for temp_role in self.bot.settings["guilds"][ctx.guild.name]["tempRoles"]:
+        for temp_role in self.bot.settings["guilds"][interaction.guild.name]["tempRoles"]:
             if temp_role["name"] == nom.name and temp_role["id"] == nom.id:
-                role = ctx.guild.get_role(temp_role["id"])
+                role = interaction.guild.get_role(temp_role["id"])
                 if role is None:
-                    await ctx.send(
+                    await interaction.response.send_message(
                         embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))
                 else:
                     await role.delete()
-                    await ctx.send(embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé",
-                                                       colour=0x008001))
+                    await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé",
+                                                               colour=0x008001))
                     suppr = True
         if not suppr:
-            await ctx.send(embed=discord.Embed(
+            await interaction.response.send_message(embed=discord.Embed(
                 title=":warning: Le salon que vous souhaitez supprimer n'existe pas ou n'est pas un salon temporaire"))
 
 
