@@ -9,16 +9,15 @@ from view.aideView import AideSelectView
 from utilities import captchas as c, settings as s
 from utilities import embeds as e
 
+def is_admin():
+    async def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.guild_permissions.administrator
+    return discord.app_commands.check(predicate)
+
 @discord.app_commands.guild_only()
 class SettingsCog(commands.GroupCog, group_name="set"):
     def __init__(self, bot):
         self.bot = bot
-
-    @staticmethod
-    def is_admin():
-        async def predicate(interaction: discord.Interaction) -> bool:
-            return interaction.user.guild_permissions.administrator
-        return discord.app_commands.check(predicate)
 
     @discord.app_commands.command(name="role",
                              description="Permet de configurer le rôle d'arrivée et celui après la vérification")
