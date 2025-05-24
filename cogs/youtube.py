@@ -10,7 +10,7 @@ import pytubefix.exceptions
 play_task = None
 
 
-class MusiqueCog(commands.Cog):
+class YoutubeCog(commands.GroupCog, group_name="youtube"):
     def __init__(self, bot):
         self.bot = bot
 
@@ -22,7 +22,7 @@ class MusiqueCog(commands.Cog):
         else:
             global play_task
             vc = None
-            state = interaction.author.voice
+            state = interaction.user.voice
             if state is None:
                 await interaction.response.send_message("Vous devez être dans un salon vocal pour utiliser cette commande")
             else:
@@ -112,4 +112,4 @@ class MusiqueCog(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(MusiqueCog(bot))
+    await bot.add_cog(YoutubeCog(bot))

@@ -61,7 +61,7 @@ class RolesCogs(commands.Cog):
     @discord.app_commands.command(name="supprimer-role-temporaire", description="Supprime un salon temporaire crée")
     @discord.app_commands.describe()
     @is_admin()
-    async def supprimersalontemporaire(self, interaction, nom: discord.Role):
+    async def supprimerroletemporaire(self, interaction, nom: discord.Role):
         suppr = False
         for temp_role in self.bot.settings["guilds"][interaction.guild.name]["tempRoles"]:
             if temp_role["name"] == nom.name and temp_role["id"] == nom.id:

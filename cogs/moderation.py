@@ -21,21 +21,7 @@ class ModerationCog(commands.Cog):
 
         return discord.app_commands.check(predicate)
 
-    @staticmethod
-    def is_me():
-        async def predicate(interaction: discord.Interaction) -> bool:
-            return interaction.user.id == 649268058652672051
-
-        return discord.app_commands.check(predicate)
-
     # -----Commandes-----
-
-    @discord.app_commands.command(name="reload", description="Permet de recharger une partie des fonctions en fonction de l'extension")
-    @discord.app_commands.describe(extension="Le nom de celle que vous voulez recharger")
-    @is_me()
-    async def reload(self, interaction, extension : str):
-        await self.bot.reload_extension(f"cogs.{extension}")
-        await interaction.response.send_message(f"✅ Extension `{extension}` rechargée !")
 
     @discord.app_commands.command(name="aide", description="affiche les informations sur les différentes commandes")
     async def aide(self, interaction, commande: str = None):
@@ -149,15 +135,6 @@ class ModerationCog(commands.Cog):
 
 
     # -----autocomplete-----
-
-    # Reload
-    @reload.autocomplete("extension")
-    async def autocomplete_extension(self, interaction, extension : str) -> typing.List[discord.app_commands.Choice[str]]:
-        liste = []
-        for cog in os.listdir("./cogs"):
-            if cog.endswith(".py") and not cog.startswith("__"):
-                liste.append(discord.app_commands.Choice(name=cog[:-3], value=cog[:-3]))
-        return liste
 
     # Aide
 
