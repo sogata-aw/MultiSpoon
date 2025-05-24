@@ -4,17 +4,15 @@ from discord.ext import commands
 import os
 import typing
 
+def is_me():
+    async def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.id == 649268058652672051
+    return discord.app_commands.check(predicate)
+
 @discord.app_commands.dm_only()
 class ReloadCog(commands.GroupCog, group_name="reload"):
     def __init__(self, bot):
         self.bot = bot
-
-    @staticmethod
-    def is_me():
-        async def predicate(interaction: discord.Interaction) -> bool:
-            return interaction.user.id == 649268058652672051
-
-        return discord.app_commands.check(predicate)
 
     # -----Commandes-----
 

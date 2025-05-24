@@ -10,16 +10,14 @@ from utilities import captchas as c, settings as s
 from utilities import embeds as e
 
 
+def is_admin():
+    async def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.guild_permissions.administrator
+    return discord.app_commands.check(predicate)
+
 class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    @staticmethod
-    def is_admin():
-        async def predicate(interaction: discord.Interaction) -> bool:
-            return interaction.user.guild_permissions.administrator
-
-        return discord.app_commands.check(predicate)
 
     # -----Commandes-----
 

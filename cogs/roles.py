@@ -5,19 +5,17 @@ import datetime as d
 
 from utilities import dater as dat
 
+def is_admin():
+    async def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.guild_permissions.administrator
+    return discord.app_commands.check(predicate)
+
 @discord.app_commands.guild_only()
 class RolesCog(commands.GroupCog, group_name="role-temporaire"):
     def __init__(self, bot):
         self.bot = bot
 
     temp_group = discord.app_commands.Group(name="temporaire", description="meilleur_visibilité")
-
-    @staticmethod
-    def is_admin():
-        async def predicate(interaction: discord.Interaction) -> bool:
-            return interaction.user.guild_permissions.administrator
-
-        return discord.app_commands.check(predicate)
 
     @temp_group.command(name="creer", description="Créer un rôle pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du rôle que vous voulez créer",
