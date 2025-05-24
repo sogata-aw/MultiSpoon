@@ -4,6 +4,7 @@ from discord.ext import commands
 import os
 import typing
 
+@discord.app_commands.dm_only()
 class ReloadCog(commands.GroupCog, group_name="reload"):
     def __init__(self, bot):
         self.bot = bot

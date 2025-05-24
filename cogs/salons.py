@@ -7,10 +7,12 @@ from discord.ext import commands
 from utilities import dater as dat
 from view import salonView as sv
 
-
-class SalonsCog(commands.Cog):
+@discord.app_commands.guild_only()
+class SalonsCog(commands.GroupCog, group_name="salon"):
     def __init__(self, bot):
         self.bot = bot
+
+    temp_group = discord.app_commands.Group(name="temporaire", description="meilleur_visibilité")
 
     @staticmethod
     def is_admin():
@@ -19,7 +21,7 @@ class SalonsCog(commands.Cog):
 
         return discord.app_commands.check(predicate)
 
-    @discord.app_commands.command(name="creer-salon-temporaire", description="Créer un salon pour une durée déterminée")
+    @temp_group.command(name="creer", description="Créer un salon pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du salon que vous voulez créer",
                                    typesalon="Le type de salon que vous voulez créer",
                                    categorie="La catégorie dans lequel vous voulez créer le salon(dans aucune par défaut)",
@@ -41,7 +43,7 @@ class SalonsCog(commands.Cog):
             else:
                 await dat.create_channel_duree(interaction, nom, typesalon, self.bot.settings, categorie, total_duration)
 
-    @discord.app_commands.command(name="afficher-salon-temporaire", description="Affiche les salons temporaires crées")
+    @temp_group.command(name="afficher", description="Affiche les salons temporaires crées")
     async def affichersalontemporaire(self, interaction, salon: discord.abc.GuildChannel):
         embed = discord.Embed()
         channel = None
@@ -61,8 +63,8 @@ class SalonsCog(commands.Cog):
                                          str(channel[attribut]), value="", inline=False)
         await interaction.response.send_message(embed=embed)
 
-    @discord.app_commands.command(name="supprimer-salon-temporaire", description="Supprime un salon temporaire crée")
-    @discord.app_commands.describe()
+    @temp_group.command(name="supprimer", description="Supprime un salon temporaire crée")
+    @discord.app_commands.describe(nom="Le nom du salon que vous voulez supprimer")
     @is_admin()
     async def supprimersalontemporaire(self, interaction, nom: discord.abc.GuildChannel):
         suppr = False

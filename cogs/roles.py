@@ -5,9 +5,12 @@ import datetime as d
 
 from utilities import dater as dat
 
-class RolesCogs(commands.Cog):
+@discord.app_commands.guild_only()
+class RolesCog(commands.GroupCog, group_name="role-temporaire"):
     def __init__(self, bot):
         self.bot = bot
+
+    temp_group = discord.app_commands.Group(name="temporaire", description="meilleur_visibilité")
 
     @staticmethod
     def is_admin():
@@ -16,12 +19,12 @@ class RolesCogs(commands.Cog):
 
         return discord.app_commands.check(predicate)
 
-    @discord.app_commands.command(name="creer-role-temporaire", description="Créer un rôle pour une durée déterminée")
+    @temp_group.command(name="creer", description="Créer un rôle pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du rôle que vous voulez créer",
                                    couleur="La couleur du rôle que vous voulez",
                                    duree="La durée que vous souhaitez mettre (voir /aide sur comment faire)")
     @is_admin()
-    async def creerroletemporaire(self, interaction, nom: str, duree: str, couleur : str = "#99a9b5", separe : bool = False, mentionable : bool = False):
+    async def creer_role_temporaire(self, interaction, nom: str, duree: str, couleur : str = "#99a9b5", separe : bool = False, mentionable : bool = False):
         if duree is None:
             await interaction.response.send_message(embed=discord.Embed(title=":warning: vous devez au moins rentrer une durée"))
 
@@ -58,10 +61,10 @@ class RolesCogs(commands.Cog):
     #                                      str(channel[attribut]), value="", inline=False)
     #     await ctx.send(embed=embed)
     #
-    @discord.app_commands.command(name="supprimer-role-temporaire", description="Supprime un salon temporaire crée")
-    @discord.app_commands.describe()
+    @temp_group.command(name="supprimer", description="Supprime un salon temporaire crée")
+    @discord.app_commands.describe(nom="Le nom du rôle que vous voulez supprimer")
     @is_admin()
-    async def supprimerroletemporaire(self, interaction, nom: discord.Role):
+    async def supprimer_role_temporaire(self, interaction, nom: discord.Role):
         suppr = False
         for temp_role in self.bot.settings["guilds"][interaction.guild.name]["tempRoles"]:
             if temp_role["name"] == nom.name and temp_role["id"] == nom.id:
@@ -78,6 +81,5 @@ class RolesCogs(commands.Cog):
             await interaction.response.send_message(embed=discord.Embed(
                 title=":warning: Le salon que vous souhaitez supprimer n'existe pas ou n'est pas un salon temporaire"))
 
-
 async def setup(bot):
-    await bot.add_cog(RolesCogs(bot))
+    await bot.add_cog(RolesCog(bot))
