@@ -17,7 +17,7 @@ class ReloadCog(commands.GroupCog, group_name="reload"):
     # -----Commandes-----
 
     @discord.app_commands.command(name="extension",
-                                  description="Permet de recharger une extension")
+                                  description="Commande inutilisable")
     @discord.app_commands.describe(extension="Le nom de celle que vous voulez recharger")
     @is_me()
     async def reload(self, interaction, extension: str):
@@ -25,7 +25,7 @@ class ReloadCog(commands.GroupCog, group_name="reload"):
         await interaction.response.send_message(f"✅ Extension `{extension}` rechargée !")
 
     @discord.app_commands.command(name="all",
-                                  description="Permet de recharger toutes les extensions")
+                                  description="Commande inutilisable")
     @is_me()
     async def reload_all(self, interaction):
         await self.bot.setup_hook()

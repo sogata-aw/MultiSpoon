@@ -55,6 +55,16 @@ class ModerationCog(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
+    @discord.app_commands.command(name="sync", description="Synchronise toutes les personnes qui ont le rôle après vérification")
+    @is_admin()
+    @discord.app_commands.guild_only()
+    async def sync(self, interaction):
+        for member in interaction.guild.members:
+            if member.id not in self.bot.settings["guilds"][interaction.guild.name]["alreadyVerified"] and member.get_role(self.bot.settings["guilds"][interaction.guild.name]["roleAfter"]) != None :
+                self.bot.settings["guilds"][interaction.guild.name]["alreadyVerified"].append(member.id)
+        await interaction.response.send_message("Synchronisation terminé !")
+
+
     @discord.app_commands.command(name="verify", description="Permet de lancer la vérification")
     @discord.app_commands.guild_only()
     async def verify(self, interaction):
@@ -121,6 +131,7 @@ class ModerationCog(commands.Cog):
                             interaction.guild.get_role(self.bot.settings["guilds"][interaction.guild.name]["roleBefore"]))
                         continuer = False
 
+                        self.bot.settings["guilds"][interaction.guild.name]["alreadyVerified"].append(interaction.user.id)
                         await interaction.channel.purge(limit=50, check=msg_check)
 
                     else:

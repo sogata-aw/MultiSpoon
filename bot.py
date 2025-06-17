@@ -104,23 +104,26 @@ class MultiSpoon(commands.Bot):
         await dm_channel.send(embed=await e.embed_add("Un serveur a supprimé le bot", guild))
 
     async def on_member_join(self, member):
-        channel = None
-        try:
-            #Récupération du salon du serveur si configuré
-            channel = member.guild.get_channel(self.settings["guilds"][member.guild.name]["verificationChannel"])
-
-            #Attribution du rôle au nouveau membre
-            await member.add_roles(member.guild.get_role(self.settings["guilds"][member.guild.name]["roleBefore"]))
-
-            #Gestion des erreurs
+        if member.id in self.settings["guilds"][member.guild.name]["inVerification"]:
+            await member.add_roles(member.guild.get_role(self.settings["guilds"][member.guild.name]["roleAfter"]))
+        else:
+            channel = None
             try:
-                await channel.send(
-                    f"Bienvenue {member.mention} ! Veuillez utiliser la commande `/verify` ou cliquer sur le bouton ci-dessous", view=VerifyView(self))
-            except discord.Forbidden:
-                await channel.send(
-                    "Le bot n'a pas les permissions nécessaires ! Essayez de mettre son rôle au-dessus des autres")
-        except AttributeError:
-            await channel.send(":warning: Le bot ne trouve pas le rôle d'arrivée")
+                #Récupération du salon du serveur si configuré
+                channel = member.guild.get_channel(self.settings["guilds"][member.guild.name]["verificationChannel"])
+
+                #Attribution du rôle au nouveau membre
+                await member.add_roles(member.guild.get_role(self.settings["guilds"][member.guild.name]["roleBefore"]))
+
+                #Gestion des erreurs
+                try:
+                    await channel.send(
+                        f"Bienvenue {member.mention} ! Veuillez utiliser la commande `/verify` ou cliquer sur le bouton ci-dessous", view=VerifyView(self))
+                except discord.Forbidden:
+                    await channel.send(
+                        "Le bot n'a pas les permissions nécessaires ! Essayez de mettre son rôle au-dessus des autres")
+            except AttributeError:
+                await channel.send(":warning: Le bot ne trouve pas le rôle d'arrivée")
 
     #Suppression automatique du salon dans les données du bot s'il était temporaire
     async def on_guild_channel_delete(self, channel):
@@ -201,7 +204,7 @@ class MultiSpoon(commands.Bot):
 
 
 if __name__ == "__main__":
-    if(mode == "beta"):
+    if mode == "beta":
         bot = MultiSpoon(discord.Intents.all(), token_beta)
     else:
         bot = MultiSpoon(discord.Intents.all(), token_base)
