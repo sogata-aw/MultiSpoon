@@ -4,6 +4,11 @@ from discord.ext import commands, tasks
 import datetime as d
 import asyncio
 import os
+import traceback
+
+from discord.ext.commands import Context, errors
+from discord.ext.commands._types import BotT
+
 from dotenv import load_dotenv
 import logging
 import colorlog
@@ -86,6 +91,7 @@ class MultiSpoon(commands.Bot):
         bot_logger.info("Je suis prêt !")
 
     #-----Event-----
+
 
     async def on_guild_join(self, guild: discord.Guild):
         await s.create_settings(guild, self.settings)

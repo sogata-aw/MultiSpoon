@@ -1,5 +1,6 @@
 import typing
 import datetime as d
+import traceback
 
 import discord
 from discord.ext import commands
@@ -16,8 +17,31 @@ def is_admin():
 class SalonsCog(commands.GroupCog, group_name="salon"):
     def __init__(self, bot):
         self.bot = bot
+        self.bot.tree.error(coro=self.on_app_command_error)
 
     temp_group = discord.app_commands.Group(name="temporaire", description="meilleur_visibilité")
+
+    # -----Commandes-----
+
+    async def on_app_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+        error_time = d.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+        log_entry = (
+            f"[{error_time}] ERREUR Slash Command (COG)\n"
+            f"Auteur: {interaction.user} (ID: {interaction.user.id})\n"
+            f"Guild: {interaction.guild} | Channel: {interaction.channel}\n"
+            f"Erreur: {repr(error)}\n"
+            f"Traceback:\n{tb}\n"
+            f"{'-' * 60}\n"
+        )
+
+        with open("errors.log", "a", encoding="utf-8") as f:
+            f.write(log_entry)
+
+        if interaction.response.is_done():
+            await interaction.followup.send("❌ Une erreur est survenue (suivi).", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ Une erreur est survenue.", ephemeral=True)
 
     @temp_group.command(name="creer", description="Créer un salon pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du salon que vous voulez créer",
