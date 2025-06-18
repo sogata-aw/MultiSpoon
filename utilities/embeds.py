@@ -2,7 +2,7 @@ import discord
 from utilities import music as m
 
 async def embed_aide(option, dico):
-    embed = discord.Embed(title=option)
+    embed = discord.Embed(title=option, colour=discord.Colour.from_str("#68cd67"))
     for value in dico:
         embed.add_field(name=value, value=dico[value], inline=False)
     return embed

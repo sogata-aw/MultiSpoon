@@ -12,7 +12,7 @@ def is_admin():
     return discord.app_commands.check(predicate)
 
 @discord.app_commands.guild_only()
-class RolesCog(commands.GroupCog, group_name="role-temporaire"):
+class RolesCog(commands.GroupCog, group_name="role"):
     def __init__(self, bot):
         self.bot = bot
         self.bot.tree.error(coro=self.on_app_command_error)

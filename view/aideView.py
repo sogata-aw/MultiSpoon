@@ -10,6 +10,8 @@ class AideSelect(discord.ui.Select):
     def __init__(self):
         options = [
             discord.SelectOption(label="Modération", emoji="🛠️"),
+            discord.SelectOption(label="Captcha", emoji="✅"),
+            discord.SelectOption(label="Salon/Rôle", emoji="📁"),
             discord.SelectOption(label="Musique", emoji="🎵")
         ]
         super().__init__(placeholder="Choisissez une option", max_values=1, min_values=1, options=options)
@@ -18,9 +20,13 @@ class AideSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> Any:
         embed = None
         if self.values[0] == "Modération":
-            embed = await e.embed_aide(self.values[0], self.settings["commands"]["moderation"])
+            embed = await e.embed_aide(self.values[0], self.settings["commands"]["Mod\u00e9ration"])
+        elif self.values[0] == "Captcha":
+            embed = await e.embed_aide(self.values[0], self.settings["commands"]["Captcha"])
+        elif self.values[0] == "Salon/Rôle":
+            embed = await e.embed_aide(self.values[0], self.settings["commands"]["Salon/R\u00F4le"])
         elif self.values[0] == "Musique":
-            embed = await e.embed_aide(self.values[0], self.settings["commands"]["music"])
+            embed = await e.embed_aide(self.values[0], self.settings["commands"]["Musique"])
         await interaction.response.edit_message(embed=embed)
 
 

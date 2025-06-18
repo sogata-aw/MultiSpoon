@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 
 from view.aideView import AideSelectView
+from view.supportView import SupportView
 from utilities import captchas as c, settings as s
 from utilities import embeds as e
 
@@ -48,15 +49,25 @@ class ModerationCog(commands.Cog):
     @discord.app_commands.command(name="aide", description="affiche les informations sur les différentes commandes")
     async def aide(self, interaction, commande: str = None):
         if commande is None:
-            embed = discord.Embed(title="Choisissez une catégorie")
+            embed = discord.Embed(title="Choisissez une catégorie", colour=discord.Colour.from_str("#68cd67"))
+            embed.set_thumbnail(url="https://raw.githubusercontent.com/sogata-aw/MultiSpoon/refs/heads/master/img/logo.png")
+            embed.add_field(name="", value="Si vous ne trouvez pas ce que vous cherchez avec l'aide, n'hésitez pas à rejoindre le [serveur de support](https://discord.gg/aeCDNDByH8) !", inline=False)
             await interaction.response.send_message(embed=embed, view=AideSelectView())
 
-        elif commande == "music":
-            await interaction.response.send_message(embed=await e.embed_aide(commande, self.bot.settings["commands"]["music"]),
+        elif commande == "Musique":
+            await interaction.response.send_message(embed=await e.embed_aide(commande, self.bot.settings["commands"]["Musique"]),
                                    view=AideSelectView())
 
-        elif commande == "moderation":
-            await interaction.response.send_message(embed=await e.embed_aide(commande, self.bot.settings["commands"]["music"]),
+        elif commande == "Mod\u00e9ration":
+            await interaction.response.send_message(embed=await e.embed_aide(commande, self.bot.settings["commands"]["Mod\u00e9ration"]),
+                                   view=AideSelectView())
+
+        elif commande == "Captcha":
+            await interaction.response.send_message(embed=await e.embed_aide(commande, self.bot.settings["commands"]["captcha"]),
+                                   view=AideSelectView())
+
+        elif commande == "Salon/R\u00F4le":
+            await interaction.response.send_message(embed=await e.embed_aide(commande, self.bot.settings["commands"]["Salon/R\u00F4le"]),
                                    view=AideSelectView())
 
     @discord.app_commands.command(name="settings",
@@ -165,6 +176,15 @@ class ModerationCog(commands.Cog):
 
                 except asyncio.TimeoutError:
                     self.bot.settings["guilds"][interaction.guild.name]["inVerification"].remove(interaction.user.name)
+
+    @discord.app_commands.command(name="support", description="Vous propose le lien vers le serveur de support")
+    async def support(self, interaction : discord.Interaction):
+        embed = discord.Embed(colour=discord.Colour.from_str("#68cd67"), title="Support de MultiSpoon")
+        embed.add_field(name="", value="Vous avez rencontrés un problème avec l'une des commandes ? Vous pensez avoir trouvé un bug ? Ou vous voulez simplement faire une suggestion ?", inline=False)
+        embed.add_field(name="", value="N'hésitez pas à nous en faire part sur le [serveur de support](https://discord.gg/aeCDNDByH8) où l'on pourra répondre à toutes vos question !", inline=False)
+        embed.set_thumbnail(url="https://raw.githubusercontent.com/sogata-aw/MultiSpoon/refs/heads/master/img/logo.png")
+
+        await interaction.response.send_message(embed=embed, view=SupportView(self.bot))
 
     # -----autocomplete-----
 
