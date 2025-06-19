@@ -55,6 +55,8 @@ class MultiSpoon(commands.Bot):
 
     async def on_ready(self):
 
+        await self.change_presence(status=discord.Status.online, activity=discord.Game(name='/aide'))
+
         #Réinitialisation de la query musical
         for server in bot.guilds:
             try:
