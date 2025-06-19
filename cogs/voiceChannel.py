@@ -57,7 +57,7 @@ class VoiceChannelCogs(commands.GroupCog, group_name="vocal"):
                                    capacite="Choisissez votre capacité maximum de votre nouveau salon (max. 99)",
                                    categorie="Sélectionnez dans quelle catégorie votre nouveau salon sera crée")
     @is_admin()
-    async def creer(self, interaction : discord.Interaction, nom : str, capacite : int|None, categorie : discord.CategoryChannel|None):
+    async def creer(self, interaction : discord.Interaction, nom : str = None , capacite : int = None , categorie  : discord.CategoryChannel = None):
         channel = await interaction.guild.create_voice_channel(name=nom, category=categorie, user_limit=capacite)
         self.bot.settings["guilds"][interaction.guild.name]["channelToCheck"].append(channel.id)
         await interaction.response.send_message(embed=discord.Embed(colour=discord.Colour.from_str("#68cd67"), title=":white_check_mark: Le salon a été ajouté à la liste des salons déclencheurs."))
