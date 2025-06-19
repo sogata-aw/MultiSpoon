@@ -130,12 +130,12 @@ class ModerationCog(commands.Cog):
 
                 if first :
                     await interaction.response.send_message(
-                        f"{interaction.user.name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
+                        f"{interaction.user.nick} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
                         file=attachement)
                     first = False
                 else :
                     await interaction.channel.send(
-                        f"{interaction.user.name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
+                        f"{interaction.user.nick} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
                         file=attachement)
 
                 def verify_check(msg):
@@ -146,7 +146,8 @@ class ModerationCog(commands.Cog):
                             or (interaction.client.user == msg.author
                                 and (interaction.user.name.lower() in msg.content.lower()
                                      or msg.content.lower() == f"Le code est bon ! Bienvenue sur {interaction.guild.name}".lower()
-                                     or msg.content.lower() == "Code incorrect... Veuillez recommencer.".lower())))
+                                     or msg.content.lower() == "Code incorrect... Veuillez recommencer.".lower()
+                                     or msg.content.lower() == f"Bienvenue {interaction.user.mention} ! Veuillez utiliser la commande `/verify` ou cliquer sur le bouton ci-dessous")))
 
                 try:
                     reponse = await self.bot.wait_for('message', check=verify_check,
@@ -156,7 +157,7 @@ class ModerationCog(commands.Cog):
                     if reponse.content == code:
                         self.bot.settings["guilds"][interaction.guild.name]["inVerification"].remove(interaction.user.name)
 
-                        await interaction.channel.send(f"Le code est bon ! Bienvenue sur {interaction.guild.name}")
+                        await interaction.channel.send(f"Le code est bon ! Bienvenue sur {interaction.guild.name} !")
                         await interaction.user.add_roles(
                             interaction.guild.get_role(self.bot.settings["guilds"][interaction.guild.name]["roleAfter"]))
 
