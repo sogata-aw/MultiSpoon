@@ -4,10 +4,6 @@ from discord.ext import commands, tasks
 import datetime as d
 import asyncio
 import os
-import traceback
-
-from discord.ext.commands import Context, errors
-from discord.ext.commands._types import BotT
 
 from dotenv import load_dotenv
 import logging
@@ -145,6 +141,23 @@ class MultiSpoon(commands.Bot):
                 self.settings["guilds"][role.guild.name]["tempRoles"].pop(i)
         s.save(self.settings)
 
+    async def on_voice_state_update(self, member, before, after):
+        if after.channel is not None and after.channel.id in self.settings["guilds"][after.channel.guild.name]["channelToCheck"]:
+            temp_channel = await after.channel.guild.create_voice_channel(
+                name=f"Salon de {member.display_name}",
+                category=after.channel.category,
+                bitrate=after.channel.bitrate,
+                user_limit=after.channel.user_limit,
+                overwrites=after.channel.overwrites
+            )
+
+            # Déplacer l’utilisateur dans le nouveau salon
+            await member.move_to(temp_channel)
+
+            print(f"{member} a été déplacé dans {temp_channel.name}")
+            self.settings["guilds"][after.channel.guild.name]["tempVoiceChannels"].append(temp_channel.id)
+
+
     #Synchronisation avec les cogs
     async def setup_hook(self):
         bot_logger.info("-----Début de l'ajout des commandes-----")
@@ -157,7 +170,7 @@ class MultiSpoon(commands.Bot):
 
     #-----Tasks-----
 
-    @tasks.loop(seconds=5)
+    @tasks.loop(seconds=10)
     async def verif_temps(self):
         bot_logger.info("-----Début de la vérification-----")
         #Récupération des guildes
@@ -170,6 +183,7 @@ class MultiSpoon(commands.Bot):
             #Récupération des rôles et salons temporaire
             temp_salons = self.settings["guilds"][guild]["tempChannels"]
             temp_roles = self.settings["guilds"][guild]["tempRoles"]
+            temp_vocs = self.settings["guilds"][guild]["tempVoiceChannels"]
             await asyncio.sleep(1)
 
             for salon in temp_salons:
@@ -192,6 +206,12 @@ class MultiSpoon(commands.Bot):
                     await dat.delete_role(role, self.settings, serveur)
                 await asyncio.sleep(1)
 
+            for temp_voc in temp_vocs:
+                channel = serveur.get_channel(temp_voc)
+                if channel and len(channel.members) == 0 :
+                    await channel.delete()
+                    temp_vocs.remove(temp_voc)
+
         bot_logger.info("-----Fin de la vérification-----")
         await asyncio.sleep(1)
 
@@ -204,6 +224,8 @@ class MultiSpoon(commands.Bot):
     @sauvegarde.before_loop
     async def before_looping(self):
         await bot.wait_until_ready()
+
+
 
     def run(self, **kwargs):
         super().run(self.token)

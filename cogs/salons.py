@@ -6,7 +6,6 @@ import discord
 from discord.ext import commands
 
 from utilities import dater as dat
-from view import salonView as sv
 
 def is_admin():
     async def predicate(interaction: discord.Interaction) -> bool:
