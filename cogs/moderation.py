@@ -127,27 +127,26 @@ class ModerationCog(commands.Cog):
                 code = c.generer_code()
                 c.generer_image(code)
                 attachement = discord.File("img/captcha.png", filename="img/captcha.png")
+                name = interaction.user.global_name
 
                 if first :
                     await interaction.response.send_message(
-                        f"{interaction.user.nick} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
+                        f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
                         file=attachement)
                     first = False
                 else :
                     await interaction.channel.send(
-                        f"{interaction.user.nick} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
+                        f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
                         file=attachement)
 
                 def verify_check(msg):
                     return msg.author == interaction.user and msg.channel == interaction.channel
 
                 def msg_check(msg):
-                    return (msg.author == interaction.user
-                            or (interaction.client.user == msg.author
-                                and (interaction.user.name.lower() in msg.content.lower()
-                                     or msg.content.lower() == f"Le code est bon ! Bienvenue sur {interaction.guild.name}".lower()
-                                     or msg.content.lower() == "Code incorrect... Veuillez recommencer.".lower()
-                                     or msg.content.lower() == f"Bienvenue {interaction.user.mention} ! Veuillez utiliser la commande `/verify` ou cliquer sur le bouton ci-dessous")))
+                    return (msg.author == interaction.user or interaction.client.user == msg.author and (interaction.user.name.lower() in msg.content.lower()
+                                     or interaction.guild.name.lower() in  msg.content.lower()
+                                     or "code" in msg.content.lower()
+                                     or interaction.user.mention.lower() in msg.content.lower()))
 
                 try:
                     reponse = await self.bot.wait_for('message', check=verify_check,

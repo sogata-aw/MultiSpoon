@@ -10,4 +10,4 @@ class VerifyView(discord.ui.View):
         cog = self.bot.get_cog("ModerationCog")
 
         #Invocation de la commande
-        await cog.verify(interaction)
+        await cog.verify.callback(interaction)
