@@ -7,21 +7,30 @@ import traceback
 import discord
 from discord.ext import commands
 
+from dotenv import load_dotenv
+
+import aiohttp
+
 from view.aideView import AideSelectView
 from view.supportView import SupportView
+from view.voteView import VoteView
+
 from utilities import captchas as c, settings as s
 from utilities import embeds as e
 
+load_dotenv('.env')
 
 def is_admin():
     async def predicate(interaction: discord.Interaction) -> bool:
         return interaction.user.guild_permissions.administrator
     return discord.app_commands.check(predicate)
 
+
+
 class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        self.topgg_token = os.getenv("TOPGG_TOKEN")
         self.bot.tree.error(coro=self.on_app_command_error)
 
     # -----Commandes-----
@@ -45,6 +54,20 @@ class ModerationCog(commands.Cog):
             await interaction.followup.send("❌ Une erreur est survenue (suivi).", ephemeral=True)
         else:
             await interaction.response.send_message("❌ Une erreur est survenue.", ephemeral=True)
+
+    @staticmethod
+    async def has_voted(user_id: int, bot_id: int, api_token: str) -> bool:
+        url = f"https://top.gg/api/bots/{bot_id}/check?userId={user_id}"
+        headers = {"Authorization": api_token}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                try:
+                    data = await response.json()
+                    return data.get("voted", 0) == 1
+                except Exception as e:
+                    print(f"[Top.gg] Erreur JSON : {e}")
+                    return False
 
     @discord.app_commands.command(name="aide", description="affiche les informations sur les différentes commandes")
     async def aide(self, interaction, commande: str = None):
@@ -186,6 +209,20 @@ class ModerationCog(commands.Cog):
 
         await interaction.response.send_message(embed=embed, view=SupportView(self.bot))
 
+    @discord.app_commands.command(name="vote", description="Vous propose le lien pour voter pour le bot sur top.gg")
+    async def vote(self, interaction : discord.Interaction):
+        voted = await self.has_voted(interaction.user.id,self.bot.application_id,self.topgg_token)
+        if voted:
+            embed = discord.Embed(colour=discord.Colour.red() , title=":x:Vote indisponible")
+            embed.add_field(name="", value="Vous avez déjà voté durant les 12 dernières heures, revenez plus tard", inline=False)
+            await interaction.response.send_message(embed=embed)
+        else:
+            embed = discord.Embed(colour=discord.Colour.from_str("#68cd67"), title="Voter pour MultiSpoon")
+            embed.add_field(name="", value="Ça ne débloque rien de le faire mais c'est un petit soutien qui fait plaisir", inline=False)
+            await interaction.response.send_message(embed=embed, view=VoteView(self.bot))
+
+
+
     # -----autocomplete-----
 
     # Aide
@@ -198,6 +235,7 @@ class ModerationCog(commands.Cog):
             liste.append(discord.app_commands.Choice(name=cat, value=cat))
 
         return liste
+
 
 
 async def setup(bot):
