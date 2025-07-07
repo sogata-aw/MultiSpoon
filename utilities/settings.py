@@ -41,9 +41,11 @@ async def create_settings(guild, settings):
         "roleBefore": 0,
         "roleAfter": 0,
         "inVerification": [],
+        "alreadyVerified": [],
         "timeout": 300,
         "tempChannels": [],
         "tempRoles": [],
+        "tempVoiceChannels": [],
         "logchannel": 0
     }
     save(settings)
