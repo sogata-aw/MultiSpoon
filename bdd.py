@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class ChannelData(BaseModel):
     name: str
     id: int
-    categorie: int|None
+    categorie: int
     type: str
     duree: str
 
