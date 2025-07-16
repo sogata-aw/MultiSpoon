@@ -57,7 +57,7 @@ class RolesCog(commands.GroupCog, group_name="role"):
                 await interaction.response.send_message(embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
             else:
                 if dat.est_couleur_hexa(couleur):
-                    await dat.create_role_duree(interaction, nom, total_duration, couleur, separe, mentionable, self.bot.settings)
+                    await dat.create_role_duree(interaction, nom, total_duration, couleur, separe, mentionable, self.bot.guilds_data)
                 else:
                     await interaction.send(embed=discord.Embed(title=":warning: Vous n'avez pas rentré une couleur au format RGB ou RRGGBB"))
 
@@ -65,7 +65,7 @@ class RolesCog(commands.GroupCog, group_name="role"):
     # async def affichersalontemporaire(self, ctx, salon: discord.abc.GuildChannel):
     #     embed = discord.Embed()
     #     channel = None
-    #     for chan in self.bot.settings["guilds"][ctx.guild.name]["tempChannels"]:
+    #     for chan in self.bot.guilds_data[ctx.guild.name]["tempChannels"]:
     #         if salon.id == chan["id"]:
     #             channel = chan
     #     if channel is None:
@@ -86,9 +86,9 @@ class RolesCog(commands.GroupCog, group_name="role"):
     @is_admin()
     async def supprimer_role_temporaire(self, interaction, nom: discord.Role):
         suppr = False
-        for temp_role in self.bot.settings["guilds"][interaction.guild.name]["tempRoles"]:
-            if temp_role["name"] == nom.name and temp_role["id"] == nom.id:
-                role = interaction.guild.get_role(temp_role["id"])
+        for temp_role in self.bot.guilds_data[interaction.guild.name].tempRoles:
+            if temp_role.name == nom.name and temp_role.id == nom.id:
+                role = interaction.guild.get_role(temp_role.id)
                 if role is None:
                     await interaction.response.send_message(
                         embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))

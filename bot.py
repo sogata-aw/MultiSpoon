@@ -8,10 +8,10 @@ import os
 from dotenv import load_dotenv
 import logging
 import colorlog
+import bdd
 
 from view.verifyView import VerifyView
 
-from utilities import settings as s
 from utilities import embeds as e
 from utilities import dater as dat
 
@@ -50,21 +50,16 @@ class MultiSpoon(commands.Bot):
     def __init__(self, intents, token):
         super().__init__(command_prefix="!", intents=intents)
         self.token: str = token
-        self.settings: dict = s.loading()
+        self.guilds_data: dict[str, bdd.GuildData] = bdd.load_guilds()
+        self.commands_data: dict[str, dict[str, str]] = bdd.load_commands()
         self.createur: int = 649268058652672051
 
     async def on_ready(self):
 
         await self.change_presence(status=discord.Status.online, activity=discord.Game(name='/aide'))
 
-        #Réinitialisation de la query musical
         for server in bot.guilds:
-            try:
-                if self.settings["guilds"][server.name]["query"] is not None:
-                    self.settings["guilds"][server.name]["query"] = []
-            except KeyError:
-                pass
-            self.settings["guilds"][server.name]["inVerification"] = []
+            self.guilds_data[server.name].inVerification = []
 
             bot_logger.debug(f'{server.name}(id: {server.id})')
 
@@ -85,14 +80,14 @@ class MultiSpoon(commands.Bot):
         self.verif_temps.start()
         self.sauvegarde.start()
 
-        bot_logger.debug(self.settings)
+        bot_logger.debug(self.guilds_data)
         bot_logger.info("Je suis prêt !")
 
     #-----Event-----
 
 
     async def on_guild_join(self, guild: discord.Guild):
-        await s.create_settings(guild, self.settings)
+        await bdd.add_guild(self.guilds_data, guild)
         bot_logger.info(f"Le serveur {guild.name} a été ajouté à la configuration")
 
         user = await self.fetch_user(self.createur)
@@ -100,7 +95,7 @@ class MultiSpoon(commands.Bot):
         await dm_channel.send(embed=await e.embed_add("Un serveur a ajouté le bot", guild))
 
     async def on_guild_remove(self, guild: discord.Guild):
-        await s.delete_settings(guild, self.settings)
+        await bdd.remove_guild(self.guilds_data, guild)
         bot_logger.info(f"Le serveur {guild.name} a été supprimé de la configuration")
 
         user = await bot.fetch_user(self.createur)
@@ -108,16 +103,16 @@ class MultiSpoon(commands.Bot):
         await dm_channel.send(embed=await e.embed_add("Un serveur a supprimé le bot", guild))
 
     async def on_member_join(self, member):
-        if member.id in self.settings["guilds"][member.guild.name]["inVerification"]:
-            await member.add_roles(member.guild.get_role(self.settings["guilds"][member.guild.name]["roleAfter"]))
+        if member.id in self.guilds_data[member.guild.name].inVerification:
+            await member.add_roles(member.guild.get_role(self.guilds_data[member.guild.name].roleAfter))
         else:
             channel = None
             try:
                 #Récupération du salon du serveur si configuré
-                channel = member.guild.get_channel(self.settings["guilds"][member.guild.name]["verificationChannel"])
+                channel = member.guild.get_channel(self.guilds_data[member.guild.name].verificationChannel)
 
                 #Attribution du rôle au nouveau membre
-                await member.add_roles(member.guild.get_role(self.settings["guilds"][member.guild.name]["roleBefore"]))
+                await member.add_roles(member.guild.get_role(self.guilds_data[member.guild.name].roleBefore))
 
                 #Gestion des erreurs
                 try:
@@ -131,20 +126,20 @@ class MultiSpoon(commands.Bot):
 
     #Suppression automatique du salon dans les données du bot s'il était temporaire
     async def on_guild_channel_delete(self, channel):
-        for i in range(len(self.settings["guilds"][channel.guild.name]["tempChannels"])):
-            if self.settings["guilds"][channel.guild.name]["tempChannels"][i]["id"] == channel.id:
-                self.settings["guilds"][channel.guild.name]["tempChannels"].pop(i)
-        s.save(self.settings)
+        for i in range(len(self.guilds_data[channel.guild.name].tempChannels)):
+            if self.guilds_data[channel.guild.name].tempChannels[i].id == channel.id:
+                self.guilds_data[channel.guild.name].tempChannels.pop(i)
+        bdd.save_guilds(self.guilds_data)
 
     #Suppression automatique du rôle dans les données du bot s'il était temporaire
     async def on_guild_role_delete(self, role):
-        for i in range(len(self.settings["guilds"][role.guild.name]["tempRoles"])):
-            if self.settings["guilds"][role.guild.name]["tempRoles"][i]["id"] == role.id:
-                self.settings["guilds"][role.guild.name]["tempRoles"].pop(i)
-        s.save(self.settings)
+        for i in range(len(self.guilds_data[role.guild.name].tempRoles)):
+            if self.guilds_data[role.guild.name].tempRoles[i].id == role.id:
+                self.guilds_data[role.guild.name].tempRoles.pop(i)
+        bdd.save_guilds(self.guilds_data)
 
     async def on_voice_state_update(self, member, before, after):
-        if after.channel is not None and after.channel.id in self.settings["guilds"][after.channel.guild.name]["channelToCheck"]:
+        if after.channel is not None and after.channel.id in self.guilds_data[after.channel.guild.name].channelToCheck:
             temp_channel = await after.channel.guild.create_voice_channel(
                 name=f"Salon de {member.display_name}",
                 category=after.channel.category,
@@ -157,7 +152,7 @@ class MultiSpoon(commands.Bot):
             await member.move_to(temp_channel)
 
             print(f"{member} a été déplacé dans {temp_channel.name}")
-            self.settings["guilds"][after.channel.guild.name]["tempVoiceChannels"].append(temp_channel.id)
+            self.guilds_data[after.channel.guild.name].tempVoiceChannels.append(temp_channel.id)
 
 
     #Synchronisation avec les cogs
@@ -175,37 +170,35 @@ class MultiSpoon(commands.Bot):
     @tasks.loop(seconds=10)
     async def verif_temps(self):
         bot_logger.info("-----Début de la vérification-----")
-        #Récupération des guildes
-        guilds = self.settings["guilds"]
 
-        for guild in guilds:
+        for guild in self.guilds_data:
             #Récupération du serveur
-            serveur = self.get_guild(self.settings["guilds"][guild]["id"])
+            serveur = self.get_guild(self.guilds_data[guild].id)
 
             #Récupération des rôles et salons temporaire
-            temp_salons = self.settings["guilds"][guild]["tempChannels"]
-            temp_roles = self.settings["guilds"][guild]["tempRoles"]
-            temp_vocs = self.settings["guilds"][guild]["tempVoiceChannels"]
+            temp_salons = self.guilds_data[guild].tempChannels
+            temp_roles = self.guilds_data[guild].tempRoles
+            temp_vocs = self.guilds_data[guild].tempVoiceChannels
             await asyncio.sleep(1)
 
             for salon in temp_salons:
                 #Récupération de la date à laquelle le salon doit être supprimé
-                date_final = d.datetime.strptime(salon["duree"], "%Y-%m-%d %H:%M:%S:%f")
+                date_final = d.datetime.strptime(salon.duree, "%Y-%m-%d %H:%M:%S:%f")
 
                 #Si la date est dépassé, alors on récupère le salon pour le supprimer
                 if d.datetime.now() > date_final:
-                    channel = serveur.get_channel(salon["id"])
-                    await dat.delete_channel(channel, self.settings, serveur)
+                    channel = serveur.get_channel(salon.id)
+                    await dat.delete_channel(channel, self.guilds_data, serveur)
                 await asyncio.sleep(1)
 
             for temp_role in temp_roles:
                 # Récupération de la date à laquelle le rôle doit être supprimé
-                date_final = d.datetime.strptime(temp_role["duree"], "%Y-%m-%d %H:%M:%S:%f")
+                date_final = d.datetime.strptime(temp_role.duree, "%Y-%m-%d %H:%M:%S:%f")
 
                 # Si la date est dépassé, alors on récupère le rôle pour le supprimer
                 if d.datetime.now() > date_final:
-                    role = serveur.get_role(temp_role["id"])
-                    await dat.delete_role(role, self.settings, serveur)
+                    role = serveur.get_role(temp_role.id)
+                    await dat.delete_role(role, self.guilds_data, serveur)
                 await asyncio.sleep(1)
 
             for temp_voc in temp_vocs:
@@ -219,7 +212,7 @@ class MultiSpoon(commands.Bot):
 
     @tasks.loop(minutes=15)
     async def sauvegarde(self):
-        s.save(self.settings)
+        bdd.save_guilds(self.guilds_data)
         bot_logger.info("Sauvegarde effectué !")
 
     @verif_temps.before_loop
