@@ -12,6 +12,9 @@ from classes.music import Music
 from pytubefix import YouTube
 
 
+before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+options = "-vn"
+
 @discord.app_commands.guild_only()
 class YoutubeCog(commands.GroupCog, group_name="youtube"):
     def __init__(self, bot: commands.Bot):
@@ -173,7 +176,7 @@ class YoutubeCog(commands.GroupCog, group_name="youtube"):
             if not vc.is_playing():
                 if not discord.utils.get(self.bot.voice_clients, guild=interaction.guild):
                     return
-                vc.play(discord.FFmpegOpusAudio("music/" + self.play_query[interaction.guild.name][self.index].filename + ".opus"))
+                vc.play(discord.FFmpegOpusAudio("music/" + self.play_query[interaction.guild.name][self.index].filename + ".opus", before_options=before_options, options=options))
                 await interaction.channel.send(embed=self.play_query[interaction.guild.name][self.index].generate_embed(":arrow_forward: Playing"))
 
             while vc.is_playing() or vc.is_paused():
