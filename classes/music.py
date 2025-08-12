@@ -2,6 +2,8 @@ from base64 import b64encode
 import os
 from dotenv import load_dotenv
 import discord
+import subprocess
+import json
 
 load_dotenv(".env")
 
@@ -25,7 +27,7 @@ class Music:
 
 
     def download(self):
-        os.system(f'{ytdlp} -x --audio-format opus --audio-quality 0 --cookies cookies.txt -v -P "music" -o "{self.filename}.%(ext)s" --restrict-filenames ' + self.url)
+        os.system(f'{ytdlp} -x --audio-format opus --audio-quality 0 --cookies data/cookies.txt -v -P "music" -o "{self.filename}.%(ext)s" --restrict-filenames ' + self.url)
 
     def time_to_min(self):
         sec = self.time
@@ -50,3 +52,13 @@ class Music:
 
     def __repr__(self):
         return str(self)
+
+    @staticmethod
+    def generate_music(url : str, guild : str):
+        cmd = [ytdlp, "-j", "--cookies", "data/cookies.txt", url]
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        info = json.loads(result.stdout)
+
+        return Music(info["title"], url, guild, info["thumbnail"], info["duration"])

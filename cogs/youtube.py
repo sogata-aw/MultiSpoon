@@ -56,7 +56,6 @@ class YoutubeCog(commands.GroupCog, group_name="youtube"):
             try:
                 if not self.play_query.get(interaction.guild.name):
                     self.play_query[interaction.guild.name] = []
-                music = YouTube(url)
                 added = False
                 i = 0
                 while not added and i < len(self.music_list):
@@ -70,7 +69,7 @@ class YoutubeCog(commands.GroupCog, group_name="youtube"):
                     i += 1
 
                 if not added:
-                    self.music_list.append(Music(music.title, url, interaction.guild.name, music.thumbnail_url, music.length))
+                    self.music_list.append(Music.generate_music(url, interaction.guild.name))
                     await interaction.followup.send(embed=discord.Embed(title=":white_check_mark: Ajouté à la file de téléchargement"))
 
                 if not self.download_task:
