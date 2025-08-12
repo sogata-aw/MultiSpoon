@@ -1,8 +1,11 @@
 from base64 import b64encode
 import os
-
+from dotenv import load_dotenv
 import discord
 
+load_dotenv(".env")
+
+ytdlp = os.getenv("YTDLP")
 
 class Music:
     def __init__(self, title: str, url: str, requested_by: str, thumbnail : str, time : int, downloaded: bool = False):
@@ -22,7 +25,7 @@ class Music:
 
 
     def download(self):
-        os.system(f'yt-dlp.exe -x --audio-format opus --audio-quality 0 --cookies cookies.txt -v -P "music" -o "{self.filename}.%(ext)s" --restrict-filenames ' + self.url)
+        os.system(f'{ytdlp} -x --audio-format opus --audio-quality 0 --cookies cookies.txt -v -P "music" -o "{self.filename}.%(ext)s" --restrict-filenames ' + self.url)
 
     def time_to_min(self):
         sec = self.time
