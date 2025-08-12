@@ -58,7 +58,7 @@ class Music:
         cmd = [ytdlp, "-j", "--cookies", "data/cookies.txt", url]
 
         result = subprocess.run(cmd, capture_output=True, text=True)
-
+        print(result.stdout)
         info = json.loads(result.stdout)
 
         return Music(info["title"], url, guild, info["thumbnail"], info["duration"])
