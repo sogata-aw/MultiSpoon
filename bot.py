@@ -71,7 +71,7 @@ class MultiSpoon(commands.Bot):
 
         commandes = self.tree.get_commands()
 
-        #Affichage des comandes du bots
+        #Affichage des commandes du bot
         for command in commandes:
             bot_logger.debug(f"Commande : {command.name}\nDescription : {command.description}\n------------------------")
 
@@ -103,7 +103,7 @@ class MultiSpoon(commands.Bot):
         await dm_channel.send(embed=await e.embed_add("Un serveur a supprimé le bot", guild))
 
     async def on_member_join(self, member):
-        if member.id in self.guilds_data[member.guild.name].inVerification:
+        if member.id in self.guilds_data[member.guild.name].alreadyVerified:
             await member.add_roles(member.guild.get_role(self.guilds_data[member.guild.name].roleAfter))
         else:
             channel = None
@@ -123,6 +123,20 @@ class MultiSpoon(commands.Bot):
                         "Le bot n'a pas les permissions nécessaires ! Essayez de mettre son rôle au-dessus des autres")
             except AttributeError:
                 await channel.send(":warning: Le bot ne trouve pas le rôle d'arrivée")
+
+    async def on_member_remove(self, member : discord.Member | discord.abc.User):
+        if member.id not in self.guilds_data[member.guild.name].alreadyVerified and self.guilds_data[member.guild.name].verificationChannel:
+            guild = self.get_guild(member.guild.id)
+            channel = guild.get_channel(self.guilds_data[member.guild.name].verificationChannel)
+
+            def check_msg(msg: discord.Message):
+                return (msg.author.name == member.name or
+                        member.name.lower() in msg.content.lower()
+                        or member.guild.name.lower() in msg.content.lower()
+                        or "code" in msg.content.lower()
+                        or member.mention in msg.content)
+
+            await channel.purge(limit=50, check=check_msg)
 
     #Suppression automatique du salon dans les données du bot s'il était temporaire
     async def on_guild_channel_delete(self, channel):
