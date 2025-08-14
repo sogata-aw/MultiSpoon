@@ -124,7 +124,7 @@ class MultiSpoon(commands.Bot):
             except AttributeError:
                 await channel.send(":warning: Le bot ne trouve pas le rôle d'arrivée")
 
-    async def on_member_remove(self, member : discord.Member | discord.abc.User):
+    async def on_member_remove(self, member : discord.abc.User):
         if member.id not in self.guilds_data[member.guild.name].alreadyVerified and self.guilds_data[member.guild.name].verificationChannel:
             guild = self.get_guild(member.guild.id)
             channel = guild.get_channel(self.guilds_data[member.guild.name].verificationChannel)
