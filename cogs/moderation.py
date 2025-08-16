@@ -126,7 +126,8 @@ class ModerationCog(commands.Cog):
         else:
             self.bot.guilds_data[interaction.guild.name].inVerification.append(interaction.user.name)
             continuer = True
-            time_in_minute = self.bot.guilds_data[interaction.guild.name].timeout / 60
+            minutes = self.bot.guilds_data[interaction.guild.name].timeout // 60
+            secondes = self.bot.guilds_data[interaction.guild.name].timeout % 60
             first = True
 
             while continuer:
@@ -137,10 +138,10 @@ class ModerationCog(commands.Cog):
                 name = interaction.user.global_name
 
                 if first:
-                    await interaction.response.send_message(f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(time_in_minute)} minutes pour le faire", file=attachement)
+                    await interaction.response.send_message(f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {minutes}:{secondes:02} minutes pour le faire", file=attachement)
                     first = False
                 else:
-                    await interaction.channel.send(f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(time_in_minute)} minutes pour le faire", file=attachement)
+                    await interaction.channel.send(f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {minutes}:{secondes:02} minutes pour le faire", file=attachement)
 
                 def verify_check(msg: discord.Message):
                     return msg.author == interaction.user and msg.channel == interaction.channel
