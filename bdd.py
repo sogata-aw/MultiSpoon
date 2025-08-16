@@ -33,7 +33,6 @@ class GuildData(BaseModel):
     alreadyVerified: list[int] = []
     channelToCheck: list[int] = []
     timeout: int = 300
-    nbEssais: int = 3
     logChannel: int = 0
     tempChannels: list[ChannelData] = []
     tempRoles: list[RoleData] = []
