@@ -10,8 +10,7 @@ class AideSelect(discord.ui.Select):
         options = [
             discord.SelectOption(label="Modération", emoji="🛠️"),
             discord.SelectOption(label="Captcha", emoji="✅"),
-            discord.SelectOption(label="Salon/Rôle", emoji="📁"),
-            discord.SelectOption(label="Musique", emoji="🎵")
+            discord.SelectOption(label="Salon/Rôle", emoji="📁")
         ]
         super().__init__(placeholder="Choisissez une option", max_values=1, min_values=1, options=options)
         self.commands = bdd.load_commands()
@@ -24,8 +23,7 @@ class AideSelect(discord.ui.Select):
             embed = await e.embed_aide(self.values[0], self.commands["Captcha"])
         elif self.values[0] == "Salon/Rôle":
             embed = await e.embed_aide(self.values[0], self.commands["Salon/R\u00F4le"])
-        elif self.values[0] == "Musique":
-            embed = await e.embed_aide(self.values[0], self.commands["Musique"])
+
         await interaction.response.edit_message(embed=embed)
 
 

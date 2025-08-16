@@ -1,5 +1,5 @@
 import discord.ui
-from cogs.moderation import ModerationCog
+
 
 class VerifyView(discord.ui.View):
     def __init__(self, bot):
@@ -10,5 +10,5 @@ class VerifyView(discord.ui.View):
     async def button_verify(self, interaction: discord.Interaction, button: discord.ui.Button):
         cog = self.bot.get_cog("ModerationCog")
 
-        #Invocation de la commande
+        # Invocation de la commande
         await cog.verify.callback(cog, interaction)

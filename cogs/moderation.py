@@ -1,8 +1,6 @@
 import typing
 import asyncio
 import os
-import datetime
-import traceback
 
 import discord
 from discord.ext import commands
@@ -14,6 +12,8 @@ import aiohttp
 from view.aideView import AideSelectView
 from view.supportView import SupportView
 from view.voteView import VoteView
+
+from bot import MultiSpoon
 
 from utilities import captchas as c
 from utilities import embeds as e
@@ -29,32 +29,12 @@ def is_admin():
 
 
 class ModerationCog(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: MultiSpoon):
         self.bot = bot
         self.topgg_token = os.getenv("TOPGG_TOKEN")
-        self.bot.tree.error(coro=self.on_app_command_error)
+        self.bot.tree.error(coro=self.bot.on_app_command_error)
 
     # -----Commandes-----
-
-    async def on_app_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-        error_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
-        log_entry = (
-            f"[{error_time}] ERREUR Slash Command (COG)\n"
-            f"Auteur: {interaction.user} (ID: {interaction.user.id})\n"
-            f"Guild: {interaction.guild} | Channel: {interaction.channel}\n"
-            f"Erreur: {repr(error)}\n"
-            f"Traceback:\n{tb}\n"
-            f"{'-' * 60}\n"
-        )
-
-        with open("errors.log", "a", encoding="utf-8") as f:
-            f.write(log_entry)
-
-        if interaction.response.is_done():
-            await interaction.followup.send("❌ Une erreur est survenue (suivi).", ephemeral=True)
-        else:
-            await interaction.response.send_message("❌ Une erreur est survenue.", ephemeral=True)
 
     @staticmethod
     async def has_voted(user_id: int, bot_id: int, api_token: str) -> bool:
@@ -71,7 +51,7 @@ class ModerationCog(commands.Cog):
                     return False
 
     @discord.app_commands.command(name="aide", description="affiche les informations sur les différentes commandes")
-    async def aide(self, interaction, commande: str = None):
+    async def aide(self, interaction: discord.Interaction, commande: str = None):
         if commande is None:
             embed = discord.Embed(title="Choisissez une catégorie", colour=discord.Colour.from_str("#68cd67"))
             embed.set_thumbnail(
@@ -105,7 +85,7 @@ class ModerationCog(commands.Cog):
                                   description="Affiche les différents paramètres mis en place (admin uniquement)")  # à améliorer
     @is_admin()
     @discord.app_commands.guild_only()
-    async def settings(self, interaction):
+    async def settings(self, interaction: discord.Interaction):
 
         salon = interaction.guild.get_channel(self.bot.guilds_data[interaction.guild.name].verificationChannel)
         role_before = interaction.guild.get_role(self.bot.guilds_data[interaction.guild.name].roleBefore)
@@ -125,7 +105,7 @@ class ModerationCog(commands.Cog):
                                   description="Synchronise toutes les personnes qui ont le rôle après vérification")
     @is_admin()
     @discord.app_commands.guild_only()
-    async def sync(self, interaction):
+    async def sync(self, interaction: discord.Interaction):
         for member in interaction.guild.members:
             if member.id not in self.bot.guilds_data[interaction.guild.name].alreadyVerified and member.get_role(
                     self.bot.guilds_data[interaction.guild.name].roleAfter) is not None:
@@ -134,54 +114,44 @@ class ModerationCog(commands.Cog):
 
     @discord.app_commands.command(name="verify", description="Permet de lancer la vérification")
     @discord.app_commands.guild_only()
-    async def verify(self, interaction):
-        reponse = None
+    async def verify(self, interaction: discord.Interaction):
         if not (interaction.guild.get_role(
                 self.bot.guilds_data[interaction.guild.name].roleBefore) in interaction.user.roles):
-            await interaction.response.send_message(":warning: Vous avez déjà effectué la vérification")
+            await interaction.response.send_message(embed=discord.Embed(title=":warning: Vous avez déjà effectué la vérification", color=discord.Colour.red()))
 
         elif interaction.user.name in self.bot.guilds_data[interaction.guild.name].inVerification:
-            await interaction.response.send_message(
-                ":warning: Vous êtes déjà en train de faire une vérification ! si vous avez raté le code donnée, attendez que le bot regénère un code")
+            await interaction.response.send_message(embed=discord.Embed(title=":warning: Vous êtes déjà en train de faire une vérification ! si vous avez raté le code donnée, attendez que le bot régénère un code", color=discord.Colour.red()))
 
-        elif self.bot.guilds_data[interaction.guild.name].verificationChannel == 0 or \
-                self.bot.guilds_data[interaction.guild.name].roleBefore == 0 or self.bot.guilds_data[
-            interaction.guild.name].roleAfter == 0:
-
-            await interaction.response.send_message(
-                ":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une vérifcation"
-            )
+        elif self.bot.guilds_data[interaction.guild.name].verificationChannel == 0 or self.bot.guilds_data[interaction.guild.name].roleBefore == 0 or self.bot.guilds_data[interaction.guild.name].roleAfter == 0:
+            await interaction.response.send_message(embed=discord.Embed(title=":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une verification", color=discord.Colour.red()))
         else:
             self.bot.guilds_data[interaction.guild.name].inVerification.append(interaction.user.name)
             continuer = True
-            tmps = self.bot.guilds_data[interaction.guild.name].timeout / 60
+            time_in_minute = self.bot.guilds_data[interaction.guild.name].timeout / 60
             first = True
 
             while continuer:
                 code = c.generer_code()
                 c.generer_image(code)
-                attachement = discord.File("img/captcha.png", filename="img/captcha.png")
+
+                attachement = discord.File("img/captcha.png", filename="captcha.png")
                 name = interaction.user.global_name
 
                 if first:
-                    await interaction.response.send_message(
-                        f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
-                        file=attachement)
+                    await interaction.response.send_message(f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(time_in_minute)} minutes pour le faire", file=attachement)
                     first = False
                 else:
-                    await interaction.channel.send(
-                        f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(tmps)} minutes pour le faire",
-                        file=attachement)
+                    await interaction.channel.send(f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {int(time_in_minute)} minutes pour le faire", file=attachement)
 
-                def verify_check(msg):
+                def verify_check(msg: discord.Message):
                     return msg.author == interaction.user and msg.channel == interaction.channel
 
-                def msg_check(msg):
+                def msg_check(msg: discord.Message):
                     return (msg.author == interaction.user or interaction.client.user == msg.author and (
-                                interaction.user.name.lower() in msg.content.lower()
-                                or interaction.guild.name.lower() in msg.content.lower()
-                                or "code" in msg.content.lower()
-                                or interaction.user.mention.lower() in msg.content.lower()))
+                            interaction.user.name.lower() in msg.content.lower()
+                            or interaction.guild.name.lower() in msg.content.lower()
+                            or "code" in msg.content.lower()
+                            or interaction.user.mention.lower() in msg.content.lower()))
 
                 try:
                     reponse = await self.bot.wait_for('message', check=verify_check,
@@ -191,22 +161,21 @@ class ModerationCog(commands.Cog):
                     if reponse.content == code:
                         self.bot.guilds_data[interaction.guild.name].inVerification.remove(interaction.user.name)
 
-                        await interaction.channel.send(f"Le code est bon ! Bienvenue sur {interaction.guild.name} !")
-                        await interaction.user.add_roles(
-                            interaction.guild.get_role(self.bot.guilds_data[interaction.guild.name].roleAfter))
+                        await interaction.channel.send(f":white_check_mark: Le code est bon ! Bienvenue sur {interaction.guild.name} !")
+                        await interaction.user.add_roles(interaction.guild.get_role(self.bot.guilds_data[interaction.guild.name].roleAfter))
 
-                        await asyncio.sleep(0.5)
+                        await asyncio.sleep(0.3)
 
-                        await interaction.user.remove_roles(
-                            interaction.guild.get_role(self.bot.guilds_data[interaction.guild.name].roleBefore))
+                        await interaction.user.remove_roles(interaction.guild.get_role(self.bot.guilds_data[interaction.guild.name].roleBefore))
+
                         continuer = False
 
                         self.bot.guilds_data[interaction.guild.name].alreadyVerified.append(interaction.user.id)
                         await interaction.channel.purge(limit=50, check=msg_check)
 
                     else:
-                        await interaction.channel.send("Code incorrect... Veuillez recommencer.")
-                        await asyncio.sleep(0.5)
+                        await interaction.channel.send(":x: Code incorrect... Veuillez recommencer")
+                        await asyncio.sleep(0.3)
                         await interaction.channel.purge(limit=50, check=msg_check)
 
                 except asyncio.TimeoutError:
@@ -229,14 +198,14 @@ class ModerationCog(commands.Cog):
     async def vote(self, interaction: discord.Interaction):
         voted = await self.has_voted(interaction.user.id, self.bot.application_id, self.topgg_token)
         if voted:
-            embed = discord.Embed(colour=discord.Colour.red(), title=":x:Vote indisponible")
+            embed = discord.Embed(colour=discord.Colour.red(), title=":x: Vote indisponible")
             embed.add_field(name="", value="Vous avez déjà voté durant les 12 dernières heures, revenez plus tard",
                             inline=False)
             await interaction.response.send_message(embed=embed)
         else:
             embed = discord.Embed(colour=discord.Colour.from_str("#68cd67"), title="Voter pour MultiSpoon")
             embed.add_field(name="",
-                            value="Ça ne débloque rien de le faire mais c'est un petit soutien qui fait plaisir",
+                            value="Ça ne débloque rien de spécial mais c'est un petit soutien qui fait plaisir",
                             inline=False)
             await interaction.response.send_message(embed=embed, view=VoteView(self.bot))
 
@@ -245,8 +214,7 @@ class ModerationCog(commands.Cog):
     # Aide
 
     @aide.autocomplete("commande")
-    async def autocomplete_commande(self, interaction, commande: str) -> typing.List[
-        discord.app_commands.Choice[str]]:
+    async def autocomplete_commande(self, interaction: discord.Interaction, commande: str) -> typing.List[discord.app_commands.Choice[str]]:
         liste = []
         for cat in self.bot.commands_data:
             liste.append(discord.app_commands.Choice(name=cat, value=cat))

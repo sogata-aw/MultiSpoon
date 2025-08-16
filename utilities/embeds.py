@@ -1,12 +1,14 @@
 import discord
 
-async def embed_aide(option, dico):
+
+async def embed_aide(option: str, dico: dict[str, list[str]]):
     embed = discord.Embed(title=option, colour=discord.Colour.from_str("#68cd67"))
     for value in dico:
         embed.add_field(name=value, value=dico[value], inline=False)
     return embed
 
-async def embed_add(title, guild):
+
+async def embed_add(title: str, guild: str):
     embed = discord.Embed(title=title, color=0x00ff00)
     embed.set_thumbnail(url=guild.icon)
     embed.set_author(name=guild.name)

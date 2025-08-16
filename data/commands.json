@@ -8,13 +8,6 @@
     "set channel": "Permet de configurer le salon ou sera envoy\u00e9 le message quand quelqu'un arrive sur le serveur",
     "set timeout": "Permet de configurer le temps en seconde avant expiration du captcha"
   },
-  "Musique": {
-    "play": "Lance un audio via l'URL youtube",
-    "skip": "Passe \u00e0 la musique suivante",
-    "stop": "Stop la musique et d\u00e9connecte le bot",
-    "queue": "Affiche la liste de lecture",
-    "request": "Envoie une demande \u00e0 l'administrateur du bot pour pouvoir activer les commandes musicales"
-  },
   "Salon/R\u00f4le": {
     "salon/r\u00f4le temporaire creer": "Cr\u00e9e un salon/r\u00f4le pour une dur\u00e9e d\u00e9termin\u00e9e.\nPour cr\u00e9er un salon/r\u00f4le temporaire, utilisez le format\n `XX an/ans XX mois XX j/jour/jours XX h/heure/heures XX j/jour/jours XX m/min/minute/minutes` (avec un espace entre les nombres et les mots)",
     "salon/r\u00f4le temporaire supprimer": "Supprime un salon/r\u00f4le temporaire, emp\u00eache l'a suppression si c'en est pas un"
