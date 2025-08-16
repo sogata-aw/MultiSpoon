@@ -96,7 +96,7 @@ class ModerationCog(commands.Cog):
         embed.add_field(name="Rôle d'arrivée : ", value=role_before.mention)
         embed.add_field(name="Rôle après vérification : ", value=role_after.mention)
         embed.add_field(name="Temps de la commande vérification : ",
-                        value=self.bot.guilds_data[interaction.guild.name].timeout + " secondes")
+                        value=str(self.bot.guilds_data[interaction.guild.name].timeout) + " secondes")
 
         await interaction.response.send_message(embed=embed)
 
