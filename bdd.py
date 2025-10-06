@@ -3,6 +3,7 @@ import json
 
 import discord
 from pydantic import BaseModel
+from typing import Optional
 
 
 class LoggerData(BaseModel):
@@ -13,7 +14,7 @@ class LoggerData(BaseModel):
 class ChannelData(BaseModel):
     name: str
     id: int
-    categorie: int | None
+    categorie: Optional[int]
     type: str
     duree: str
 

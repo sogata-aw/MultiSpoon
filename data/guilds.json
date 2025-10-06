@@ -180,7 +180,15 @@
         "channelToCheck": [],
         "timeout": 300,
         "logChannel": 0,
-        "tempChannels": [],
+        "tempChannels": [
+            {
+                "name": "test3",
+                "id": 1424833878165684335,
+                "categorie": null,
+                "type": "textuel",
+                "duree": "2025-10-06 21:02:08:260528"
+            }
+        ],
         "tempRoles": [],
         "tempVoiceChannels": [
             1385190527485476865,
