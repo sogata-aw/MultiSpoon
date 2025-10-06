@@ -54,7 +54,6 @@ class SettingsCog(commands.GroupCog, group_name="set"):
     @discord.app_commands.guild_only()
     async def set_timeout(self, interaction: discord.Interaction, time: int):
         await s.set_timeout(interaction, time, self.bot.guilds_data)
-        await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Temps pour le captcha mis à jour."))
         bdd.save_guilds(self.bot.guilds_data)
 
     # Setrole

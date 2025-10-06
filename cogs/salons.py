@@ -76,7 +76,7 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
     @is_admin()
     async def supprimer_salon_temporaire(self, interaction: discord.Interaction, nom: discord.abc.GuildChannel):
         suppr = False
-        for temp_channel in self.bot.guilds_data[interaction.guild.name].tempChannels:
+        for temp_channel in self.bot.guilds_data[interaction.guild.id].tempChannels:
             if temp_channel.name == nom.name and temp_channel.id == nom.id:
                 channel = interaction.guild.get_channel(temp_channel.id)
                 if channel is None:

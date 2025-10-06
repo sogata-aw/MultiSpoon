@@ -1,0 +1,11 @@
+{
+  "level" : 20,
+  "format" : "%(log_color)s[%(levelname)s] [%(name)s]: %(message)s",
+  "logColors" : {
+    "DEBUG": "cyan",
+    "INFO": "green",
+    "WARNING" : "yellow",
+    "ERROR" : "red",
+    "CRITICAL" : "bold_red"
+  }
+}

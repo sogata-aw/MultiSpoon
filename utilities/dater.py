@@ -14,7 +14,7 @@ async def annee_en_jours(annee: int):
     return mois_en_jours(12 * annee)
 
 
-async def create_channel_duree(interaction: discord.Interaction, nom: str, typesalon: str, guilds: dict[str, bdd.GuildData], categorie: discord.CategoryChannel = None, duree: str = None):
+async def create_channel_duree(interaction: discord.Interaction, nom: str, typesalon: str, guilds: dict[int, bdd.GuildData], categorie: discord.CategoryChannel = None, duree: str = None):
     if typesalon == "textuel":
         salon_temp = await interaction.guild.create_text_channel(name=nom, category=categorie)
         bdd.add_temp_channel(guilds, interaction, salon_temp, nom, typesalon, categorie, duree)
@@ -29,7 +29,7 @@ async def create_channel_duree(interaction: discord.Interaction, nom: str, types
         await interaction.response.send_message(embed=discord.Embed(title=":warning: Le type n'est pas valide"))
 
 
-async def create_role_duree(interaction: discord.Interaction, nom: str, duree: str, couleur: str, separe: bool, mentionable: bool, guilds: dict[str, bdd.GuildData]):
+async def create_role_duree(interaction: discord.Interaction, nom: str, duree: str, couleur: str, separe: bool, mentionable: bool, guilds: dict[int, bdd.GuildData]):
     role = await interaction.guild.create_role(name=nom, colour=discord.Colour.from_str(couleur), hoist=separe,
                                                mentionable=mentionable)
     bdd.add_temp_role(guilds, interaction, nom, duree, role)
@@ -57,15 +57,15 @@ async def ajouter_temps(duree_split: list[str]):
     return duration
 
 
-async def delete_channel(channel: discord.abc.GuildChannel, guilds: dict[str, bdd.GuildData], guild: discord.Guild):
-    for salon in guilds[guild.name].tempChannels:
+async def delete_channel(channel: discord.abc.GuildChannel, guilds: dict[int, bdd.GuildData], guild: discord.Guild):
+    for salon in guilds[guild.id].tempChannels:
         if salon.id == channel.id:
             await channel.delete()
             print("salon supprimé")
 
 
-async def delete_role(role: discord.Role, guilds: dict[str, bdd.GuildData], guild: discord.Guild):
-    for temp_role in guilds[guild.name].tempRoles:
+async def delete_role(role: discord.Role, guilds: dict[int, bdd.GuildData], guild: discord.Guild):
+    for temp_role in guilds[guild.id].tempRoles:
         if temp_role.id == role.id:
             await role.delete()
             print("role supprimé")

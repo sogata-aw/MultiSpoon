@@ -75,7 +75,7 @@ class RolesCog(commands.GroupCog, group_name="role"):
     @is_admin()
     async def supprimer_role_temporaire(self, interaction: discord.Interaction, role: discord.Role):
         suppr = False
-        for temp_role in self.bot.guilds_data[interaction.guild.name].tempRoles:
+        for temp_role in self.bot.guilds_data[interaction.guild.id].tempRoles:
             if temp_role.name == role.name and temp_role.id == role.id:
                 role_to_del = interaction.guild.get_role(temp_role.id)
                 if role_to_del is None:

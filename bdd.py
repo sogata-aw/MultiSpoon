@@ -13,7 +13,7 @@ class LoggerData(BaseModel):
 class ChannelData(BaseModel):
     name: str
     id: int
-    categorie: int
+    categorie: int | None
     type: str
     duree: str
 
@@ -25,11 +25,11 @@ class RoleData(BaseModel):
 
 
 class GuildData(BaseModel):
+    name: str
     id: int
     verificationChannel: int = 0
     roleBefore: int = 0
     roleAfter: int = 0
-    inVerification: list[str] = []
     alreadyVerified: list[int] = []
     channelToCheck: list[int] = []
     timeout: int = 300
@@ -42,17 +42,17 @@ class GuildData(BaseModel):
 guilds = {}
 
 
-def load_guilds() -> dict[str, GuildData]:
+def load_guilds() -> dict[int, GuildData]:
     loading = {}
     with open("./data/guilds.json", "r") as json_data:
         data = json.load(json_data)
         for k in data.keys():
-            loading[k] = GuildData.model_validate(data[k])
+            loading[int(k)] = GuildData.model_validate(data[k])
 
     return loading
 
 
-def save_guilds(data: dict[str, GuildData]):
+def save_guilds(data: dict[int, GuildData]):
     with open("./data/guilds.json", "w") as json_data:
         json.dump(serialize_guilds(data), json_data, indent=4)
 
@@ -62,15 +62,15 @@ def load_commands():
         return json.load(json_data)
 
 
-def serialize_guilds(data: dict[str, GuildData]) -> dict:
+def serialize_guilds(data: dict[int, GuildData]) -> dict:
     result = {}
     for k in data.keys():
-        result[k] = data[k].model_dump()
+        result[str(k)] = data[k].model_dump()
     return result
 
 
-def add_temp_channel(data: dict[str, GuildData], interaction: discord.Interaction, salon: discord.abc.GuildChannel, nom: str, typesalon: str, categorie: discord.CategoryChannel = None, duree: datetime.datetime = None):
-    data[interaction.guild.name].tempChannels.append(ChannelData.model_validate({
+def add_temp_channel(data: dict[int, GuildData], interaction: discord.Interaction, salon: discord.abc.GuildChannel, nom: str, typesalon: str, categorie: discord.CategoryChannel = None, duree: datetime.datetime = None):
+    data[interaction.guild.id].tempChannels.append(ChannelData.model_validate({
         "name": nom.replace(' ', '-'),
         "id": salon.id,
         "categorie": categorie.id if categorie is not None else None,
@@ -80,9 +80,9 @@ def add_temp_channel(data: dict[str, GuildData], interaction: discord.Interactio
     save_guilds(data)
 
 
-def add_temp_role(data: dict[str, GuildData], interaction: discord.Interaction, nom: str, duree: datetime.datetime,
+def add_temp_role(data: dict[int, GuildData], interaction: discord.Interaction, nom: str, duree: datetime.datetime,
                   role: discord.Role):
-    data[interaction.guild.name].tempRoles.append(RoleData.model_validate({
+    data[interaction.guild.id].tempRoles.append(RoleData.model_validate({
         "name": nom,
         "id": role.id,
         "duree": duree.strftime("%Y-%m-%d %H:%M:%S:%f")
@@ -90,13 +90,14 @@ def add_temp_role(data: dict[str, GuildData], interaction: discord.Interaction, 
     save_guilds(data)
 
 
-async def add_guild(data: dict[str, GuildData], guild: discord.Guild):
-    data[guild.name] = GuildData.model_validate({
+async def add_guild(data: dict[int, GuildData], guild: discord.Guild):
+    data[guild.id] = GuildData.model_validate({
+        "name": guild.name,
         "id": guild.id
     })
     save_guilds(data)
 
 
 async def remove_guild(data, guild):
-    del data[guild.name]
+    del data[guild.id]
     save_guilds(data)

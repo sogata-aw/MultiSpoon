@@ -1,10 +1,12 @@
-class Player():
-    name: str = ""
-    rank: int = 0
-
-    def __init__(self, name: str, rank: int) -> None:
+class Player:
+    def __init__(self, name, power):
         self.name = name
-        self.rank = rank
+        self.power = power
+        self.team = None
 
-    def __repr__(self) -> str:
-        return f"{self.name} : {self.rank}"
+    def __int__(self):
+        return self.power
+
+    def __repr__(self):
+        return f"{self.name} : {self.power}"
+

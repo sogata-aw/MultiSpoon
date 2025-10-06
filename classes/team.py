@@ -1,19 +1,19 @@
-from classes import player as pl
+from classes.player import Player
 
-class Team():
-    players: list[pl.Player] = []
-    rankSum: int = 0
-    deviation: float = 0
 
-    def __init__(self, players: list[pl.Player]) -> None:
-        self.players = players
-        self.rankSum = sum([p.rank for p in self.players])
+class Team:
+    def __init__(self, limit):
+        self.players: list[Player] = []
+        self.power: int = 0
+        self.limit = limit
 
-    def __repr__(self) -> str:
-        s = f"\nTeam Total Rank : {self.rankSum}\nDeviation = {self.deviation}\nPlayers : \n"
-        for player in self.players:
-            s += f"\t{player}\n"
-        return s + "\n"
+    def __repr__(self):
+        return f"[power : {self.power}, players : {self.players}]"
 
-    def update(self):
-        self.rankSum = sum([p.rank for p in self.players])
+    def is_full(self):
+        return len(self.players) >= self.limit
+
+    def add_player(self, player: Player):
+        self.players.append(player)
+        self.power += player.power
+        player.team = self

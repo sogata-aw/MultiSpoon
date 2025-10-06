@@ -48,7 +48,7 @@ class MultiSpoon(commands.Bot):
     def __init__(self, intents: discord.Intents, token: str):
         super().__init__(command_prefix="!", intents=intents)
         self.token: str = token
-        self.guilds_data: dict[str, bdd.GuildData] = bdd.load_guilds()
+        self.guilds_data: dict[int, bdd.GuildData] = bdd.load_guilds()
         self.commands_data: dict[str, dict[str, str]] = bdd.load_commands()
         self.createur: int = 649268058652672051
 
@@ -57,7 +57,6 @@ class MultiSpoon(commands.Bot):
         await self.change_presence(status=discord.Status.online, activity=discord.Game(name='/aide'))
 
         for server in bot.guilds:
-            self.guilds_data[server.name].inVerification = []
 
             bot_logger.debug(f'{server.name}(id: {server.id})')
 
@@ -126,16 +125,16 @@ class MultiSpoon(commands.Bot):
         await dm_channel.send(embed=await e.embed_add("Un serveur a supprimé le bot", guild))
 
     async def on_member_join(self, member: discord.Member):
-        if member.id in self.guilds_data[member.guild.name].alreadyVerified:
-            await member.add_roles(member.guild.get_role(self.guilds_data[member.guild.name].roleAfter))
+        if member.id in self.guilds_data[member.guild.id].alreadyVerified:
+            await member.add_roles(member.guild.get_role(self.guilds_data[member.guild.id].roleAfter))
         else:
             channel = None
             try:
                 # Récupération du salon du serveur si configuré
-                channel = member.guild.get_channel(self.guilds_data[member.guild.name].verificationChannel)
+                channel = member.guild.get_channel(self.guilds_data[member.guild.id].verificationChannel)
 
                 # Attribution du rôle au nouveau membre
-                await member.add_roles(member.guild.get_role(self.guilds_data[member.guild.name].roleBefore))
+                await member.add_roles(member.guild.get_role(self.guilds_data[member.guild.id].roleBefore))
 
                 # Gestion des erreurs
                 try:
@@ -146,9 +145,9 @@ class MultiSpoon(commands.Bot):
                 await channel.send(embed=discord.Embed(title=":warning: Le bot ne trouve pas le rôle d'arrivée", color=discord.Colour.yellow()))
 
     async def on_member_remove(self, member: discord.abc.User):
-        if member.id not in self.guilds_data[member.guild.name].alreadyVerified and self.guilds_data[member.guild.name].verificationChannel:
+        if member.id not in self.guilds_data[member.guild.id].alreadyVerified and self.guilds_data[member.guild.id].verificationChannel:
             guild = self.get_guild(member.guild.id)
-            channel = guild.get_channel(self.guilds_data[member.guild.name].verificationChannel)
+            channel = guild.get_channel(self.guilds_data[member.guild.id].verificationChannel)
 
             def check_msg(msg: discord.Message):
                 return (msg.author.name == member.name or
@@ -161,20 +160,20 @@ class MultiSpoon(commands.Bot):
 
     # Suppression automatique du salon dans les données du bot s'il était temporaire
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
-        for i in range(len(self.guilds_data[channel.guild.name].tempChannels)):
-            if self.guilds_data[channel.guild.name].tempChannels[i].id == channel.id:
-                self.guilds_data[channel.guild.name].tempChannels.pop(i)
+        for i in range(len(self.guilds_data[channel.guild.id].tempChannels)):
+            if self.guilds_data[channel.guild.id].tempChannels[i].id == channel.id:
+                self.guilds_data[channel.guild.id].tempChannels.pop(i)
         bdd.save_guilds(self.guilds_data)
 
     # Suppression automatique du rôle dans les données du bot s'il était temporaire
     async def on_guild_role_delete(self, role: discord.Role):
-        for i in range(len(self.guilds_data[role.guild.name].tempRoles)):
-            if self.guilds_data[role.guild.name].tempRoles[i].id == role.id:
-                self.guilds_data[role.guild.name].tempRoles.pop(i)
+        for i in range(len(self.guilds_data[role.guild.id].tempRoles)):
+            if self.guilds_data[role.guild.id].tempRoles[i].id == role.id:
+                self.guilds_data[role.guild.id].tempRoles.pop(i)
         bdd.save_guilds(self.guilds_data)
 
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-        if after.channel is not None and after.channel.id in self.guilds_data[after.channel.guild.name].channelToCheck:
+        if after.channel is not None and after.channel.id in self.guilds_data[after.channel.guild.id].channelToCheck:
             temp_channel = await after.channel.guild.create_voice_channel(
                 name=f"Salon de {member.display_name}",
                 category=after.channel.category,
@@ -187,7 +186,7 @@ class MultiSpoon(commands.Bot):
             await member.move_to(temp_channel)
 
             print(f"{member} a été déplacé dans {temp_channel.name}")
-            self.guilds_data[after.channel.guild.name].tempVoiceChannels.append(temp_channel.id)
+            self.guilds_data[after.channel.guild.id].tempVoiceChannels.append(temp_channel.id)
 
     # Synchronisation avec les cogs
     async def setup_hook(self):
