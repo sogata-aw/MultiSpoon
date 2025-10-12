@@ -31,7 +31,7 @@ def is_admin():
 class ModerationCog(commands.Cog):
     def __init__(self, bot: MultiSpoon):
         self.bot = bot
-        self.inVerification: dict[int, list[str]] = {}
+        self.inVerification: dict[int, list[int]] = {}
         self.topgg_token = os.getenv("TOPGG_TOKEN")
         self.bot.tree.error(coro=self.bot.on_app_command_error)
 
@@ -119,13 +119,16 @@ class ModerationCog(commands.Cog):
                 self.bot.guilds_data[interaction.guild.id].roleBefore) in interaction.user.roles):
             await interaction.response.send_message(embed=discord.Embed(title=":warning: Vous avez déjà effectué la vérification", color=discord.Colour.red()))
 
-        elif self.inVerification.get(interaction.guild.id) and interaction.user.name in self.inVerification[interaction.guild.id]:
+        elif self.inVerification.get(interaction.guild.id) and interaction.user.id in self.inVerification[interaction.guild.id]:
             await interaction.response.send_message(embed=discord.Embed(title=":warning: Vous êtes déjà en train de faire une vérification ! si vous avez raté le code donnée, attendez que le bot régénère un code", color=discord.Colour.red()))
 
         elif self.bot.guilds_data[interaction.guild.id].verificationChannel == 0 or self.bot.guilds_data[interaction.guild.id].roleBefore == 0 or self.bot.guilds_data[interaction.guild.id].roleAfter == 0:
             await interaction.response.send_message(embed=discord.Embed(title=":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une verification", color=discord.Colour.red()))
         else:
-            self.inVerification[interaction.guild.id].append(interaction.user.name)
+            if self.inVerification.get(interaction.guild.id):
+                self.inVerification[interaction.guild.id].append(interaction.user.id)
+            else:
+                self.inVerification[interaction.guild.id] = [interaction.user.id]
             continuer = True
             minutes = self.bot.guilds_data[interaction.guild.id].timeout // 60
             secondes = self.bot.guilds_data[interaction.guild.id].timeout % 60
@@ -160,7 +163,7 @@ class ModerationCog(commands.Cog):
 
                     # Agir en fonction de la réponse de l'utilisateur
                     if reponse.content == code:
-                        self.inVerification[interaction.guild.id].remove(interaction.user.name)
+                        self.inVerification[interaction.guild.id].remove(interaction.user.id)
 
                         await interaction.channel.send(f":white_check_mark: Le code est bon ! Bienvenue sur {interaction.guild.name} !")
                         await interaction.user.add_roles(interaction.guild.get_role(self.bot.guilds_data[interaction.guild.id].roleAfter))
@@ -181,7 +184,7 @@ class ModerationCog(commands.Cog):
 
                 except asyncio.TimeoutError:
                     await interaction.channel.purge(limit=50, check=msg_check)
-                    self.inVerification[interaction.guild.id].remove(interaction.user.name)
+                    self.inVerification[interaction.guild.id].remove(interaction.user.id)
                     continuer = False
 
     @discord.app_commands.command(name="support", description="Vous propose le lien vers le serveur de support")
