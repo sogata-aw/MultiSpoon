@@ -62,11 +62,6 @@ class ModerationCog(commands.Cog):
                             inline=False)
             await interaction.response.send_message(embed=embed, view=AideSelectView())
 
-        elif commande == "Musique":
-            await interaction.response.send_message(
-                embed=await e.embed_aide(commande, self.bot.commands_data["Musique"]),
-                view=AideSelectView())
-
         elif commande == "Mod\u00e9ration":
             await interaction.response.send_message(
                 embed=await e.embed_aide(commande, self.bot.commands_data["Mod\u00e9ration"]),
