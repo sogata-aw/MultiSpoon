@@ -157,7 +157,7 @@ class ModerationCog(commands.Cog):
                                                       timeout=self.bot.guilds_data[interaction.guild.id].timeout)
 
                     # Agir en fonction de la réponse de l'utilisateur
-                    if reponse.content == code:
+                    if reponse.content.lower() == code:
                         self.inVerification[interaction.guild.id].remove(interaction.user.id)
 
                         await interaction.channel.send(f":white_check_mark: Le code est bon ! Bienvenue sur {interaction.guild.name} !")
