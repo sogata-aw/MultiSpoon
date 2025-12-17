@@ -203,15 +203,15 @@ class MultiSpoon(commands.Bot):
     @tasks.loop(seconds=10)
     async def verif_temps(self):
         bot_logger.info("-----Début de la vérification-----")
-
-        for guild in self.guilds_data:
+        guilds_data = self.guilds_data.copy()
+        for guild in guilds_data:
             # Récupération du serveur
-            serveur = self.get_guild(self.guilds_data[guild].id)
+            serveur = self.get_guild(guilds_data[guild].id)
 
             # Récupération des rôles et salons temporaire
-            temp_salons = self.guilds_data[guild].tempChannels
-            temp_roles = self.guilds_data[guild].tempRoles
-            temp_vocs = self.guilds_data[guild].tempVoiceChannels
+            temp_salons = guilds_data[guild].tempChannels
+            temp_roles = guilds_data[guild].tempRoles
+            temp_vocs = guilds_data[guild].tempVoiceChannels
             await asyncio.sleep(1)
 
             for salon in temp_salons:
