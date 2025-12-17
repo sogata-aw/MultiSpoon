@@ -3,7 +3,7 @@ import discord.ui
 
 class VerifyView(discord.ui.View):
     def __init__(self, bot):
-        super().__init__()
+        super().__init__(timeout=None)
         self.bot = bot
 
     @discord.ui.button(label="Verifier", style=discord.ButtonStyle.green, emoji="✅", disabled=False)
