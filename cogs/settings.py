@@ -7,7 +7,7 @@ from bot import MultiSpoon
 
 import bdd
 
-from utilities import captchas as c, settings as s
+from utilities import settings as s
 
 
 def is_admin():
@@ -56,7 +56,20 @@ class SettingsCog(commands.GroupCog, group_name="set"):
         await s.set_timeout(interaction, time, self.bot.guilds_data)
         bdd.save_guilds(self.bot.guilds_data)
 
-    # Setrole
+    @discord.app_commands.command(name="log", description="Permet de configurer le salon des logs du bot")
+    @discord.app_commands.describe(
+        channel="Le salon de logs où les messages du bot s'afficheront (laissez vite si vous souhaitez les retirer)")
+    @is_admin()
+    @discord.app_commands.guild_only()
+    async def set_log(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
+        if channel is None:
+            self.bot.guilds_data[interaction.guild.id].logChannel = 0
+        else:
+            self.bot.guilds_data[interaction.guild.id].logChannel = channel.id
+        await interaction.response.send_message(embed=discord.Embed(title="✅ Le salon des log a été mis à jour", color=discord.Color.green()))
+        bdd.save_guilds(self.bot.guilds_data)
+
+    # Set_role
     @set_role.autocomplete("option")
     async def autocomplete_option(self, interaction: discord.Interaction, option: str) -> typing.List[discord.app_commands.Choice[str]]:
         liste = []

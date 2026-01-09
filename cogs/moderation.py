@@ -9,8 +9,10 @@ from dotenv import load_dotenv
 
 import aiohttp
 
+from utilities.embeds import embed_log
 from view.aideView import AideSelectView
 from view.supportView import SupportView
+from view.verifyView import VerifyView
 from view.voteView import VoteView
 
 from bot import MultiSpoon
@@ -120,6 +122,11 @@ class ModerationCog(commands.Cog):
         elif self.bot.guilds_data[interaction.guild.id].verificationChannel == 0 or self.bot.guilds_data[interaction.guild.id].roleBefore == 0 or self.bot.guilds_data[interaction.guild.id].roleAfter == 0:
             await interaction.response.send_message(embed=discord.Embed(title=":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une verification", color=discord.Colour.red()))
         else:
+            log_channel = interaction.guild.get_channel(self.bot.guilds_data[interaction.guild.id].logChannel)
+            if log_channel:
+                embed = embed_log(f"{interaction.user.mention} tente de résoudre le captcha", interaction.user)
+                await log_channel.send(embed=embed)
+
             if self.inVerification.get(interaction.guild.id):
                 self.inVerification[interaction.guild.id].append(interaction.user.id)
             else:
@@ -169,16 +176,29 @@ class ModerationCog(commands.Cog):
 
                         continuer = False
 
+                        if log_channel:
+                            embed = embed_log(f"{interaction.user.mention} a réussi le captcha", interaction.user)
+                            await log_channel.send(embed=embed)
+
                         self.bot.guilds_data[interaction.guild.id].alreadyVerified.append(interaction.user.id)
                         await interaction.channel.purge(limit=50, check=msg_check)
 
                     else:
+                        if log_channel:
+                            embed = embed_log(f"{interaction.user.mention} a raté le captcha", interaction.user)
+                            await log_channel.send(embed=embed)
+
                         await interaction.channel.send(":x: Code incorrect... Veuillez recommencer")
                         await asyncio.sleep(0.3)
                         await interaction.channel.purge(limit=50, check=msg_check)
 
                 except asyncio.TimeoutError:
                     await interaction.channel.purge(limit=50, check=msg_check)
+                    await interaction.channel.send(interaction.user.mention, embed=discord.Embed(title=f"Bienvenue {interaction.user.name} ! Veuillez utiliser la commande `/verify` ou cliquer sur le bouton ci-dessous", color=discord.Colour.green()), view=VerifyView(self))
+                    if log_channel:
+                        embed = embed_log(f"{interaction.user.mention} abandonne le captcha", interaction.user)
+                        await log_channel.send(embed=embed)
+
                     self.inVerification[interaction.guild.id].remove(interaction.user.id)
                     continuer = False
 

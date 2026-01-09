@@ -19,3 +19,10 @@ async def embed_add(title: str, guild: discord.Guild):
     embed.add_field(name="Nombre de membres", value=guild.member_count, inline=False)
     embed.set_footer(text=f"Date de création du serveur : {guild.created_at}")
     return embed
+
+
+def embed_log(title: str, user: discord.User):
+    embed = discord.Embed(title="", description=title, color=discord.Colour.green(), timestamp=discord.utils.utcnow())
+    embed.set_author(name=user.name, icon_url=user.display_avatar)
+    embed.set_footer(text=f"ID: {user.id}")
+    return embed

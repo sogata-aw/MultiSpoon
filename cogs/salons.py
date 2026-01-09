@@ -41,6 +41,7 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
 
             duree_split = duree.split()
             total_duration = await dat.ajouter_temps(duree_split)
+            print(total_duration)
 
             if total_duration == duree_de_base:
                 await interaction.response.send_message(

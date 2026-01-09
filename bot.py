@@ -138,7 +138,11 @@ class MultiSpoon(commands.Bot):
 
                 # Gestion des erreurs
                 try:
-                    await channel.send(member.mention, embed=discord.Embed(title=f"Bienvenue {member.name} ! Veuillez utiliser la commande `/verify` ou cliquer sur le bouton ci-dessous", color=discord.Colour.from_str("#6bcf65")), view=VerifyView(self))
+                    embed = discord.Embed(title="",
+                                          description=f"Bienvenue {member.mention} ! Veuillez utiliser la commande `/verify` ou cliquer sur le bouton ci-dessous",
+                                          color=discord.Colour.green())
+                    embed.set_author(name=member.name, icon_url=member.display_avatar)
+                    await channel.send(member.mention, embed=embed, view=VerifyView(self))
                 except discord.Forbidden:
                     await channel.send(embed=discord.Embed(title="Le bot n'a pas les permissions nécessaires ! Essayez de mettre son rôle au-dessus des autres", color=discord.Colour.red()))
             except AttributeError:
