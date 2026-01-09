@@ -163,3 +163,4 @@ cython_debug/
 ./settings.json
 img/captcha.png
 img/logo.png
+./data/guilds.json
