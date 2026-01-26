@@ -154,11 +154,11 @@ class ModerationCog(commands.Cog):
     )
     @discord.app_commands.guild_only()
     async def verify(self, interaction: discord.Interaction):
-        if not (
+        if (
             interaction.guild.get_role(
                 self.bot.guilds_data[interaction.guild.id].roleBefore
             )
-            in interaction.user.roles
+            not in interaction.user.roles
         ):
             await interaction.response.send_message(
                 embed=discord.Embed(
