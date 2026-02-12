@@ -1,8 +1,8 @@
-import discord
-from discord.ext import commands
-
 import os
 import typing
+
+import discord
+from discord.ext import commands
 
 from bot import MultiSpoon
 
@@ -22,25 +22,29 @@ class ReloadCog(commands.GroupCog, group_name="reload"):
 
     # -----Commandes-----
 
-    @discord.app_commands.command(name="extension",
-                                  description="Commande inutilisable")
-    @discord.app_commands.describe(extension="Le nom de celle que vous voulez recharger")
+    @discord.app_commands.command(name="extension", description="Commande inutilisable")
+    @discord.app_commands.describe(
+        extension="Le nom de celle que vous voulez recharger"
+    )
     @is_me()
     async def reload(self, interaction: discord.Interaction, extension: str):
         await self.bot.reload_extension(f"cogs.{extension}")
-        await interaction.response.send_message(f"✅ Extension `{extension}` rechargée !")
+        await interaction.response.send_message(
+            f"✅ Extension `{extension}` rechargée !"
+        )
 
-    @discord.app_commands.command(name="all",
-                                  description="Commande inutilisable")
+    @discord.app_commands.command(name="all", description="Commande inutilisable")
     @is_me()
     async def reload_all(self, interaction: discord.Interaction):
         await self.bot.setup_hook()
-        await interaction.response.send_message(f"✅ Extensions rechargées !")
+        await interaction.response.send_message("✅ Extensions rechargées !")
 
     # Reload
 
     @reload.autocomplete("extension")
-    async def autocomplete_extension(self, interaction: discord.Interaction, extension: str) -> typing.List[discord.app_commands.Choice[str]]:
+    async def autocomplete_extension(
+        self, interaction: discord.Interaction, extension: str
+    ) -> typing.List[discord.app_commands.Choice[str]]:
         liste = []
         for cog in os.listdir("./cogs"):
             if cog.endswith(".py") and not cog.startswith("__"):

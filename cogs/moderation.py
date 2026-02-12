@@ -110,7 +110,7 @@ class ModerationCog(commands.Cog):
         salon = interaction.guild.get_channel(
             self.bot.guilds_data[interaction.guild.id].verificationChannel
         )
-        role_before = interaction.guild.getl_role(
+        role_before = interaction.guild.get_role(
             self.bot.guilds_data[interaction.guild.id].roleBefore
         )
         role_after = interaction.guild.get_role(
