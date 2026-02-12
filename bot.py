@@ -17,32 +17,6 @@ from view.verifyView import VerifyView
 from utilities import embeds as e
 from utilities import dater as dat
 
-# Configuration des logs
-
-with open("data/logger.json", 'r') as file:
-    logger_settings = json.load(file)
-
-bot_logger = logging.getLogger("BOT_DISCORD")
-
-if bot_logger.hasHandlers():
-    bot_logger.handlers.clear()
-
-handler = colorlog.StreamHandler()
-handler.setFormatter(colorlog.ColoredFormatter(logger_settings["format"], log_colors=logger_settings["logColors"]))
-
-bot_logger.addHandler(handler)
-bot_logger.setLevel(logger_settings["level"])
-
-load_dotenv('.env')
-
-# Token
-
-mode = os.getenv('DEFAULT_TOKEN')
-
-token_base = os.getenv('DT')
-token_beta = os.getenv('DTB')
-
-
 class MultiSpoon(commands.Bot):
 
     def __init__(self, intents: discord.Intents, token: str):
@@ -52,65 +26,99 @@ class MultiSpoon(commands.Bot):
         self.commands_data: dict[str, dict[str, str]] = bdd.load_commands()
         self.createur: int = 649268058652672051
 
+        # Initialisation du logger
+
+        self.logger = logging.getLogger("BOT_DISCORD")
+
+        if self.logger.hasHandlers():
+            self.logger.handlers.clear()
+
+        with open("data/logger.json", 'r') as file:
+            logger_settings = json.load(file)
+
+        handler = colorlog.StreamHandler()
+        handler.setFormatter(colorlog.ColoredFormatter(logger_settings["format"], log_colors=logger_settings["logColors"]))
+
+        self.logger.addHandler(handler)
+        self.logger.setLevel(logger_settings["level"])
+
     async def on_ready(self):
+
+        # Changement du status
 
         await self.change_presence(status=discord.Status.online, activity=discord.Game(name='/aide'))
 
+        # Affichage des serveurs
+
         for server in bot.guilds:
+            self.logger.debug(f'{server.name}(id: {server.id})')
 
-            bot_logger.debug(f'{server.name}(id: {server.id})')
+        # Synchronisation des commandes
 
-        bot_logger.info("-----Début de la synchronisation-----")
-
+        self.logger.info("-----Début de la synchronisation-----")
         await bot.tree.sync()
-
-        bot_logger.info("-----Synchronisation terminée-----")
+        self.logger.info("-----Synchronisation terminée-----")
 
         commandes = self.tree.get_commands()
 
         # Affichage des commandes du bot
-        for command in commandes:
-            bot_logger.debug(
-                f"Commande : {command.name}\nDescription : {command.description}\n------------------------")
 
-        bot_logger.debug(self.cogs)
+        for command in commandes:
+            self.logger.debug(f"Commande : {command.name}\nDescription : {command.description}\n------------------------")
+
+        self.logger.debug(self.cogs)
+
+        # Lancement des loops
 
         self.verif_temps.start()
         self.sauvegarde.start()
 
-        bot_logger.debug(self.guilds_data)
-        bot_logger.info("Je suis prêt !")
+        self.logger.debug(self.guilds_data)
+        self.logger.info("MultiSpoon est prêt !")
 
-    # -----Event-----
+
 
     async def on_app_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
+
+        # Formattage des données
+
         error_time = d.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+
+        # Notification au développeur
 
         user = await self.fetch_user(self.createur)
         dm_channel = await user.create_dm()
         await dm_channel.send(embed=discord.Embed(title="Une erreur est survenue dans le serveur : " + interaction.guild.name, color=discord.Colour.red()))
+
+        # Formattage du log
 
         log_entry = (
             f"[{error_time}] ERREUR Slash Command (COG)\n"
             f"Auteur: {interaction.user} (ID: {interaction.user.id})\n"
             f"Guild: {interaction.guild} | Channel: {interaction.channel}\n"
             f"Erreur: {repr(error)}\n"
-            f"Traceback:\n{tb}\n"
+            f"\n{tb}\n"
             f"{'-' * 60}\n"
         )
 
+        # Ajout de l'erreur au fichier
+
         with open("errors.log", "a", encoding="utf-8") as f:
             f.write(log_entry)
+
+        # Envoi de l'information à l'utilisateur
 
         if interaction.response.is_done():
             await interaction.followup.send(embed=discord.Embed(title="❌ Une erreur est survenue (suivi).", color=discord.Colour.red()), ephemeral=True)
         else:
             await interaction.response.send_message(embed=discord.Embed(title="❌ Une erreur est survenue.", color=discord.Colour.red()), ephemeral=True)
 
+    # -----Event-----
+
     async def on_guild_join(self, guild: discord.Guild):
         await bdd.add_guild(self.guilds_data, guild)
-        bot_logger.info(f"Le serveur {guild.name} a été ajouté à la configuration")
+        self.logger.info(f"Le serveur {guild.name} a été ajouté à la configuration")
 
         user = await self.fetch_user(self.createur)
         dm_channel = await user.create_dm()
@@ -118,7 +126,7 @@ class MultiSpoon(commands.Bot):
 
     async def on_guild_remove(self, guild: discord.Guild):
         await bdd.remove_guild(self.guilds_data, guild)
-        bot_logger.info(f"Le serveur {guild.name} a été supprimé de la configuration")
+        self.logger.info(f"Le serveur {guild.name} a été supprimé de la configuration")
 
         user = await bot.fetch_user(self.createur)
         dm_channel = await user.create_dm()
@@ -194,19 +202,19 @@ class MultiSpoon(commands.Bot):
 
     # Synchronisation avec les cogs
     async def setup_hook(self):
-        bot_logger.info("-----Début de l'ajout des commandes-----")
+        self.logger.info("-----Début de l'ajout des commandes-----")
         for extension in os.listdir("./cogs"):
             if extension.endswith(".py") and not extension.startswith("__"):
                 await self.load_extension(f'cogs.{extension[:-3]}')
-                bot_logger.info(f"cogs.{extension[:-3]} chargé avec succès !")
+                self.logger.info(f"cogs.{extension[:-3]} chargé avec succès !")
 
-        bot_logger.info("-----Ajout des commandes terminée-----")
+        self.logger.info("-----Ajout des commandes terminée-----")
 
     # -----Tasks-----
 
     @tasks.loop(seconds=10)
     async def verif_temps(self):
-        bot_logger.info("-----Début de la vérification-----")
+        self.logger.info("-----Début de la vérification-----")
         guilds_data = self.guilds_data.copy()
         for guild in guilds_data:
             # Récupération du serveur
@@ -244,13 +252,13 @@ class MultiSpoon(commands.Bot):
                     await channel.delete()
                     temp_vocs.remove(temp_voc)
 
-        bot_logger.info("-----Fin de la vérification-----")
+        self.logger.info("-----Fin de la vérification-----")
         await asyncio.sleep(1)
 
     @tasks.loop(minutes=5)
     async def sauvegarde(self):
         bdd.save_guilds(self.guilds_data)
-        bot_logger.info("Sauvegarde effectué !")
+        self.logger.info("Sauvegarde effectué !")
 
     @verif_temps.before_loop
     @sauvegarde.before_loop
@@ -262,8 +270,19 @@ class MultiSpoon(commands.Bot):
 
 
 if __name__ == "__main__":
+
+    # Chargement de l'env
+
+    load_dotenv('.env')
+
+    mode = os.getenv('DEFAULT_TOKEN')
+
+    token_base = os.getenv('DT')
+    token_beta = os.getenv('DTB')
+
     if mode == "beta":
         bot = MultiSpoon(discord.Intents.all(), token_beta)
     else:
         bot = MultiSpoon(discord.Intents.all(), token_base)
+
     bot.run()
