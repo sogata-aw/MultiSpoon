@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from bot import MultiSpoon
-
+import bdd
 
 def is_me():
     async def predicate(interaction: discord.Interaction) -> bool:
@@ -38,6 +38,17 @@ class ReloadCog(commands.GroupCog, group_name="reload"):
     async def reload_all(self, interaction: discord.Interaction):
         await self.bot.setup_hook()
         await interaction.response.send_message("✅ Extensions rechargées !")
+
+    @discord.app_commands.command(name="guilds", description="Commande inutilisable")
+    @is_me()
+    async def reload_all(self, interaction: discord.Interaction):
+        count = 0
+        for guild in self.bot.guilds:
+            if not self.bot.guilds_data[guild.id]:
+                await bdd.add_guild(self.bot.guilds_data, guild)
+                count += 1
+        await interaction.response.send_message(f"{count} serveurs étaient manquants!")
+
 
     # Reload
 

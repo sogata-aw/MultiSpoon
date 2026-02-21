@@ -17,6 +17,7 @@ from view.verifyView import VerifyView
 from utilities import embeds as e
 from utilities import dater as dat
 
+
 class MultiSpoon(commands.Bot):
 
     def __init__(self, intents: discord.Intents, token: str):
@@ -37,7 +38,8 @@ class MultiSpoon(commands.Bot):
             logger_settings = json.load(file)
 
         handler = colorlog.StreamHandler()
-        handler.setFormatter(colorlog.ColoredFormatter(logger_settings["format"], log_colors=logger_settings["logColors"]))
+        handler.setFormatter(
+            colorlog.ColoredFormatter(logger_settings["format"], log_colors=logger_settings["logColors"]))
 
         self.logger.addHandler(handler)
         self.logger.setLevel(logger_settings["level"])
@@ -64,7 +66,8 @@ class MultiSpoon(commands.Bot):
         # Affichage des commandes du bot
 
         for command in commandes:
-            self.logger.debug(f"Commande : {command.name}\nDescription : {command.description}\n------------------------")
+            self.logger.debug(
+                f"Commande : {command.name}\nDescription : {command.description}\n------------------------")
 
         self.logger.debug(self.cogs)
 
@@ -75,8 +78,6 @@ class MultiSpoon(commands.Bot):
 
         self.logger.debug(self.guilds_data)
         self.logger.info("MultiSpoon est prêt !")
-
-
 
     async def on_app_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
 
@@ -89,7 +90,9 @@ class MultiSpoon(commands.Bot):
 
         user = await self.fetch_user(self.createur)
         dm_channel = await user.create_dm()
-        await dm_channel.send(embed=discord.Embed(title="Une erreur est survenue dans le serveur : " + interaction.guild.name, color=discord.Colour.red()))
+        await dm_channel.send(
+            embed=discord.Embed(title="Une erreur est survenue dans le serveur : " + interaction.guild.name,
+                                color=discord.Colour.red()))
 
         # Formattage du log
 
@@ -110,9 +113,12 @@ class MultiSpoon(commands.Bot):
         # Envoi de l'information à l'utilisateur
 
         if interaction.response.is_done():
-            await interaction.followup.send(embed=discord.Embed(title="❌ Une erreur est survenue (suivi).", color=discord.Colour.red()), ephemeral=True)
+            await interaction.followup.send(
+                embed=discord.Embed(title="❌ Une erreur est survenue (suivi).", color=discord.Colour.red()),
+                ephemeral=True)
         else:
-            await interaction.response.send_message(embed=discord.Embed(title="❌ Une erreur est survenue.", color=discord.Colour.red()), ephemeral=True)
+            await interaction.response.send_message(
+                embed=discord.Embed(title="❌ Une erreur est survenue.", color=discord.Colour.red()), ephemeral=True)
 
     # -----Event-----
 
@@ -152,12 +158,16 @@ class MultiSpoon(commands.Bot):
                     embed.set_author(name=member.name, icon_url=member.display_avatar)
                     await channel.send(member.mention, embed=embed, view=VerifyView(self))
                 except discord.Forbidden:
-                    await channel.send(embed=discord.Embed(title="Le bot n'a pas les permissions nécessaires ! Essayez de mettre son rôle au-dessus des autres", color=discord.Colour.red()))
+                    await channel.send(embed=discord.Embed(
+                        title="Le bot n'a pas les permissions nécessaires ! Essayez de mettre son rôle au-dessus des autres",
+                        color=discord.Colour.red()))
             except AttributeError:
-                await channel.send(embed=discord.Embed(title=":warning: Le bot ne trouve pas le rôle d'arrivée", color=discord.Colour.yellow()))
+                await channel.send(embed=discord.Embed(title=":warning: Le bot ne trouve pas le rôle d'arrivée",
+                                                       color=discord.Colour.yellow()))
 
     async def on_member_remove(self, member: discord.abc.User):
-        if member.id not in self.guilds_data[member.guild.id].alreadyVerified and self.guilds_data[member.guild.id].verificationChannel:
+        if member.id not in self.guilds_data[member.guild.id].alreadyVerified and self.guilds_data[
+            member.guild.id].verificationChannel:
             guild = self.get_guild(member.guild.id)
             channel = guild.get_channel(self.guilds_data[member.guild.id].verificationChannel)
 
@@ -184,7 +194,8 @@ class MultiSpoon(commands.Bot):
                 self.guilds_data[role.guild.id].tempRoles.pop(i)
         bdd.save_guilds(self.guilds_data)
 
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState,
+                                    after: discord.VoiceState):
         if after.channel is not None and after.channel.id in self.guilds_data[after.channel.guild.id].channelToCheck:
             temp_channel = await after.channel.guild.create_voice_channel(
                 name=f"Salon de {member.display_name}",
