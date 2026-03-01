@@ -53,9 +53,7 @@ class ReloadCog(commands.GroupCog, group_name="reload"):
     # Reload
 
     @reload.autocomplete("extension")
-    async def autocomplete_extension(
-        self, interaction: discord.Interaction, extension: str
-    ) -> typing.List[discord.app_commands.Choice[str]]:
+    async def autocomplete_extension(self, interaction: discord.Interaction, extension: str) -> typing.List[discord.app_commands.Choice[str]]:
         liste = []
         for cog in os.listdir("./cogs"):
             if cog.endswith(".py") and not cog.startswith("__"):

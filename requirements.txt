@@ -7,7 +7,7 @@ captcha==0.7.1
 click==8.1.8
 colorama==0.4.6
 colorlog==6.10.1
-discord.py==2.6.4
+discord.py==2.7.0
 dotenv==0.9.9
 frozenlist==1.8.0
 greenlet==3.2.4
