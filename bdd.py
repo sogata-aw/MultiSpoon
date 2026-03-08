@@ -39,6 +39,7 @@ class GuildData(BaseModel):
     tempRoles: list[RoleData] = []
     tempVoiceChannels: list[int] = []
     whiteListActive: bool = False
+    onCreateChannel: bool = False
     whiteList: list[int] = []
 
 guilds = {}

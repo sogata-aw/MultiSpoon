@@ -185,6 +185,16 @@ class MultiSpoon(commands.Bot):
         for i in range(len(self.guilds_data[channel.guild.id].tempChannels)):
             if self.guilds_data[channel.guild.id].tempChannels[i].id == channel.id:
                 self.guilds_data[channel.guild.id].tempChannels.pop(i)
+
+        if channel.id in self.guilds_data[channel.guild.id].whiteList:
+            self.guilds_data[channel.guild.id].whiteList.pop(channel.id)
+
+            log_channel = channel.guild.get_channel(self.guilds_data[channel.guild.id].logChannel)
+
+            if log_channel:
+                await log_channel.send(
+                    embed=discord.Embed(title=f"Le salon {channel.mention} a été retiré de la white list",
+                                        color=discord.Color.green()))
         bdd.save_guilds(self.guilds_data)
 
     # Suppression automatique du rôle dans les données du bot s'il était temporaire
@@ -214,11 +224,25 @@ class MultiSpoon(commands.Bot):
     async def on_message(self, message: discord.Message):
         if not message.author.bot:
             if self.guilds_data[message.guild.id].whiteListActive and message.channel.id not in self.guilds_data[message.guild.id].whiteList:
-                await message.delete()
-                channel = message.guild.get_channel(self.guilds_data[message.guild.id].verificationChannel)
-                await message.channel.send(content=message.author.mention, embed=discord.Embed(
-                    title=f":warning: Vous n'avez pas les droits pour écrire ici, veuillez passer la vérification dans {channel.mention}",
-                    color=discord.Colour.yellow()))
+                role = self.guilds_data[message.guild.id].get_role(self.guilds_data[message.guild.id].roleAfter)
+                if role not in message.author.roles:
+                    await message.delete()
+                    channel = message.guild.get_channel(self.guilds_data[message.guild.id].verificationChannel)
+                    await message.channel.send(content=message.author.mention, embed=discord.Embed(
+                        title=f":warning: Vous n'avez pas les droits pour écrire ici, veuillez passer la vérification dans {channel.mention}",
+                        color=discord.Colour.yellow()))
+
+    async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
+        if self.guilds_data[channel.guild.id].onCreateChannel:
+            self.guilds_data[channel.guild.id].whiteList.append(channel.id)
+
+            log_channel = channel.guild.get_channel(self.guilds_data[channel.guild.id].logChannel)
+
+            if log_channel:
+                await log_channel.send(
+                    embed=discord.Embed(title=f"Le salon {channel.mention} a été retiré de la white list",
+                                        color=discord.Color.green()))
+            bdd.save_guilds(self.guilds_data)
 
     # Synchronisation avec les cogs
     async def setup_hook(self):
