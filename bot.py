@@ -224,7 +224,7 @@ class MultiSpoon(commands.Bot):
     async def on_message(self, message: discord.Message):
         if not message.author.bot:
             if self.guilds_data[message.guild.id].whiteListActive and message.channel.id not in self.guilds_data[message.guild.id].whiteList:
-                role = self.guilds_data[message.guild.id].get_role(self.guilds_data[message.guild.id].roleAfter)
+                role = message.guild.get_role(self.guilds_data[message.guild.id].roleAfter)
                 if role not in message.author.roles:
                     await message.delete()
                     channel = message.guild.get_channel(self.guilds_data[message.guild.id].verificationChannel)
