@@ -211,6 +211,15 @@ class MultiSpoon(commands.Bot):
             print(f"{member} a été déplacé dans {temp_channel.name}")
             self.guilds_data[after.channel.guild.id].tempVoiceChannels.append(temp_channel.id)
 
+    async def on_message(self, message: discord.Message):
+        if not message.author.bot:
+            if self.guilds_data[message.guild.id].whiteListActive and message.channel.id not in self.guilds_data[message.guild.id].whiteList:
+                await message.delete()
+                channel = message.guild.get_channel(self.guilds_data[message.guild.id].verificationChannel)
+                await message.channel.send(content=message.author.mention, embed=discord.Embed(
+                    title=f":warning: Vous n'avez pas les droits pour écrire ici, veuillez passer la vérification dans {channel.mention}",
+                    color=discord.Colour.yellow()))
+
     # Synchronisation avec les cogs
     async def setup_hook(self):
         self.logger.info("-----Début de l'ajout des commandes-----")

@@ -38,7 +38,8 @@ class GuildData(BaseModel):
     tempChannels: list[ChannelData] = []
     tempRoles: list[RoleData] = []
     tempVoiceChannels: list[int] = []
-
+    whiteListActive: bool = False
+    whiteList: list[int] = []
 
 guilds = {}
 
@@ -70,7 +71,9 @@ def serialize_guilds(data: dict[int, GuildData]) -> dict:
     return result
 
 
-def add_temp_channel(data: dict[int, GuildData], interaction: discord.Interaction, salon: discord.abc.GuildChannel, nom: str, typesalon: str, categorie: discord.CategoryChannel = None, duree: datetime.datetime = None):
+def add_temp_channel(data: dict[int, GuildData], interaction: discord.Interaction, salon: discord.abc.GuildChannel,
+                     nom: str, typesalon: str, categorie: discord.CategoryChannel = None,
+                     duree: datetime.datetime = None):
     data[interaction.guild.id].tempChannels.append(ChannelData.model_validate({
         "name": nom.replace(' ', '-'),
         "id": salon.id,

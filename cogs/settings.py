@@ -66,12 +66,14 @@ class SettingsCog(commands.GroupCog, group_name="set"):
             self.bot.guilds_data[interaction.guild.id].logChannel = 0
         else:
             self.bot.guilds_data[interaction.guild.id].logChannel = channel.id
-        await interaction.response.send_message(embed=discord.Embed(title="✅ Le salon des log a été mis à jour", color=discord.Color.green()))
+        await interaction.response.send_message(
+            embed=discord.Embed(title="✅ Le salon des log a été mis à jour", color=discord.Color.green()))
         bdd.save_guilds(self.bot.guilds_data)
 
     # Set_role
     @set_role.autocomplete("option")
-    async def autocomplete_option(self, interaction: discord.Interaction, option: str) -> typing.List[discord.app_commands.Choice[str]]:
+    async def autocomplete_option(self, interaction: discord.Interaction, option: str) -> typing.List[
+        discord.app_commands.Choice[str]]:
         liste = []
         for choice in ["arrivée", "vérifié"]:
             liste.append(discord.app_commands.Choice(name=choice, value=choice))
