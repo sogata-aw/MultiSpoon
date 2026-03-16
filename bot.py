@@ -240,7 +240,7 @@ class MultiSpoon(commands.Bot):
 
             if log_channel:
                 await log_channel.send(
-                    embed=discord.Embed(title=f"Le salon {channel.mention} a été retiré de la white list",
+                    embed=discord.Embed(title=f"Le salon {channel.mention} a été ajouté à la white list",
                                         color=discord.Color.green()))
             bdd.save_guilds(self.guilds_data)
 
