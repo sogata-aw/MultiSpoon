@@ -24,6 +24,9 @@ class RoleData(BaseModel):
     id: int
     duree: str
 
+class LinkData(BaseModel):
+    guild: int
+    channel: int
 
 class GuildData(BaseModel):
     name: str
@@ -41,6 +44,7 @@ class GuildData(BaseModel):
     whiteListActive: bool = False
     onCreateChannel: bool = False
     whiteList: list[int] = []
+    associatedWith: dict[int, list[LinkData]] = {}
 
 guilds = {}
 

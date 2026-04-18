@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import logging
 import colorlog
 import bdd
+from utilities.webhook import get_webhook
 
 from view.verifyView import VerifyView
 
@@ -231,6 +232,12 @@ class MultiSpoon(commands.Bot):
                     await message.channel.send(content=message.author.mention, embed=discord.Embed(
                         title=f":warning: Vous n'avez pas les droits pour écrire ici, veuillez passer la vérification dans {channel.mention}",
                         color=discord.Colour.yellow()))
+            elif self.guilds_data[message.guild.id].associatedWith.get(message.channel.id):
+                guild = self.get_guild(self.guilds_data[message.guild.id].associatedWith[message.channel.id].guild)
+                channel = guild.get_channel(self.guilds_data[message.guild.id].associatedWith[message.channel.id].channel)
+                webhook = await get_webhook(channel, "SpoonLink")
+                await webhook.send(content=message.content, username=message.author.display_name,avatar_url=message.author.display_avatar.url)
+
 
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
         if self.guilds_data[channel.guild.id].onCreateChannel:
