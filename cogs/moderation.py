@@ -154,12 +154,7 @@ class ModerationCog(commands.Cog):
     )
     @discord.app_commands.guild_only()
     async def verify(self, interaction: discord.Interaction):
-        if (
-            interaction.guild.get_role(
-                self.bot.guilds_data[interaction.guild.id].roleBefore
-            )
-            not in interaction.user.roles
-        ):
+        if (interaction.guild.get_role(self.bot.guilds_data[interaction.guild.id].roleBefore) not in interaction.user.roles):
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=":warning: Vous avez déjà effectué la vérification",
@@ -167,10 +162,7 @@ class ModerationCog(commands.Cog):
                 )
             )
 
-        elif (
-            self.inVerification.get(interaction.guild.id)
-            and interaction.user.id in self.inVerification[interaction.guild.id]
-        ):
+        elif (self.inVerification.get(interaction.guild.id) and interaction.user.id in self.inVerification[interaction.guild.id]):
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=":warning: Vous êtes déjà en train de faire une vérification ! si vous avez raté le code donnée, attendez que le bot régénère un code",
@@ -178,11 +170,7 @@ class ModerationCog(commands.Cog):
                 )
             )
 
-        elif (
-            self.bot.guilds_data[interaction.guild.id].verificationChannel == 0
-            or self.bot.guilds_data[interaction.guild.id].roleBefore == 0
-            or self.bot.guilds_data[interaction.guild.id].roleAfter == 0
-        ):
+        elif (self.bot.guilds_data[interaction.guild.id].verificationChannel == 0 or self.bot.guilds_data[interaction.guild.id].roleBefore == 0 or self.bot.guilds_data[interaction.guild.id].roleAfter == 0):
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une verification",

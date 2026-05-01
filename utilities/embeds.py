@@ -21,6 +21,14 @@ async def embed_add(title: str, guild: discord.Guild):
     return embed
 
 
+def embed_link(title: str, guild: discord.Guild, channel: discord.TextChannel):
+    embed = discord.Embed(title=title, color=discord.Colour.yellow())
+    embed.set_thumbnail(url=guild.icon)
+    embed.set_author(name=guild.name)
+    embed.add_field(name="Nom du serveur", value=guild.name, inline=False)
+    embed.add_field(name="Salon du serveur", value=channel.name, inline=False)
+    return embed
+
 def embed_log(title: str, user: discord.User):
     embed = discord.Embed(title="", description=title, color=discord.Colour.green(), timestamp=discord.utils.utcnow())
     embed.set_author(name=user.name, icon_url=user.display_avatar)
