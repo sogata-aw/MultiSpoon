@@ -49,9 +49,12 @@ class VoiceChannelCogs(commands.GroupCog, group_name="vocal"):
             self.bot.guilds_data[interaction.guild.id].channelToCheck.remove(salon.id)
             await interaction.response.send_message(embed=discord.Embed(colour=discord.Colour.from_str("#68cd67"),
                                                                         title=":white_check_mark: Ce salon ne déclenchera plus la création automatique de salons vocaux."))
-        else:
-            await interaction.response.send_message(embed=discord.Embed(colour=discord.Color.red(),
-                                                                        title=":warning: Ce salon n'est pas configuré pour la création automatique de salons vocaux temporaires."))
+            return
+        await interaction.response.send_message(
+            embed=discord.Embed(
+                colour=discord.Color.red(),
+                title=":warning: Ce salon n'est pas configuré pour la création automatique de salons vocaux temporaires.")
+        )
 
     @temp_group.command(name="afficher",
                         description="affiche les vocaux qui possède un déclencheur pour créer des salons temporaires")

@@ -13,7 +13,6 @@ from utilities import embeds as e
 from utilities.embeds import embed_log
 from view.aideView import AideSelectView
 from view.supportView import SupportView
-from view.verifyModal import TestModal
 from view.verifyView import VerifyView
 from view.voteView import VoteView
 
@@ -333,18 +332,18 @@ class ModerationCog(commands.Cog):
                 inline=False,
             )
             await interaction.response.send_message(embed=embed)
-        else:
-            embed = discord.Embed(
-                colour=discord.Colour.from_str("#68cd67"), title="Voter pour MultiSpoon"
-            )
-            embed.add_field(
-                name="",
-                value="Ça ne débloque rien de spécial mais c'est un petit soutien qui fait plaisir",
-                inline=False,
-            )
-            await interaction.response.send_message(
-                embed=embed, view=VoteView(self.bot)
-            )
+            return
+        embed = discord.Embed(
+            colour=discord.Colour.from_str("#68cd67"), title="Voter pour MultiSpoon"
+        )
+        embed.add_field(
+            name="",
+            value="Ça ne débloque rien de spécial mais c'est un petit soutien qui fait plaisir",
+            inline=False,
+        )
+        await interaction.response.send_message(
+            embed=embed, view=VoteView(self.bot)
+        )
 
     # -----autocomplete-----
 

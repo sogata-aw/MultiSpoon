@@ -64,8 +64,9 @@ class SettingsCog(commands.GroupCog, group_name="set"):
     async def set_log(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
         if channel is None:
             self.bot.guilds_data[interaction.guild.id].logChannel = 0
-        else:
-            self.bot.guilds_data[interaction.guild.id].logChannel = channel.id
+            return
+        self.bot.guilds_data[interaction.guild.id].logChannel = channel.id
+
         await interaction.response.send_message(
             embed=discord.Embed(title="✅ Le salon des log a été mis à jour", color=discord.Color.green()))
         bdd.save_guilds(self.bot.guilds_data)

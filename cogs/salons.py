@@ -25,29 +25,24 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
     temp_group = discord.app_commands.Group(name="temporaire", description="meilleur_visibilité")
 
     # -----Commandes-----
-    @temp_group.command(name="creer", description="Créer un salon pour une durée déterminée")
+    @temp_group.command(name="créer", description="Créer un salon pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du salon que vous voulez créer",
                                    typesalon="Le type de salon que vous voulez créer",
                                    categorie="La catégorie dans lequel vous voulez créer le salon(dans aucune par défaut)",
                                    duree="La durée que vous souhaitez mettre (voir /aide sur comment faire)")
     @is_admin()
     async def creer_salon_temporaire(self, interaction: discord.Interaction, nom: str, typesalon: str, duree: str, categorie: discord.CategoryChannel = None):
-        if duree is None:
+        duree_de_base = d.datetime.now()
+
+        duree_split = duree.split()
+        total_duration = await dat.ajouter_temps(duree_split)
+
+        if total_duration == duree_de_base:
             await interaction.response.send_message(
-                embed=discord.Embed(title=":warning: vous devez au moins rentrer une durée"))
+                embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
+            return
 
-        else:
-            duree_de_base = d.datetime.now()
-
-            duree_split = duree.split()
-            total_duration = await dat.ajouter_temps(duree_split)
-
-            if total_duration == duree_de_base:
-                await interaction.response.send_message(
-                    embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
-            else:
-                await dat.create_channel_duree(interaction, nom, typesalon, self.bot.guilds_data, categorie,
-                                               total_duration)
+        await dat.create_channel_duree(interaction, nom, typesalon, self.bot.guilds_data, categorie, total_duration)
 
     # @temp_group.command(name="afficher", description="Affiche les salons temporaires crées")
     # async def afficher_salon_temporaire(self, interaction, salon: discord.abc.GuildChannel):
@@ -82,12 +77,13 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
                 if channel is None:
                     await interaction.response.send_message(
                         embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))
-                else:
-                    await channel.delete()
-                    await interaction.response.send_message(
-                        embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé",
-                                            colour=0x008001))
-                    suppr = True
+                    return
+
+                await channel.delete()
+                await interaction.response.send_message(
+                    embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé",
+                                        colour=0x008001))
+                suppr = True
         if not suppr:
             await interaction.response.send_message(embed=discord.Embed(
                 title=":warning: Le salon que vous souhaitez supprimer n'existe pas ou n'est pas un salon temporaire"))
