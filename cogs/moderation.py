@@ -154,165 +154,146 @@ class ModerationCog(commands.Cog):
     )
     @discord.app_commands.guild_only()
     async def verify(self, interaction: discord.Interaction):
-        if (interaction.guild.get_role(self.bot.guilds_data[interaction.guild.id].roleBefore) not in interaction.user.roles):
+        if interaction.guild.get_role(self.bot.guilds_data[interaction.guild.id].roleBefore) not in interaction.user.roles:
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=":warning: Vous avez déjà effectué la vérification",
                     color=discord.Colour.red(),
                 )
             )
+            return
 
-        elif (self.inVerification.get(interaction.guild.id) and interaction.user.id in self.inVerification[interaction.guild.id]):
+        if self.inVerification.get(interaction.guild.id) and interaction.user.id in self.inVerification[interaction.guild.id]:
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=":warning: Vous êtes déjà en train de faire une vérification ! si vous avez raté le code donnée, attendez que le bot régénère un code",
                     color=discord.Colour.red(),
                 )
             )
+            return
 
-        elif (self.bot.guilds_data[interaction.guild.id].verificationChannel == 0 or self.bot.guilds_data[interaction.guild.id].roleBefore == 0 or self.bot.guilds_data[interaction.guild.id].roleAfter == 0):
+        if not self.bot.guilds_data[interaction.guild.id].verificationChannel or not self.bot.guilds_data[interaction.guild.id].roleBefore or not self.bot.guilds_data[interaction.guild.id].roleAfter:
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une verification",
                     color=discord.Colour.red(),
                 )
             )
-        else:
-            log_channel = interaction.guild.get_channel(
-                self.bot.guilds_data[interaction.guild.id].logChannel
+            return
+        log_channel = interaction.guild.get_channel(
+            self.bot.guilds_data[interaction.guild.id].logChannel
+        )
+        if log_channel:
+            embed = embed_log(
+                f"{interaction.user.mention} tente de résoudre le captcha",
+                interaction.user,
             )
-            if log_channel:
-                embed = embed_log(
-                    f"{interaction.user.mention} tente de résoudre le captcha",
-                    interaction.user,
+            await log_channel.send(embed=embed)
+
+        if self.inVerification.get(interaction.guild.id):
+            self.inVerification[interaction.guild.id].append(interaction.user.id)
+        else:
+            self.inVerification[interaction.guild.id] = [interaction.user.id]
+        continuer = True
+        minutes = self.bot.guilds_data[interaction.guild.id].timeout // 60
+        secondes = self.bot.guilds_data[interaction.guild.id].timeout % 60
+        first = True
+
+        while continuer:
+            code = c.generer_code()
+            c.generer_image(code)
+            attachement = discord.File("img/captcha.png", filename="captcha.png")
+            name = interaction.user.global_name
+
+            if first:
+                await interaction.response.send_message(
+                    f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {minutes}:{secondes:02} minutes pour le faire",
+                    file=attachement,
                 )
-                await log_channel.send(embed=embed)
-
-            if self.inVerification.get(interaction.guild.id):
-                self.inVerification[interaction.guild.id].append(interaction.user.id)
+                first = False
             else:
-                self.inVerification[interaction.guild.id] = [interaction.user.id]
-            continuer = True
-            minutes = self.bot.guilds_data[interaction.guild.id].timeout // 60
-            secondes = self.bot.guilds_data[interaction.guild.id].timeout % 60
-            first = True
+                await interaction.channel.send(
+                    f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {minutes}:{secondes:02} minutes pour le faire",
+                    file=attachement,
+                )
 
-            while continuer:
-                code = c.generer_code()
-                c.generer_image(code)
+            def verify_check(msg: discord.Message):
+                return (
+                    msg.author == interaction.user
+                    and msg.channel == interaction.channel
+                )
 
-                attachement = discord.File("img/captcha.png", filename="captcha.png")
-                name = interaction.user.global_name
-
-                if first:
-                    await interaction.response.send_message(
-                        f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {minutes}:{secondes:02} minutes pour le faire",
-                        file=attachement,
+            def msg_check(msg: discord.Message):
+                return (
+                    msg.author == interaction.user
+                    or interaction.client.user == msg.author
+                    and (
+                        interaction.user.name.lower() in msg.content.lower()
+                        or interaction.guild.name.lower() in msg.content.lower()
+                        or "code" in msg.content.lower()
+                        or interaction.user.mention.lower() in msg.content.lower()
                     )
-                    first = False
-                else:
-                    await interaction.channel.send(
-                        f"{name} veuillez rentrer le code du captcha **en minuscule**, vous avez {minutes}:{secondes:02} minutes pour le faire",
-                        file=attachement,
-                    )
+                )
 
-                def verify_check(msg: discord.Message):
-                    return (
-                        msg.author == interaction.user
-                        and msg.channel == interaction.channel
-                    )
+            try:
+                reponse = await self.bot.wait_for(
+                    "message",
+                    check=verify_check,
+                    timeout=self.bot.guilds_data[interaction.guild.id].timeout,
+                )
+                # Agir en fonction de la réponse de l'utilisateur
+                if reponse.content.lower() == code:
+                    self.inVerification[interaction.guild.id].remove(interaction.user.id)
 
-                def msg_check(msg: discord.Message):
-                    return (
-                        msg.author == interaction.user
-                        or interaction.client.user == msg.author
-                        and (
-                            interaction.user.name.lower() in msg.content.lower()
-                            or interaction.guild.name.lower() in msg.content.lower()
-                            or "code" in msg.content.lower()
-                            or interaction.user.mention.lower() in msg.content.lower()
-                        )
+                    await interaction.channel.send(f":white_check_mark: Le code est bon ! Bienvenue sur {interaction.guild.name} !")
+
+                    await interaction.user.add_roles(
+                        interaction.guild.get_role(self.bot.guilds_data[interaction.guild.id].roleAfter)
                     )
 
-                try:
-                    reponse = await self.bot.wait_for(
-                        "message",
-                        check=verify_check,
-                        timeout=self.bot.guilds_data[interaction.guild.id].timeout,
+                    await asyncio.sleep(0.3)
+                    await interaction.user.remove_roles(
+                        interaction.guild.get_role(self.bot.guilds_data[interaction.guild.id].roleBefore)
                     )
-
-                    # Agir en fonction de la réponse de l'utilisateur
-                    if reponse.content.lower() == code:
-                        self.inVerification[interaction.guild.id].remove(
-                            interaction.user.id
-                        )
-
-                        await interaction.channel.send(
-                            f":white_check_mark: Le code est bon ! Bienvenue sur {interaction.guild.name} !"
-                        )
-                        await interaction.user.add_roles(
-                            interaction.guild.get_role(
-                                self.bot.guilds_data[interaction.guild.id].roleAfter
-                            )
-                        )
-
-                        await asyncio.sleep(0.3)
-
-                        await interaction.user.remove_roles(
-                            interaction.guild.get_role(
-                                self.bot.guilds_data[interaction.guild.id].roleBefore
-                            )
-                        )
-
-                        continuer = False
-
-                        if log_channel:
-                            embed = embed_log(
-                                f"{interaction.user.mention} a réussi le captcha",
-                                interaction.user,
-                            )
-                            await log_channel.send(embed=embed)
-
-                        self.bot.guilds_data[
-                            interaction.guild.id
-                        ].alreadyVerified.append(interaction.user.id)
-                        await interaction.channel.purge(limit=50, check=msg_check)
-
-                    else:
-                        if log_channel:
-                            embed = embed_log(
-                                f"{interaction.user.mention} a raté le captcha",
-                                interaction.user,
-                            )
-                            await log_channel.send(embed=embed)
-
-                        await interaction.channel.send(
-                            ":x: Code incorrect... Veuillez recommencer"
-                        )
-                        await asyncio.sleep(0.3)
-                        await interaction.channel.purge(limit=50, check=msg_check)
-
-                except asyncio.TimeoutError:
-                    await interaction.channel.purge(limit=50, check=msg_check)
-                    await interaction.channel.send(
-                        interaction.user.mention,
-                        embed=discord.Embed(
-                            title=f"Bienvenue {interaction.user.name} ! Veuillez utiliser la commande `/verify` ou cliquer sur le bouton ci-dessous",
-                            color=discord.Colour.green(),
-                        ),
-                        view=VerifyView(self),
-                    )
+                    continuer = False
                     if log_channel:
                         embed = embed_log(
-                            f"{interaction.user.mention} abandonne le captcha",
+                            f"{interaction.user.mention} a réussi le captcha",
                             interaction.user,
                         )
                         await log_channel.send(embed=embed)
-
-                    self.inVerification[interaction.guild.id].remove(
-                        interaction.user.id
+                    self.bot.guilds_data[interaction.guild.id].alreadyVerified.append(interaction.user.id)
+                    await interaction.channel.purge(limit=50, check=msg_check)
+                else:
+                    if log_channel:
+                        embed = embed_log(
+                            f"{interaction.user.mention} a raté le captcha",
+                            interaction.user,
+                        )
+                        await log_channel.send(embed=embed)
+                    await interaction.channel.send(":x: Code incorrect... Veuillez recommencer")
+                    await asyncio.sleep(0.3)
+                    await interaction.channel.purge(limit=50, check=msg_check)
+            except asyncio.TimeoutError:
+                await interaction.channel.purge(limit=50, check=msg_check)
+                await interaction.channel.send(
+                    interaction.user.mention,
+                    embed=discord.Embed(
+                        title=f"Bienvenue {interaction.user.name} ! Veuillez utiliser la commande `/verify` ou cliquer sur le bouton ci-dessous",
+                        color=discord.Colour.green(),
+                    ),
+                    view=VerifyView(self),
+                )
+                if log_channel:
+                    embed = embed_log(
+                        f"{interaction.user.mention} abandonne le captcha",
+                        interaction.user,
                     )
-                    continuer = False
+                    await log_channel.send(embed=embed)
+
+                self.inVerification[interaction.guild.id].remove(interaction.user.id)
+
+                continuer = False
 
     @discord.app_commands.command(
         name="support", description="Vous propose le lien vers le serveur de support"
