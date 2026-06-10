@@ -1,3 +1,5 @@
+from email import message
+
 import discord
 from discord.ext import commands, tasks
 
@@ -11,6 +13,7 @@ from dotenv import load_dotenv
 import logging
 import colorlog
 import bdd
+from utilities.embeds import embed_log
 from utilities.webhook import get_webhook
 
 from view.verifyView import VerifyView
@@ -224,6 +227,18 @@ class MultiSpoon(commands.Bot):
 
     async def on_message(self, message: discord.Message):
         if not message.author.bot:
+            if self.guilds_data[message.guild.id].spoonPot != 0 and message.channel.id == self.guilds_data[message.guild.id].spoonPot:
+                await message.guild.ban(user=message.author, delete_message_seconds=60, reason="Tombé dans le pot de cuillère")
+
+                log_channel = message.guild.get_channel(self.guilds_data[message.guild.id].logChannel)
+
+                if log_channel:
+                    embed = embed_log(
+                        f"{message.author.mention} est tombé dans le pot de cuillère et a été banni",
+                        message.author,
+                    )
+                    await log_channel.send(embed=embed)
+
             if self.guilds_data[message.guild.id].whiteListActive and message.channel.id not in self.guilds_data[message.guild.id].whiteList:
                 role = message.guild.get_role(self.guilds_data[message.guild.id].roleAfter)
                 if role not in message.author.roles:

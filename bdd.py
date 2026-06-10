@@ -45,6 +45,7 @@ class GuildData(BaseModel):
     onCreateChannel: bool = False
     whiteList: list[int] = []
     associatedWith: dict[int, list[LinkData]] = {}
+    spoonPot: int = 0
 
 guilds = {}
 
