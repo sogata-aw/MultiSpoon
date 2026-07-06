@@ -56,7 +56,7 @@ async def isUserVerified(user_id: int, guild_id: int):
 async def addVerified(user_id: int, guild_id: int):
     async with async_session() as session :
         verified = Verified(user_id=user_id, guild_id=guild_id)
-        session.add(Verified)
+        session.add(verified)
         await session.commit()
 
 #----------------------TEMP_CHANNELS-----------------------------
