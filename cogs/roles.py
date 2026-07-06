@@ -5,6 +5,7 @@ import datetime as d
 
 from bot import MultiSpoon
 
+import newBDD
 from utilities import dater as dat
 
 
@@ -45,7 +46,11 @@ class RolesCog(commands.GroupCog, group_name="role"):
                 embed=discord.Embed(title=":warning: Vous n'avez pas rentré une couleur au format RGB ou RRGGBB"))
             return
 
-        await dat.create_role_duree(interaction, nom, total_duration, couleur, separe, mentionable, self.bot.guilds_data)
+        role = await interaction.guild.create_role(name=nom, colour=discord.Colour.from_str(couleur), hoist=separe,
+                                                   mentionable=mentionable)
+
+        await newBDD.addTempRole(role.id, interaction.guild_id, role.name, duree)
+        await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Le rôle a été crée", colour=discord.Color.green()))
 
     # @commands.hybrid_command(name="afficher", description="Affiche les salons temporaires crées")
     # async def afficher_salon_temporaire(self, ctx, salon: discord.abc.GuildChannel):
@@ -72,18 +77,14 @@ class RolesCog(commands.GroupCog, group_name="role"):
     @is_admin()
     async def supprimer_role_temporaire(self, interaction: discord.Interaction, role: discord.Role):
         suppr = False
-        for temp_role in self.bot.guilds_data[interaction.guild.id].tempRoles:
-            if temp_role.name == role.name and temp_role.id == role.id:
-                role_to_del = interaction.guild.get_role(temp_role.id)
-                if role_to_del is None:
-                    await interaction.response.send_message(
-                        embed=discord.Embed(title=":warning: Le rôle que vous souhaitez supprimer n'existe pas"))
-                    return
-                await role_to_del.delete()
-                await interaction.response.send_message(
-                    embed=discord.Embed(title=":white_check_mark: Le rôle temporaire a été supprimé",
+        temp_role = await newBDD.getTempRole(role.id, interaction.guild_id)
+        if temp_role:
+            await role.delete()
+            await interaction.response.send_message(
+                embed=discord.Embed(title=":white_check_mark: Le rôle temporaire a été supprimé",
                                         colour=0x008001))
-                suppr = True
+            suppr = True
+
         if not suppr:
             await interaction.response.send_message(embed=discord.Embed(
                 title=":warning: Le rôle que vous souhaitez supprimer n'existe pas ou n'est pas un rôle temporaire"))

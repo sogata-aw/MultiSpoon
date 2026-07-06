@@ -7,6 +7,7 @@ from bot import MultiSpoon
 
 import bdd
 
+import newBDD
 from utilities import settings as s
 
 
@@ -32,11 +33,17 @@ class SettingsCog(commands.GroupCog, group_name="set"):
     @is_admin()
     @discord.app_commands.guild_only()
     async def set_role(self, interaction: discord.Interaction, option: str, role: discord.Role):
+        guild = await newBDD.getGuildById(interaction.guild.id)
+
         if option == "arrivée":
-            await s.set_role_before(interaction, role, self.bot.guilds_data)
+            guild.role_before = role.id
+
         elif option == "vérifié":
-            await s.set_role_after(interaction, role, self.bot.guilds_data)
-        bdd.save_guilds(self.bot.guilds_data)
+            guild.role_after = role.id
+
+        await newBDD.updateGuild(guild)
+        await interaction.response.send_message(
+            embed=discord.Embed(title=f"✅ Le rôle {"d'arrivée" if option == "arrivée" else "après vérification"} a été mis à jour", color=discord.Color.green()))
 
     @discord.app_commands.command(name="channel",
                                   description="Permet de configurer le salon ou sera envoyé le message quand quelqu'un arrive sur le serveur")
@@ -44,8 +51,12 @@ class SettingsCog(commands.GroupCog, group_name="set"):
     @is_admin()
     @discord.app_commands.guild_only()
     async def set_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
-        await s.set_verification_channel(interaction, channel, self.bot.guilds_data)
-        bdd.save_guilds(self.bot.guilds_data)
+        guild = await newBDD.getGuildById(interaction.guild.id)
+        guild.verificationChannel = channel.id
+        await newBDD.updateGuild(guild)
+
+        await interaction.response.send_message(
+            embed=discord.Embed(title="✅ Le salon des vérifications a été mis à jour", color=discord.Color.green()))
 
     @discord.app_commands.command(name="timeout",
                                   description="Permet de configurer le temps en seconde avant expiration du captcha")
@@ -53,8 +64,19 @@ class SettingsCog(commands.GroupCog, group_name="set"):
     @is_admin()
     @discord.app_commands.guild_only()
     async def set_timeout(self, interaction: discord.Interaction, time: int):
-        await s.set_timeout(interaction, time, self.bot.guilds_data)
-        bdd.save_guilds(self.bot.guilds_data)
+        if time < 30:
+            await interaction.response.send_message(
+                embed=discord.Embed(title=":warning: Le temps est invalide ! Il doit être supérieur à 30 secondes",
+                                    color=discord.Colour.yellow()))
+            return
+
+        guild = await newBDD.getGuildById(interaction.guild.id)
+        guild.timeout = time
+        await newBDD.updateGuild(guild)
+
+        await interaction.response.send_message(
+            embed=discord.Embed(title="✅ Le temps avant expiration du captcha a été mis à jour",
+                                color=discord.Color.green()))
 
     @discord.app_commands.command(name="log", description="Permet de configurer le salon des logs du bot")
     @discord.app_commands.describe(
@@ -65,11 +87,12 @@ class SettingsCog(commands.GroupCog, group_name="set"):
         if channel is None:
             self.bot.guilds_data[interaction.guild.id].logChannel = 0
             return
-        self.bot.guilds_data[interaction.guild.id].logChannel = channel.id
+        guild = await newBDD.getGuildById(interaction.guild.id)
+        guild.log_channel = channel.id
+        await newBDD.updateGuild(guild)
 
         await interaction.response.send_message(
             embed=discord.Embed(title="✅ Le salon des log a été mis à jour", color=discord.Color.green()))
-        bdd.save_guilds(self.bot.guilds_data)
 
     # Set_role
     @set_role.autocomplete("option")

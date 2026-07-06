@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from bot import MultiSpoon
 import bdd
+import newBDD
 
 def is_me():
     async def predicate(interaction: discord.Interaction) -> bool:
@@ -41,11 +42,12 @@ class ReloadCog(commands.GroupCog, group_name="reload"):
 
     @discord.app_commands.command(name="guilds", description="Commande inutilisable")
     @is_me()
-    async def reload_all(self, interaction: discord.Interaction):
+    async def reload_guilds(self, interaction: discord.Interaction):
         count = 0
         for guild in self.bot.guilds:
-            if not self.bot.guilds_data[guild.id]:
-                await bdd.add_guild(self.bot.guilds_data, guild)
+            guild_data = await newBDD.getGuildById(guild.id)
+            if not guild_data:
+                await newBDD.addGuild(guild)
                 count += 1
         await interaction.response.send_message(f"{count} serveurs étaient manquants!")
 

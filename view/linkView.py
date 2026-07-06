@@ -1,6 +1,7 @@
 import discord.ui
 
 from bdd import LinkData
+import newBDD
 
 
 class LinkView(discord.ui.View):
@@ -16,18 +17,8 @@ class LinkView(discord.ui.View):
             await interaction.response.send_message(embed=discord.Embed(title=":x: Vous devez être administrateur pour accepter la demande", color=discord.Colour.red()), ephemeral=True)
             return
 
-        data = LinkData.model_validate(
-            {"guild": self.channel.guild.id, "channel": self.channel.id})
-        if interaction.channel.id in self.bot.guilds_data[interaction.guild.id].associatedWith:
-            self.bot.guilds_data[interaction.guild.id].associatedWith[interaction.channel.id].append(data)
-        else:
-            self.bot.guilds_data[interaction.guild.id].associatedWith[interaction.channel.id] = [data]
-
-        data = LinkData.model_validate({"guild": interaction.guild.id, "channel": interaction.channel.id})
-        if self.channel.id in self.bot.guilds_data[self.channel.guild.id].associatedWith:
-            self.bot.guilds_data[self.channel.guild.id].associatedWith[self.channel.id].append(data)
-        else:
-            self.bot.guilds_data[self.channel.guild.id].associatedWith[self.channel.id] = [data]
+        await newBDD.addLink(interaction.channel_id, interaction.guild_id, self.channel.id, self.channel.id)
+        await newBDD.addLink(self.channel.id, self.channel.id, interaction.channel_id, interaction.guild_id,)
 
         await interaction.response.edit_message(
             embed=discord.Embed(

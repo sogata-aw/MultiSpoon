@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import logging
 import colorlog
 import bdd
+import newBDD
 from utilities.embeds import embed_log
 from utilities.webhook import get_webhook
 
@@ -78,7 +79,6 @@ class MultiSpoon(commands.Bot):
         # Lancement des loops
 
         self.verif_temps.start()
-        self.sauvegarde.start()
 
         self.logger.debug(self.guilds_data)
         self.logger.info("MultiSpoon est prêt !")
@@ -127,7 +127,7 @@ class MultiSpoon(commands.Bot):
     # -----Event-----
 
     async def on_guild_join(self, guild: discord.Guild):
-        await bdd.add_guild(self.guilds_data, guild)
+        await newBDD.addGuild(guild)
         self.logger.info(f"Le serveur {guild.name} a été ajouté à la configuration")
 
         user = await self.fetch_user(self.createur)
@@ -135,7 +135,7 @@ class MultiSpoon(commands.Bot):
         await dm_channel.send(embed=await e.embed_add("Un serveur a ajouté le bot", guild))
 
     async def on_guild_remove(self, guild: discord.Guild):
-        await bdd.remove_guild(self.guilds_data, guild)
+        await newBDD.deleteGuild(guild.id)
         self.logger.info(f"Le serveur {guild.name} a été supprimé de la configuration")
 
         user = await bot.fetch_user(self.createur)
@@ -143,16 +143,17 @@ class MultiSpoon(commands.Bot):
         await dm_channel.send(embed=await e.embed_add("Un serveur a supprimé le bot", guild))
 
     async def on_member_join(self, member: discord.Member):
-        if member.id in self.guilds_data[member.guild.id].alreadyVerified:
-            await member.add_roles(member.guild.get_role(self.guilds_data[member.guild.id].roleAfter))
+        guild = await newBDD.getGuildById(member.guild.id)
+        user_verified = await newBDD.isUserVerified(member.id, guild.id)
+        if user_verified:
+            await member.add_roles(member.guild.get_role(guild.role_after))
         else:
-            channel = None
+            # Récupération du salon du serveur si configuré
+            channel = member.guild.get_channel(guild.verification_channel)
             try:
-                # Récupération du salon du serveur si configuré
-                channel = member.guild.get_channel(self.guilds_data[member.guild.id].verificationChannel)
 
                 # Attribution du rôle au nouveau membre
-                await member.add_roles(member.guild.get_role(self.guilds_data[member.guild.id].roleBefore))
+                await member.add_roles(member.guild.get_role(guild.role_before))
 
                 # Gestion des erreurs
                 try:
@@ -169,11 +170,12 @@ class MultiSpoon(commands.Bot):
                 await channel.send(embed=discord.Embed(title=":warning: Le bot ne trouve pas le rôle d'arrivée",
                                                        color=discord.Colour.yellow()))
 
-    async def on_member_remove(self, member: discord.abc.User):
-        if member.id not in self.guilds_data[member.guild.id].alreadyVerified and self.guilds_data[
-            member.guild.id].verificationChannel:
+    async def on_member_remove(self, member: discord.Member):
+        guild_data = await newBDD.getGuildById(member.guild.id)
+        user_verified = await newBDD.isUserVerified(member.id, guild_data.id)
+        if not user_verified and guild_data.verification_channel:
             guild = self.get_guild(member.guild.id)
-            channel = guild.get_channel(self.guilds_data[member.guild.id].verificationChannel)
+            channel = guild.get_channel(guild_data.verificationChannel)
 
             def check_msg(msg: discord.Message):
                 return (msg.author.name == member.name or
@@ -186,86 +188,92 @@ class MultiSpoon(commands.Bot):
 
     # Suppression automatique du salon dans les données du bot s'il était temporaire
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
-        for i in range(len(self.guilds_data[channel.guild.id].tempChannels)):
-            if self.guilds_data[channel.guild.id].tempChannels[i].id == channel.id:
-                self.guilds_data[channel.guild.id].tempChannels.pop(i)
+        guild = await newBDD.getGuildById(channel.guild.id)
+        temp_channel = await newBDD.getTempChannel(channel.id, guild.id)
+        white_channel = await newBDD.getWhiteChannel(channel.id, guild.id)
 
-        if channel.id in self.guilds_data[channel.guild.id].whiteList:
-            self.guilds_data[channel.guild.id].whiteList.pop(channel.id)
+        if temp_channel:
+            await newBDD.deleteTempChannel(temp_channel)
 
-            log_channel = channel.guild.get_channel(self.guilds_data[channel.guild.id].logChannel)
+        if guild.white_list_active and white_channel:
+            await newBDD.deleteChannelFromWhiteList(white_channel)
+
+            log_channel = channel.guild.get_channel(guild.log_channel)
 
             if log_channel:
                 await log_channel.send(
                     embed=discord.Embed(title=f"Le salon {channel.mention} a été retiré de la white list",
                                         color=discord.Color.green()))
-        bdd.save_guilds(self.guilds_data)
 
     # Suppression automatique du rôle dans les données du bot s'il était temporaire
     async def on_guild_role_delete(self, role: discord.Role):
-        for i in range(len(self.guilds_data[role.guild.id].tempRoles)):
-            if self.guilds_data[role.guild.id].tempRoles[i].id == role.id:
-                self.guilds_data[role.guild.id].tempRoles.pop(i)
-        bdd.save_guilds(self.guilds_data)
+        temp_role = await newBDD.getTempRole(role.id, role.guild.id)
+        if temp_role:
+            await newBDD.deleteTempRole(temp_role)
 
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState,
-                                    after: discord.VoiceState):
-        if after.channel is not None and after.channel.id in self.guilds_data[after.channel.guild.id].channelToCheck:
-            temp_channel = await after.channel.guild.create_voice_channel(
-                name=f"Salon de {member.display_name}",
-                category=after.channel.category,
-                bitrate=after.channel.bitrate,
-                user_limit=after.channel.user_limit,
-                overwrites=after.channel.overwrites
-            )
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+        if after.channel is not None:
+            trigger_channel = await newBDD.getTriggerChannel(after.channel.id, member.guild.id)
+            if trigger_channel:
+                    temp_channel = await member.guild.create_voice_channel(
+                        name=f"Salon de {member.display_name}",
+                        category=after.channel.category,
+                        bitrate=after.channel.bitrate,
+                        user_limit=after.channel.user_limit,
+                        overwrites=after.channel.overwrites
+                    )
 
-            # Déplacer l’utilisateur dans le nouveau salon
-            await member.move_to(temp_channel)
+                    # Déplacer l’utilisateur dans le nouveau salon
+                    await member.move_to(temp_channel)
 
-            print(f"{member} a été déplacé dans {temp_channel.name}")
-            self.guilds_data[after.channel.guild.id].tempVoiceChannels.append(temp_channel.id)
+                    print(f"{member} a été déplacé dans {temp_channel.name}")
+                    await newBDD.addTriggeredChannel(temp_channel.id, member.guild.id)
 
     async def on_message(self, message: discord.Message):
-        if not message.author.bot:
-            if self.guilds_data[message.guild.id].spoonPot != 0 and message.channel.id == self.guilds_data[message.guild.id].spoonPot:
-                await message.guild.ban(user=message.author, delete_message_seconds=60, reason="Tombé dans le pot de cuillère")
+        if message.author.bot:
+            return
 
-                log_channel = message.guild.get_channel(self.guilds_data[message.guild.id].logChannel)
+        guild_data = await newBDD.getGuildById(message.guild.id)
 
-                if log_channel:
-                    embed = embed_log(
-                        f"{message.author.mention} est tombé dans le pot de cuillère et a été banni",
-                        message.author,
-                    )
-                    await log_channel.send(embed=embed)
+        if guild_data.spoon_pot != 0 and message.channel.id == guild_data.spoon_pot:
+            await message.guild.ban(user=message.author, delete_message_seconds=60, reason="Tombé dans le pot de cuillère")
+            log_channel = message.guild.get_channel(guild_data.log_channel)
+            if log_channel:
+                embed = embed_log(
+                    f"{message.author.mention} est tombé dans le pot de cuillère et a été banni",
+                    message.author,
+                )
+                await log_channel.send(embed=embed)
 
-            if self.guilds_data[message.guild.id].whiteListActive and message.channel.id not in self.guilds_data[message.guild.id].whiteList:
-                role = message.guild.get_role(self.guilds_data[message.guild.id].roleAfter)
+        if guild_data.white_list_active:
+            white_channel = await newBDD.getWhiteChannel(message.channel.id, guild_data.id)
+            if not white_channel:
+                role = message.guild.get_role(guild_data.role_after)
                 if role not in message.author.roles:
                     await message.delete()
-                    channel = message.guild.get_channel(self.guilds_data[message.guild.id].verificationChannel)
+                    channel = message.guild.get_channel(guild_data.verification_channel)
                     await message.channel.send(content=message.author.mention, embed=discord.Embed(
                         title=f":warning: Vous n'avez pas les droits pour écrire ici, veuillez passer la vérification dans {channel.mention}",
                         color=discord.Colour.yellow()))
-            elif message.channel.id in self.guilds_data[message.guild.id].associatedWith:
-                for link in self.guilds_data[message.guild.id].associatedWith[message.channel.id]:
-                    guild = self.get_guild(link.guild)
-                    channel = guild.get_channel(link.channel)
-                    webhook = await get_webhook(channel, "SpoonLink")
-                    await webhook.send(content=message.content, username=message.author.display_name, avatar_url=message.author.display_avatar.url)
-
+        else:
+            linked_channels = await newBDD.getLink(message.channel.id, guild_data.id)
+            for linked_channel in linked_channels:
+                linked_guild = self.get_guild(linked_channel.linked_guild_id)
+                channel = linked_guild.get_channel(linked_channel.linked_channel_id)
+                webhook = await get_webhook(channel, "SpoonLink")
+                await webhook.send(content=message.content, username=message.author.display_name, avatar_url=message.author.display_avatar.url)
 
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
-        if self.guilds_data[channel.guild.id].onCreateChannel:
-            self.guilds_data[channel.guild.id].whiteList.append(channel.id)
+        guild = await newBDD.getGuildById(channel.guild.id)
+        if guild.on_create_channel:
+            await newBDD.addToWhiteList(channel.id, guild.id)
 
-            log_channel = channel.guild.get_channel(self.guilds_data[channel.guild.id].logChannel)
+            log_channel = channel.guild.get_channel(guild.log_channel)
 
             if log_channel:
                 await log_channel.send(
                     embed=discord.Embed(title=f"Le salon {channel.mention} a été ajouté à la white list",
                                         color=discord.Color.green()))
-            bdd.save_guilds(self.guilds_data)
 
     # Synchronisation avec les cogs
     async def setup_hook(self):
@@ -279,19 +287,19 @@ class MultiSpoon(commands.Bot):
 
     # -----Tasks-----
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=7)
     async def verif_temps(self):
         self.logger.info("-----Début de la vérification-----")
-        guilds_data = self.guilds_data.copy()
-        for guild in guilds_data:
+        guilds = await newBDD.getAllGuilds()
+        for guild in guilds:
             # Récupération du serveur
-            serveur = self.get_guild(guilds_data[guild].id)
+            serveur = self.get_guild(guild.id)
 
             # Récupération des rôles et salons temporaire
-            temp_salons = guilds_data[guild].tempChannels
-            temp_roles = guilds_data[guild].tempRoles
-            temp_vocs = guilds_data[guild].tempVoiceChannels
-            await asyncio.sleep(1)
+            temp_salons = await newBDD.getTempChannelsByGuildId(guild.id)
+            temp_roles = await newBDD.getTempRolesByGuildId(guild.id)
+            temp_vocs = await newBDD.getTriggeredChannelByGuildId(guild.id)
+            await asyncio.sleep(0.5)
 
             for salon in temp_salons:
                 # Récupération de la date à laquelle le salon doit être supprimé
@@ -300,8 +308,8 @@ class MultiSpoon(commands.Bot):
                 # Si la date est dépassé, alors on récupère le salon pour le supprimer
                 if d.datetime.now() > date_final:
                     channel = serveur.get_channel(salon.id)
-                    await dat.delete_channel(channel, self.guilds_data, serveur)
-                await asyncio.sleep(1)
+                    await channel.delete()
+                await asyncio.sleep(0.5)
 
             for temp_role in temp_roles:
                 # Récupération de la date à laquelle le rôle doit être supprimé
@@ -310,25 +318,19 @@ class MultiSpoon(commands.Bot):
                 # Si la date est dépassé, alors on récupère le rôle pour le supprimer
                 if d.datetime.now() > date_final:
                     role = serveur.get_role(temp_role.id)
-                    await dat.delete_role(role, self.guilds_data, serveur)
-                await asyncio.sleep(1)
+                    await role.delete()
+                await asyncio.sleep(0.5)
 
             for temp_voc in temp_vocs:
-                channel = serveur.get_channel(temp_voc)
+                channel = serveur.get_channel(temp_voc.voice_channel_id)
                 if channel and len(channel.members) == 0:
                     await channel.delete()
-                    temp_vocs.remove(temp_voc)
+                    await newBDD.deleteTriggeredVoiceChannel(channel.id)
 
         self.logger.info("-----Fin de la vérification-----")
-        await asyncio.sleep(1)
-
-    @tasks.loop(minutes=5)
-    async def sauvegarde(self):
-        bdd.save_guilds(self.guilds_data)
-        self.logger.info("Sauvegarde effectué !")
+        await asyncio.sleep(0.5)
 
     @verif_temps.before_loop
-    @sauvegarde.before_loop
     async def before_looping(self):
         await bot.wait_until_ready()
 

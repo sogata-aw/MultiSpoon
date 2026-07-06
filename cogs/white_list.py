@@ -4,6 +4,7 @@ from discord.ext import commands
 from bot import MultiSpoon
 
 import bdd
+import newBDD
 
 
 def is_admin():
@@ -27,30 +28,33 @@ class WhiteListCog(commands.GroupCog, group_name="white_list"):
     @is_admin()
     @discord.app_commands.guild_only()
     async def activer(self, interaction: discord.Interaction, on_create_channel: bool = False):
-        self.bot.guilds_data[interaction.guild.id].whiteListActive = True
-        self.bot.guilds_data[interaction.guild.id].onCreateChannel = on_create_channel
+        guild = await newBDD.getGuildById(interaction.guild.id)
+        guild.white_list_active = True
+        guild.on_create_channel = on_create_channel
+        await newBDD.updateGuild(guild)
 
-        log_channel = interaction.guild.get_channel(self.bot.guilds_data[interaction.guild.id].logChannel)
+        log_channel = interaction.guild.get_channel(guild.log_channel)
 
         if log_channel:
             await log_channel.send(embed=discord.Embed(title="La white list à été activé", color=discord.Color.green()))
 
         await interaction.response.send_message(embed=discord.Embed(title="✅ La white list a été activé", color=discord.Color.green()))
-        bdd.save_guilds(self.bot.guilds_data)
 
     @discord.app_commands.command(name="désactiver",
                                   description="Permet de désactiver la white list")
     @is_admin()
     @discord.app_commands.guild_only()
     async def desactiver(self, interaction: discord.Interaction):
-        if not self.bot.guilds_data[interaction.guild_id].whiteListActive:
+        guild = await newBDD.getGuildById(interaction.guild.id)
+        if not guild.white_list_active:
             await interaction.response.send_message(
                 embed=discord.Embed(title=":warning: La white list est déjà désactivé", color=discord.Color.yellow()))
             return
 
-        self.bot.guilds_data[interaction.guild.id].whiteListActive = False
+        guild.whiteListActive = False
+        await newBDD.updateGuild(guild)
 
-        log_channel = interaction.guild.get_channel(self.bot.guilds_data[interaction.guild.id].logChannel)
+        log_channel = interaction.guild.get_channel(guild.log_channel)
         if log_channel:
             await log_channel.send(embed=discord.Embed(title="La white list à été désactivé",
                                                        color=discord.Color.green()))
@@ -58,21 +62,21 @@ class WhiteListCog(commands.GroupCog, group_name="white_list"):
         await interaction.response.send_message(
             embed=discord.Embed(title="✅ La white list a été désactivé", color=discord.Color.green()))
 
-        bdd.save_guilds(self.bot.guilds_data)
-
     @discord.app_commands.command(name="ajouter_salon",
                                   description="Permet d'ajouter un salon à la white list")
     @is_admin()
     @discord.app_commands.guild_only()
     async def ajouter_salon(self, interaction: discord.Interaction, salon: discord.TextChannel):
-        if salon.id in self.bot.guilds_data[interaction.guild_id].whiteList:
+        guild = await newBDD.getGuildById(interaction.guild.id)
+        white_channel = await newBDD.getWhiteChannel(salon.id, guild.id)
+        if white_channel:
             await interaction.response.send_message(
                 embed=discord.Embed(title="✅ Le salon est déjà dans la white list", color=discord.Color.green()))
             return
 
-        self.bot.guilds_data[interaction.guild_id].whiteList.append(salon.id)
+        await newBDD.addToWhiteList(salon.id, guild.id)
 
-        log_channel = interaction.guild.get_channel(self.bot.guilds_data[interaction.guild.id].logChannel)
+        log_channel = interaction.guild.get_channel(guild.log_channel)
 
         if log_channel:
             await log_channel.send(embed=discord.Embed(title=f"Le salon {salon.mention} a été ajouté à la white list",
@@ -80,7 +84,6 @@ class WhiteListCog(commands.GroupCog, group_name="white_list"):
 
         await interaction.response.send_message(
             embed=discord.Embed(title="✅ Le salon a été ajouté à la white list", color=discord.Color.green()))
-        bdd.save_guilds(self.bot.guilds_data)
 
 
     @discord.app_commands.command(name="retirer_salon",
@@ -88,24 +91,22 @@ class WhiteListCog(commands.GroupCog, group_name="white_list"):
     @is_admin()
     @discord.app_commands.guild_only()
     async def retirer_salon(self, interaction: discord.Interaction, salon: discord.TextChannel):
-        if not salon.id in self.bot.guilds_data[interaction.guild_id].whiteList:
-            await interaction.response.send_message(
-                embed=discord.Embed(title=":warning: Le salon n'est pas dans la white list",
-                                    color=discord.Color.green()))
+        guild = await newBDD.getGuildById(interaction.guild.id)
+        white_channel = await newBDD.getWhiteChannel(salon.id, guild.id)
+        if not white_channel:
+            await interaction.response.send_message(embed=discord.Embed(title=":warning: Le salon n'est pas dans la white list", color=discord.Color.green()))
             return
 
-        self.bot.guilds_data[interaction.guild_id].whiteList.remove(salon.id)
-
-        log_channel = interaction.guild.get_channel(self.bot.guilds_data[interaction.guild.id].logChannel)
-
+        await newBDD.deleteChannelFromWhiteList(white_channel)
+        log_channel = interaction.guild.get_channel(guild.log_channel)
         if log_channel:
             await log_channel.send(
                 embed=discord.Embed(title=f"Le salon {salon.mention} a été retiré de la white list",
                                     color=discord.Color.green()))
-
         await interaction.response.send_message(
             embed=discord.Embed(title="✅ Le salon a été retiré à la white list", color=discord.Color.green()))
-        bdd.save_guilds(self.bot.guilds_data)
+        return
+
 
 
 

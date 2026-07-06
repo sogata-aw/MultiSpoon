@@ -164,3 +164,4 @@ cython_debug/
 img/captcha.png
 img/logo.png
 ./data/guilds.json
+.zed/

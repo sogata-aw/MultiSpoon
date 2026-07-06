@@ -3,6 +3,7 @@ from discord.ext import commands
 
 from bdd import LinkData
 from bot import MultiSpoon
+import newBDD
 from utilities.embeds import embed_link
 from view.linkView import LinkView
 
@@ -47,18 +48,19 @@ class LinkCog(commands.GroupCog, group_name="interserveurs"):
                     color=discord.Colour.red()))
             return
 
-        data = LinkData.model_validate(
-            {"guild": int(server_id), "channel": int(channel_id)})
+        link = await newBDD.getLink(interaction.channel.id, guild.id, int(channel_id), int(server_id))
 
-        if interaction.channel.id not in self.bot.guilds_data[interaction.guild.id].associatedWith or data not in self.bot.guilds_data[interaction.guild.id].associatedWith[interaction.channel.id]:
+        if link:
             await interaction.response.send_message(
-                embed=discord.Embed(title=":white_check_mark: Une demande a été envoyé dans le salon à associer",
-                                    color=discord.Colour.green()))
-            message = await interaction.original_response()
-            await channel.send(embed=embed_link(":warning: Un serveur souhaite associer ce salon au sien !", interaction.guild, interaction.channel), view=LinkView(self.bot, interaction.channel, message))
+                embed=discord.Embed(title=":warning: Le salon est déjà associé", color=discord.Colour.yellow()))
             return
-        await interaction.response.send_message(
-            embed=discord.Embed(title=":warning: Le salon est déjà associé", color=discord.Colour.yellow()))
+
+        await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Une demande a été envoyé dans le salon à associer",
+                                    color=discord.Colour.green()))
+        message = await interaction.original_response()
+        await channel.send(embed=embed_link(":warning: Un serveur souhaite associer ce salon au sien !", interaction.guild, interaction.channel), view=LinkView(self.bot, interaction.channel, message))
+        return
+
 
     @is_admin()
     @discord.app_commands.command(name="unlink")
@@ -78,19 +80,13 @@ class LinkCog(commands.GroupCog, group_name="interserveurs"):
                                     color=discord.Colour.red()))
             return
 
-        key_to_remove = None
-        for i in range(len(self.bot.guilds_data[interaction.guild.id].associatedWith[interaction.channel.id])):
-            if self.bot.guilds_data[interaction.guild.id].associatedWith[interaction.channel.id][i].guild == guild.id and self.bot.guilds_data[interaction.guild.id].associatedWith[interaction.channel.id][i].channel == channel.id:
-                key_to_remove = i
-        if key_to_remove:
-            self.bot.guilds_data[interaction.guild_id].associatedWith[interaction.channel_id].pop(key_to_remove)
+        link = await newBDD.getLink(interaction.channel.id, guild.id, int(channel_id), int(server_id))
+        if link:
+            await newBDD.deleteLink(link)
 
-        key_to_remove = None
-        for i in range(len(self.bot.guilds_data[guild.id].associatedWith[channel.id])):
-            if self.bot.guilds_data[guild.id].associatedWith[channel.id][i].guild == interaction.guild_id and self.bot.guilds_data[guild.id].associatedWith[channel.id][i].channel == interaction.channel_id:
-                key_to_remove = i
-        if key_to_remove:
-            self.bot.guilds_data[guild.id].associatedWith[channel.id].pop(key_to_remove)
+        reversed_link = await newBDD.getLink(int(channel_id), int(server_id), interaction.channel.id, guild.id)
+        if reversed_link:
+            await newBDD.deleteLink(reversed_link)
         await interaction.response.send_message(
             embed=discord.Embed(title=":white_check_mark: Les salons ont été dissociés",
                                 color=discord.Colour.green()))

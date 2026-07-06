@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from bot import MultiSpoon
 
+import newBDD
 from utilities import dater as dat
 
 
@@ -42,7 +43,18 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
                 embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
             return
 
-        await dat.create_channel_duree(interaction, nom, typesalon, self.bot.guilds_data, categorie, total_duration)
+        if typesalon == "textuel":
+            salon_temp = await interaction.guild.create_text_channel(name=nom.lower(), category=categorie)
+        elif typesalon == "vocal":
+            salon_temp = await interaction.guild.create_voice_channel(name=nom, category=categorie)
+        else:
+            await interaction.response.send_message(embed=discord.Embed(title=":warning: Le type n'est pas valide"))
+            return
+
+        await newBDD.addTempChannel(salon_temp.id, interaction.guild_id, nom.lower(), categorie.name, typesalon,  duree)
+
+        await interaction.response.send_message(
+            embed=discord.Embed(title=":white_check_mark: Le salon a été crée", colour=discord.Color.green()))
 
     # @temp_group.command(name="afficher", description="Affiche les salons temporaires crées")
     # async def afficher_salon_temporaire(self, interaction, salon: discord.abc.GuildChannel):
@@ -69,21 +81,16 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
     @temp_group.command(name="supprimer", description="Supprime un salon temporaire crée")
     @discord.app_commands.describe(nom="Le nom du salon que vous voulez supprimer")
     @is_admin()
-    async def supprimer_salon_temporaire(self, interaction: discord.Interaction, nom: discord.abc.GuildChannel):
+    async def supprimer_salon_temporaire(self, interaction: discord.Interaction, salon: discord.abc.GuildChannel):
         suppr = False
-        for temp_channel in self.bot.guilds_data[interaction.guild.id].tempChannels:
-            if temp_channel.name == nom.name and temp_channel.id == nom.id:
-                channel = interaction.guild.get_channel(temp_channel.id)
-                if channel is None:
-                    await interaction.response.send_message(
-                        embed=discord.Embed(title=":warning: Le salon que vous souhaitez supprimer n'existe pas"))
-                    return
+        channel = await newBDD.getTempChannel(salon.id, interaction.guild_id)
+        if channel:
+            await salon.delete()
+            await interaction.response.send_message(
+                embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé",
+                                    colour=discord.Color.green()))
+            suppr = True
 
-                await channel.delete()
-                await interaction.response.send_message(
-                    embed=discord.Embed(title=":white_check_mark: Le salon temporaire a été supprimé",
-                                        colour=0x008001))
-                suppr = True
         if not suppr:
             await interaction.response.send_message(embed=discord.Embed(
                 title=":warning: Le salon que vous souhaitez supprimer n'existe pas ou n'est pas un salon temporaire"))

@@ -8,6 +8,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from bot import MultiSpoon
+import newBDD
 from utilities import captchas as c
 from utilities import embeds as e
 from utilities.embeds import embed_log
@@ -107,15 +108,10 @@ class ModerationCog(commands.Cog):
     @is_admin()
     @discord.app_commands.guild_only()
     async def settings(self, interaction: discord.Interaction):
-        salon = interaction.guild.get_channel(
-            self.bot.guilds_data[interaction.guild.id].verificationChannel
-        )
-        role_before = interaction.guild.get_role(
-            self.bot.guilds_data[interaction.guild.id].roleBefore
-        )
-        role_after = interaction.guild.get_role(
-            self.bot.guilds_data[interaction.guild.id].roleAfter
-        )
+        guild = await newBDD.getGuildById(interaction.guild_id)
+        salon = interaction.guild.get_channel(guild.verification_channel)
+        role_before = interaction.guild.get_role(guild.role_before)
+        role_after = interaction.guild.get_role(guild.role_after)
 
         embed = discord.Embed(title="paramètre du bot :")
         embed.add_field(name="Salon de vérification : ", value=salon.mention)
@@ -123,31 +119,10 @@ class ModerationCog(commands.Cog):
         embed.add_field(name="Rôle après vérification : ", value=role_after.mention)
         embed.add_field(
             name="Temps de la commande vérification : ",
-            value=str(self.bot.guilds_data[interaction.guild.id].timeout) + " secondes",
+            value=str(guild.timeout) + " secondes",
         )
 
         await interaction.response.send_message(embed=embed)
-
-    @discord.app_commands.command(
-        name="sync",
-        description="Synchronise toutes les personnes qui ont le rôle après vérification",
-    )
-    @is_admin()
-    @discord.app_commands.guild_only()
-    async def sync(self, interaction: discord.Interaction):
-        for member in interaction.guild.members:
-            if (
-                    member.id
-                    not in self.bot.guilds_data[interaction.guild.id].alreadyVerified
-                    and member.get_role(
-                self.bot.guilds_data[interaction.guild.id].roleAfter
-            )
-                    is not None
-            ):
-                self.bot.guilds_data[interaction.guild.id].alreadyVerified.append(
-                    member.id
-                )
-        await interaction.response.send_message("Synchronisation terminé !")
 
     @discord.app_commands.command(
         name="verify", description="Permet de lancer la vérification"
@@ -155,9 +130,9 @@ class ModerationCog(commands.Cog):
     @discord.app_commands.guild_only()
     async def verify(self, interaction: discord.Interaction):
         guild = interaction.guild
-        guild_data = self.bot.guilds_data[guild.id]
-        roleBefore = guild_data.roleBefore
-        roleAfter = guild_data.roleAfter
+        guild_data = await newBDD.getGuildById(guild.id)
+        roleBefore = guild_data.role_before
+        roleAfter = guild_data.role_after
 
         if guild.get_role(roleBefore) not in interaction.user.roles:
             await interaction.response.send_message(
@@ -177,7 +152,7 @@ class ModerationCog(commands.Cog):
             )
             return
 
-        if not guild_data.verificationChannel or not roleBefore or not roleAfter:
+        if not guild_data.verification_channel or not roleBefore or not roleAfter:
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title=":warning: La configuration n'est pas complète \n Veuillez la finaliser avant de procéder à une verification",
@@ -185,7 +160,7 @@ class ModerationCog(commands.Cog):
                 )
             )
             return
-        log_channel = guild.get_channel(guild_data.logChannel)
+        log_channel = guild.get_channel(guild_data.log_channel)
 
         if log_channel:
             embed = embed_log(
@@ -254,7 +229,8 @@ class ModerationCog(commands.Cog):
                             interaction.user,
                         )
                         await log_channel.send(embed=embed)
-                    guild_data.alreadyVerified.append(interaction.user.id)
+
+                    await newBDD.addVerified(interaction.user.id, guild.id)
                     await interaction.channel.purge(limit=50, check=msg_check)
                 else:
                     if log_channel:
