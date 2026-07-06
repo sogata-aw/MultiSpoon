@@ -117,7 +117,7 @@ async def getTempRole(role_id: int, guild_id: int):
         result = await session.get(Role, (role_id, guild_id))
         return result
 
-async def addTempRole(role_id: int, guild_id: int, name: str, duree: str)
+async def addTempRole(role_id: int, guild_id: int, name: str, duree: str):
     async with async_session() as session :
         role = Role(id=role_id, guild_id=guild_id, name=name, duree=duree)
         session.add(role)

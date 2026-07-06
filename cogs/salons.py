@@ -79,7 +79,7 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
     #     await interaction.response.send_message(embed=embed)
 
     @temp_group.command(name="supprimer", description="Supprime un salon temporaire crée")
-    @discord.app_commands.describe(nom="Le nom du salon que vous voulez supprimer")
+    @discord.app_commands.describe(salon="Le nom du salon que vous voulez supprimer")
     @is_admin()
     async def supprimer_salon_temporaire(self, interaction: discord.Interaction, salon: discord.abc.GuildChannel):
         suppr = False

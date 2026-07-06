@@ -4,12 +4,7 @@ import discord
 from discord.ext import commands
 
 from bot import MultiSpoon
-
-import bdd
-
 import newBDD
-from utilities import settings as s
-
 
 def is_admin():
     async def predicate(interaction: discord.Interaction) -> bool:
