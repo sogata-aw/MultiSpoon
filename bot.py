@@ -28,7 +28,6 @@ class MultiSpoon(commands.Bot):
     def __init__(self, intents: discord.Intents, token: str):
         super().__init__(command_prefix="!", intents=intents)
         self.token: str = token
-        self.guilds_data: dict[int, bdd.GuildData] = bdd.load_guilds()
         self.commands_data: dict[str, dict[str, str]] = bdd.load_commands()
         self.createur: int = 649268058652672051
 
@@ -80,7 +79,6 @@ class MultiSpoon(commands.Bot):
 
         self.verif_temps.start()
 
-        self.logger.debug(self.guilds_data)
         self.logger.info("MultiSpoon est prêt !")
 
     async def on_app_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
@@ -256,7 +254,7 @@ class MultiSpoon(commands.Bot):
                         title=f":warning: Vous n'avez pas les droits pour écrire ici, veuillez passer la vérification dans {channel.mention}",
                         color=discord.Colour.yellow()))
         else:
-            linked_channels = await newBDD.getLink(message.channel.id, guild_data.id)
+            linked_channels = await newBDD.getLinks(message.channel.id, guild_data.id)
             for linked_channel in linked_channels:
                 linked_guild = self.get_guild(linked_channel.linked_guild_id)
                 channel = linked_guild.get_channel(linked_channel.linked_channel_id)

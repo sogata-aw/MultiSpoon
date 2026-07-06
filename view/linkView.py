@@ -1,6 +1,4 @@
 import discord.ui
-
-from bdd import LinkData
 import newBDD
 
 

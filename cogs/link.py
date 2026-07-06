@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 
-from bdd import LinkData
 from bot import MultiSpoon
 import newBDD
 from utilities.embeds import embed_link
