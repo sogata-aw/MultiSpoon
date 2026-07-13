@@ -8,6 +8,7 @@ import traceback
 import asyncio
 import os
 import json
+import sys
 
 from dotenv import load_dotenv
 import logging
@@ -25,11 +26,12 @@ from utilities import dater as dat
 
 class MultiSpoon(commands.Bot):
 
-    def __init__(self, intents: discord.Intents, token: str):
+    def __init__(self, intents: discord.Intents, token: str, update: bool):
         super().__init__(command_prefix="!", intents=intents)
         self.token: str = token
         self.commands_data: dict[str, dict[str, str]] = bdd.load_commands()
         self.createur: int = 649268058652672051
+        self.update = update
 
         # Initialisation du logger
 
@@ -80,6 +82,11 @@ class MultiSpoon(commands.Bot):
         self.verif_temps.start()
 
         self.logger.info("MultiSpoon est prêt !")
+
+        if self.update:
+            user = await self.fetch_user(self.createur)
+            dm_channel = await user.create_dm()
+            await dm_channel.send(embed=discord.Embed(title="Le bot a été correctement mis à jour et a redémarré", color=discord.Colour.green()))
 
     async def on_app_command_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
 
@@ -347,9 +354,11 @@ if __name__ == "__main__":
     token_base = os.getenv('DT')
     token_beta = os.getenv('DTB')
 
+    updated = sys.argv and sys.argv[1] == "updated"
+
     if mode == "beta":
-        bot = MultiSpoon(discord.Intents.all(), token_beta)
+        bot = MultiSpoon(discord.Intents.all(), token_beta, updated)
     else:
-        bot = MultiSpoon(discord.Intents.all(), token_base)
+        bot = MultiSpoon(discord.Intents.all(), token_base, updated)
 
     bot.run()
