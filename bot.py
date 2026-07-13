@@ -212,7 +212,7 @@ class MultiSpoon(commands.Bot):
 
     # Suppression automatique du rôle dans les données du bot s'il était temporaire
     async def on_guild_role_delete(self, role: discord.Role):
-        temp_role = await newBDD.getTempRole(role.id, role.guild.id)
+        temp_role = await newBDD.getTempRole(role.id)
         if temp_role:
             await newBDD.deleteTempRole(temp_role)
 
@@ -307,21 +307,15 @@ class MultiSpoon(commands.Bot):
             await asyncio.sleep(0.5)
 
             for salon in temp_salons:
-                # Récupération de la date à laquelle le salon doit être supprimé
-                date_final = d.datetime.strptime(salon.duree, "%Y-%m-%d %H:%M:%S:%f")
-
                 # Si la date est dépassé, alors on récupère le salon pour le supprimer
-                if d.datetime.now() > date_final:
+                if d.datetime.now().isoformat() > salon.duree:
                     channel = serveur.get_channel(salon.id)
                     await channel.delete()
                 await asyncio.sleep(0.5)
 
             for temp_role in temp_roles:
-                # Récupération de la date à laquelle le rôle doit être supprimé
-                date_final = d.datetime.strptime(temp_role.duree, "%Y-%m-%d %H:%M:%S:%f")
-
                 # Si la date est dépassé, alors on récupère le rôle pour le supprimer
-                if d.datetime.now() > date_final:
+                if d.datetime.now().isoformat() > temp_role.duree:
                     role = serveur.get_role(temp_role.id)
                     await role.delete()
                 await asyncio.sleep(0.5)

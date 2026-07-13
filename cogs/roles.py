@@ -27,19 +27,16 @@ class RolesCog(commands.GroupCog, group_name="role"):
     # -----Commandes-----
     @temp_group.command(name="créer", description="Créer un rôle pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du rôle que vous voulez créer",
-                                   couleur="La couleur du rôle que vous voulez",
-                                   duree="La durée que vous souhaitez mettre (voir /aide sur comment faire)")
+                                   couleur="La couleur du rôle que vous voulez")
     @is_admin()
-    async def creer_role_temporaire(self, interaction: discord.Interaction, nom: str, duree: str, couleur: str = "#99a9b5",
-                                    separe: bool = False, mentionable: bool = False):
-        duree_de_base = d.datetime.now()
-
-        duree_split = duree.split()
-        total_duration = await dat.ajouter_temps(duree_split)
-        if total_duration == duree_de_base:
+    async def creer_role_temporaire(self, interaction: discord.Interaction, nom: str, couleur: str = "#99a9b5",separe: bool = False, mentionable: bool = False,
+        jours: int = 0, heures: int = 0, minutes: int = 0, semaines: int = 0, mois: int = 0, annees: int = 0):
+        if not jours and not heures and not minutes and not semaines and not mois and not annees :
             await interaction.response.send_message(
-                embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
+                embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide", color=discord.Colour.yellow()))
             return
+
+        expiration = dat.get_expiration_time(minutes, heures, jours, semaines, mois, annees)
 
         if not dat.est_couleur_hexa(couleur):
             await interaction.channel.send(
@@ -49,7 +46,7 @@ class RolesCog(commands.GroupCog, group_name="role"):
         role = await interaction.guild.create_role(name=nom, colour=discord.Colour.from_str(couleur), hoist=separe,
                                                    mentionable=mentionable)
 
-        await newBDD.addTempRole(role.id, interaction.guild_id, role.name, duree)
+        await newBDD.addTempRole(role.id, interaction.guild_id, role.name, expiration.isoformat())
         await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Le rôle a été crée", colour=discord.Color.green()))
 
     # @commands.hybrid_command(name="afficher", description="Affiche les salons temporaires crées")
@@ -77,7 +74,7 @@ class RolesCog(commands.GroupCog, group_name="role"):
     @is_admin()
     async def supprimer_role_temporaire(self, interaction: discord.Interaction, role: discord.Role):
         suppr = False
-        temp_role = await newBDD.getTempRole(role.id, interaction.guild_id)
+        temp_role = await newBDD.getTempRole(role.id)
         if temp_role:
             await role.delete()
             await interaction.response.send_message(

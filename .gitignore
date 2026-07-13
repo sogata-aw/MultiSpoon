@@ -165,3 +165,6 @@ img/captcha.png
 img/logo.png
 ./data/guilds.json
 .zed/
+spoon.db
+test.py
+bddTest.py

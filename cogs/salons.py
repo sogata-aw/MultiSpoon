@@ -29,19 +29,17 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
     @temp_group.command(name="créer", description="Créer un salon pour une durée déterminée")
     @discord.app_commands.describe(nom="Le nom du salon que vous voulez créer",
                                    typesalon="Le type de salon que vous voulez créer",
-                                   categorie="La catégorie dans lequel vous voulez créer le salon(dans aucune par défaut)",
-                                   duree="La durée que vous souhaitez mettre (voir /aide sur comment faire)")
+                                   categorie="La catégorie dans lequel vous voulez créer le salon(dans aucune par défaut)")
     @is_admin()
-    async def creer_salon_temporaire(self, interaction: discord.Interaction, nom: str, typesalon: str, duree: str, categorie: discord.CategoryChannel = None):
-        duree_de_base = d.datetime.now()
+    async def creer_salon_temporaire(self, interaction: discord.Interaction, nom: str, typesalon: str, categorie: discord.CategoryChannel = None,
+        jours: int = 0, heures: int = 0, minutes: int = 0, semaines: int = 0, mois: int = 0, annees: int = 0):
 
-        duree_split = duree.split()
-        total_duration = await dat.ajouter_temps(duree_split)
-
-        if total_duration == duree_de_base:
+        if not jours and not heures and not minutes and not semaines and not mois and not annees :
             await interaction.response.send_message(
-                embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide"))
+                embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide", color=discord.Colour.yellow()))
             return
+
+        expiration = dat.get_expiration_time(minutes, heures, jours, semaines, mois, annees)
 
         if typesalon == "textuel":
             salon_temp = await interaction.guild.create_text_channel(name=nom.lower(), category=categorie)
@@ -51,7 +49,8 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
             await interaction.response.send_message(embed=discord.Embed(title=":warning: Le type n'est pas valide"))
             return
 
-        await newBDD.addTempChannel(salon_temp.id, interaction.guild_id, nom.lower(), categorie.name, typesalon,  duree)
+        category_name = categorie.name if categorie else "None"
+        await newBDD.addTempChannel(salon_temp.id, interaction.guild_id, nom.lower(), category_name, typesalon, expiration.isoformat())
 
         await interaction.response.send_message(
             embed=discord.Embed(title=":white_check_mark: Le salon a été crée", colour=discord.Color.green()))
