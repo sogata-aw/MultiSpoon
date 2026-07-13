@@ -194,7 +194,7 @@ class MultiSpoon(commands.Bot):
     # Suppression automatique du salon dans les données du bot s'il était temporaire
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
         guild = await newBDD.getGuildById(channel.guild.id)
-        temp_channel = await newBDD.getTempChannel(channel.id, guild.id)
+        temp_channel = await newBDD.getTempChannel(channel.id)
         white_channel = await newBDD.getWhiteChannel(channel.id, guild.id)
 
         if temp_channel:

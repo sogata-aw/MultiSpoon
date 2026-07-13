@@ -83,7 +83,7 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
     @is_admin()
     async def supprimer_salon_temporaire(self, interaction: discord.Interaction, salon: discord.abc.GuildChannel):
         suppr = False
-        channel = await newBDD.getTempChannel(salon.id, interaction.guild_id)
+        channel = await newBDD.getTempChannel(salon.id)
         if channel:
             await salon.delete()
             await interaction.response.send_message(

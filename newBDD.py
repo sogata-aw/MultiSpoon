@@ -66,9 +66,9 @@ async def getTempChannelsByGuildId(guild_id: int):
         result = await session.exec(select(TempChannel).where(TempChannel.guild_id == guild_id))
         return result.all()
 
-async def getTempChannel(channel_id: int, guild_id: int):
+async def getTempChannel(channel_id: int):
     async with async_session() as session :
-        result = await session.get(TempChannel, (channel_id, guild_id))
+        result = await session.get(TempChannel, channel_id)
         return result
 
 async def addTempChannel(channel_id: int, guild_id: int, name: str, category: str, type: str, duree: str):
@@ -112,9 +112,9 @@ async def getTempRolesByGuildId(guild_id: int):
         result = await session.exec(select(Role).where(Role.guild_id == guild_id))
         return result.all()
 
-async def getTempRole(role_id: int, guild_id: int):
+async def getTempRole(role_id: int):
     async with async_session() as session :
-        result = await session.get(Role, (role_id, guild_id))
+        result = await session.get(Role, role_id)
         return result
 
 async def addTempRole(role_id: int, guild_id: int, name: str, duree: str):
