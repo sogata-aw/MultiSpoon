@@ -1,5 +1,3 @@
-from email import message
-
 import discord
 from discord.ext import commands, tasks
 
@@ -21,7 +19,6 @@ from utilities.webhook import get_webhook
 from view.verifyView import VerifyView
 
 from utilities import embeds as e
-from utilities import dater as dat
 
 
 class MultiSpoon(commands.Bot):
