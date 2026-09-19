@@ -1,4 +1,4 @@
-CREATE TABLE Guild
+CREATE TABLE IF NOT EXISTS Guild
 (
     id                   INTEGER PRIMARY KEY,
     name                 VARCHAR(255) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE Guild
     spoon_pot            INTEGER DEFAULT 0
 );
 
-CREATE TABLE Verified
+CREATE TABLE IF NOT EXISTS Verified
 (
     user_id  INTEGER NOT NULL,
     guild_id INTEGER NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE Verified
     FOREIGN KEY (guild_id) REFERENCES Guild (id) ON DELETE CASCADE
 );
 
-CREATE TABLE Trigger_Voice_Channel
+CREATE TABLE IF NOT EXISTS Trigger_Voice_Channel
 (
     channel_id INTEGER NOT NULL,
     guild_id   INTEGER NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE Trigger_Voice_Channel
     FOREIGN KEY (guild_id) REFERENCES Guild (id) ON DELETE CASCADE
 );
 
-CREATE TABLE Temp_Channel
+CREATE TABLE IF NOT EXISTS Temp_Channel
 (
     id       INTEGER PRIMARY KEY,
     guild_id INTEGER      NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE Temp_Channel
     FOREIGN KEY (guild_id) REFERENCES Guild (id) ON DELETE CASCADE
 );
 
-CREATE TABLE Triggered_Voice_Channel
+CREATE TABLE IF NOT EXISTS Triggered_Voice_Channel
 (
     voice_channel_id INTEGER NOT NULL,
     guild_id         INTEGER NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE Triggered_Voice_Channel
     FOREIGN KEY (guild_id) REFERENCES Guild (id) ON DELETE CASCADE
 );
 
-CREATE TABLE Role
+CREATE TABLE IF NOT EXISTS Role
 (
     id       INTEGER PRIMARY KEY,
     guild_id INTEGER      NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE Role
     FOREIGN KEY (guild_id) REFERENCES Guild (id) ON DELETE CASCADE
 );
 
-CREATE TABLE White_List
+CREATE TABLE IF NOT EXISTS White_List
 (
     channel_id INTEGER NOT NULL,
     guild_id   INTEGER NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE White_List
 
 );
 
-CREATE TABLE Link
+CREATE TABLE IF NOT EXISTS Link
 (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     channel_id        INTEGER NOT NULL,
@@ -74,4 +74,40 @@ CREATE TABLE Link
     linked_guild_id   INTEGER NOT NULL,
     FOREIGN KEY (guild_id) REFERENCES Guild (id) ON DELETE CASCADE,
     FOREIGN KEY (linked_guild_id) REFERENCES Guild (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Seance
+(
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id           INTEGER NOT NULL,
+    title              VARCHAR(255) NOT NULL,
+    date               VARCHAR(255) NOT NULL,
+    FOREIGN KEY (guild_id) REFERENCES Guild (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Movie
+(
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+    tmdb_id            INTEGER NOT NULL UNIQUE,
+    seance_id          INTEGER NOT NULL,
+    title              VARCHAR(255) NOT NULL,
+    description        TEXT NOT NULL,
+    image              VARCHAR(255) NOT NULL,
+    proposed_by        INTEGER NOT NULL UNIQUE,
+    FOREIGN KEY (seance_id) REFERENCES Seance (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Genre
+(
+    id                 INTEGER PRIMARY KEY,
+    name               VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Movie_Genre
+(
+    movie_id           INTEGER NOT NULL,
+    genre_id           INTEGER NOT NULL,
+    PRIMARY KEY (movie_id, genre_id),
+    FOREIGN KEY (movie_id) REFERENCES Movie (id) ON DELETE CASCADE,
+    FOREIGN KEY (genre_id) REFERENCES Genre (id) ON DELETE CASCADE
 );

@@ -5,26 +5,17 @@ import typing
 import aiohttp
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 
-from bot import MultiSpoon
 import newBDD
+from bot import MultiSpoon
 from utilities import captchas as c
 from utilities import embeds as e
 from utilities.embeds import embed_log
+from utilities.permissions import is_admin
 from view.aideView import AideSelectView
 from view.supportView import SupportView
 from view.verifyView import VerifyView
 from view.voteView import VoteView
-
-load_dotenv(".env")
-
-
-def is_admin():
-    async def predicate(interaction: discord.Interaction) -> bool:
-        return interaction.user.guild_permissions.administrator
-
-    return discord.app_commands.check(predicate)
 
 
 class ModerationCog(commands.Cog):

@@ -1,17 +1,9 @@
 import discord
 from discord.ext import commands
 
-from bot import MultiSpoon
-
-import bdd
 import newBDD
-
-
-def is_admin():
-    async def predicate(interaction: discord.Interaction) -> bool:
-        return interaction.user.guild_permissions.administrator
-
-    return discord.app_commands.check(predicate)
+from bot import MultiSpoon
+from utilities.permissions import is_admin
 
 
 @discord.app_commands.guild_only()

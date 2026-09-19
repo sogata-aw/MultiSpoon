@@ -4,15 +4,9 @@ import typing
 import discord
 from discord.ext import commands
 
-from bot import MultiSpoon
-import bdd
 import newBDD
-
-def is_me():
-    async def predicate(interaction: discord.Interaction) -> bool:
-        return interaction.user.id == 649268058652672051
-
-    return discord.app_commands.check(predicate)
+from bot import MultiSpoon
+from utilities.permissions import is_me
 
 
 @discord.app_commands.dm_only()
@@ -23,25 +17,25 @@ class ReloadCog(commands.GroupCog, group_name="reload"):
 
     # -----Commandes-----
 
+    @is_me()
     @discord.app_commands.command(name="extension", description="Commande inutilisable")
     @discord.app_commands.describe(
         extension="Le nom de celle que vous voulez recharger"
     )
-    @is_me()
     async def reload(self, interaction: discord.Interaction, extension: str):
         await self.bot.reload_extension(f"cogs.{extension}")
         await interaction.response.send_message(
             f"✅ Extension `{extension}` rechargée !"
         )
 
-    @discord.app_commands.command(name="all", description="Commande inutilisable")
     @is_me()
+    @discord.app_commands.command(name="all", description="Commande inutilisable")
     async def reload_all(self, interaction: discord.Interaction):
         await self.bot.setup_hook()
         await interaction.response.send_message("✅ Extensions rechargées !")
 
-    @discord.app_commands.command(name="guilds", description="Commande inutilisable")
     @is_me()
+    @discord.app_commands.command(name="guilds", description="Commande inutilisable")
     async def reload_guilds(self, interaction: discord.Interaction):
         count = 0
         for guild in self.bot.guilds:

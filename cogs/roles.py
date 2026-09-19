@@ -1,11 +1,10 @@
+import datetime as d
+
 import discord
 from discord.ext import commands
 
-import datetime as d
-
-from bot import MultiSpoon
-
 import newBDD
+from bot import MultiSpoon
 from utilities import dater as dat
 
 

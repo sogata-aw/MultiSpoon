@@ -1,12 +1,13 @@
 import discord
-
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from models.Guild import Guild
 from models.Link import Link
+from models.Movie import Movie
 from models.Role import Role
+from models.Seance import Seance
 from models.TempChannel import TempChannel
 from models.TriggerChannel import TriggerChannel
 from models.TriggeredChannel import TriggeredChannel
@@ -198,4 +199,52 @@ async def getLinksByGuildId(guild_id: int):
 async def deleteLink(link: Link):
     async with async_session() as session :
         await session.delete(link)
-        await session.delete()
+        await session.commit()
+
+
+#----------------------SEANCE-----------------------------
+
+async def addSeance(guild_id: int, title: str, date: str):
+    async with async_session() as session:
+        seance = Seance(guild_id=guild_id, title=title, date=date)
+        session.add(seance)
+        await session.commit()
+
+async def getSeance(id: int):
+    async with async_session() as session :
+        response = await session.get(Seance, id)
+        return response
+
+async def getSeances(guild_id):
+    async with async_session() as session :
+        response = await session.exec(select(Seance).where(Seance.guild_id == guild_id))
+        return response.all()
+
+async def deleteSeance(seance: Seance):
+    async with async_session() as session :
+        await session.delete(seance)
+        await session.commit()
+
+
+#----------------------MOVIE-----------------------------
+
+async def addMovie(seance_id: int, tmdb_id: int, title: str, description: str, image: str, proposed_by: int):
+    async with async_session() as session:
+        movie = Movie(seance_id=seance_id, tmdb_id=tmdb_id, title=title, description=description, image=image, proposed_by=proposed_by)
+        session.add(movie)
+        await session.commit()
+
+async def getMoviesBySeance(seance_id: int):
+    async with async_session() as session:
+        response = await session.exec(select(Movie).where(Movie.seance_id == seance_id))
+        return response.all()
+
+async def getMovieBySeanceAndUser(seance_id: int, user: int):
+    async with async_session() as session:
+        response = await session.exec(select(Movie).where(Movie.seance_id == seance_id).where(Movie.proposed_by == user))
+        return response.first()
+
+async def deleteMovie(movie: Movie):
+    async with async_session() as session :
+        await session.delete(movie)
+        await session.commit()
