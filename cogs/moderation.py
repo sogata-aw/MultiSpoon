@@ -246,6 +246,7 @@ class ModerationCog(commands.Cog):
                         color=discord.Colour.green(),
                     ),
                     view=VerifyView(self),
+                    attachments=[]
                 )
                 if log_channel:
                     embed = embed_log(

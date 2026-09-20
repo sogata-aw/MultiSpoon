@@ -1,24 +1,22 @@
+import asyncio
+import datetime as d
+import json
+import logging
+import os
+import sys
+import traceback
+
+import colorlog
 import discord
 from discord.ext import commands, tasks
-
-import datetime as d
-import traceback
-import asyncio
-import os
-import json
-import sys
-
 from dotenv import load_dotenv
-import logging
-import colorlog
+
 import bdd
 import newBDD
+from utilities import embeds as e
 from utilities.embeds import embed_log
 from utilities.webhook import get_webhook
-
 from view.verifyView import VerifyView
-
-from utilities import embeds as e
 
 
 class MultiSpoon(commands.Bot):
@@ -289,7 +287,7 @@ class MultiSpoon(commands.Bot):
 
     # -----Tasks-----
 
-    @tasks.loop(seconds=7)
+    @tasks.loop(seconds=1)
     async def verif_temps(self):
         self.logger.info("-----Début de la vérification-----")
         guilds = await newBDD.getAllGuilds()
@@ -301,21 +299,21 @@ class MultiSpoon(commands.Bot):
             temp_salons = await newBDD.getTempChannelsByGuildId(guild.id)
             temp_roles = await newBDD.getTempRolesByGuildId(guild.id)
             temp_vocs = await newBDD.getTriggeredChannelByGuildId(guild.id)
-            await asyncio.sleep(0.5)
+            # await asyncio.sleep(0.5)
 
             for salon in temp_salons:
                 # Si la date est dépassé, alors on récupère le salon pour le supprimer
                 if d.datetime.now().isoformat() > salon.duree:
                     channel = serveur.get_channel(salon.id)
                     await channel.delete()
-                await asyncio.sleep(0.5)
+                # await asyncio.sleep(0.5)
 
             for temp_role in temp_roles:
                 # Si la date est dépassé, alors on récupère le rôle pour le supprimer
                 if d.datetime.now().isoformat() > temp_role.duree:
                     role = serveur.get_role(temp_role.id)
                     await role.delete()
-                await asyncio.sleep(0.5)
+                # await asyncio.sleep(0.5)
 
             for temp_voc in temp_vocs:
                 channel = serveur.get_channel(temp_voc.voice_channel_id)
@@ -324,14 +322,11 @@ class MultiSpoon(commands.Bot):
                     await newBDD.deleteTriggeredVoiceChannel(channel.id)
 
         self.logger.info("-----Fin de la vérification-----")
-        await asyncio.sleep(0.5)
+        # await asyncio.sleep(0.5)
 
     @verif_temps.before_loop
     async def before_looping(self):
         await bot.wait_until_ready()
-
-    def run(self, **kwargs):
-        super().run(self.token)
 
 
 if __name__ == "__main__":
@@ -352,4 +347,4 @@ if __name__ == "__main__":
     else:
         bot = MultiSpoon(discord.Intents.all(), token_base, updated)
 
-    bot.run()
+    bot.run(bot.token)
