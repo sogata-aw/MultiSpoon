@@ -228,9 +228,9 @@ async def deleteSeance(seance: Seance):
 
 #----------------------MOVIE-----------------------------
 
-async def addMovie(seance_id: int, tmdb_id: int, title: str, description: str, image: str, proposed_by: int):
+async def addMovie(seance_id: int, tmdb_id: int, title: str, description: str, image: str, proposed_by: int, notes: str = ""):
     async with async_session() as session:
-        movie = Movie(seance_id=seance_id, tmdb_id=tmdb_id, title=title, description=description, image=image, proposed_by=proposed_by)
+        movie = Movie(seance_id=seance_id, tmdb_id=tmdb_id, title=title, description=description, image=image, proposed_by=proposed_by, notes=notes)
         session.add(movie)
         await session.commit()
 

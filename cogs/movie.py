@@ -30,13 +30,12 @@ class MovieCog(commands.GroupCog, group_name="film"):
         print(response)
         movies = response.json()
         print(movies)
-        text = ""
 
         await interaction.response.send_message(embed=embed_search(title, movies["results"]), ephemeral=True)
 
     @discord.app_commands.guild_only()
     @discord.app_commands.command(name="suggérer", description="Suggère un film")
-    async def suggest(self, interaction: discord.Interaction, titre: int, seance: int):
+    async def suggest(self, interaction: discord.Interaction, titre: int, seance: int, notes: str=""):
         movie = await newBDD.getMovieBySeanceAndUser(seance, interaction.user.id)
         if movie:
             await interaction.response.send_message(embed=discord.Embed(title=":x: Vous avez déjà proposé un film", color=discord.Color.red()), ephemeral=True)
@@ -50,8 +49,8 @@ class MovieCog(commands.GroupCog, group_name="film"):
 
         response = requests.get(url, headers=headers)
         movie = response.json()
-        embed=embed_movie(movie["title"], movie["poster_path"], movie["overview"], movie["genres"], interaction.user)
-        await interaction.response.send_message(embed=embed, view=SuggestView(self.bot, embed, seance, movie), ephemeral=True)
+        embed=embed_movie(movie["title"], movie["poster_path"], movie["overview"], movie["genres"], interaction.user, notes)
+        await interaction.response.send_message(embed=embed, view=SuggestView(self.bot, embed, seance, movie, notes), ephemeral=True)
 
 
     @suggest.autocomplete("titre")

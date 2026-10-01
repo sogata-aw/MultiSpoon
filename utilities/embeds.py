@@ -44,12 +44,14 @@ def embed_search(search, movies):
         embed.add_field(name=f"{movie["title"]} ({movie["release_date"][:4]})", value=f"[Voir la fiche](https://www.themoviedb.org/movie/{movie["id"]})")
     return embed
 
-def embed_movie(title: str, image: str, description: str, genres: dict, user: discord.User):
+def embed_movie(title: str, image: str, description: str, genres: dict, user: discord.User, notes: str=""):
     embed = discord.Embed(title=title)
     embed.set_author(name=f"Proposé par {user.name}", icon_url=user.display_avatar)
     embed.set_image(url=f"https://images.tmdb.org/t/p/original/{image}")
-    embed.add_field(name="Genres :", value=''.join(genre["name"] for genre in genres), inline=False)
+    embed.add_field(name="Genres :", value=', '.join(genre["name"] for genre in genres), inline=False)
     embed.add_field(name="Description :", value=description, inline=False)
+    if notes:
+        embed.add_field(name="Notes :", value=notes, inline=False)
     return embed
 
 def embed_seance(bot, seance: Seance, movies: list[Movie]):

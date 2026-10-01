@@ -8,4 +8,5 @@ class Movie(SQLModel, table=True):
     title: str
     description: str
     image: str
+    notes: str
     proposed_by: int = Field(unique=True)
