@@ -44,15 +44,13 @@ async def getAllGuilds():
 
 async def getGuildById(id: int):
     async with async_session() as session :
-        result = await session.get(Guild, id)
-        return result
+        return await session.get(Guild, id)
 
 #----------------------VERIFIED-----------------------------
 
 async def isUserVerified(user_id: int, guild_id: int):
     async with async_session() as session :
-        result = await session.get(Verified, (user_id,guild_id))
-        return result
+        return await session.get(Verified, (user_id,guild_id))
 
 async def addVerified(user_id: int, guild_id: int):
     async with async_session() as session :
@@ -69,8 +67,7 @@ async def getTempChannelsByGuildId(guild_id: int):
 
 async def getTempChannel(channel_id: int):
     async with async_session() as session :
-        result = await session.get(TempChannel, channel_id)
-        return result
+        return await session.get(TempChannel, channel_id)
 
 async def addTempChannel(channel_id: int, guild_id: int, name: str, category: str, type: str, duree: str):
     async with async_session() as session :
@@ -93,8 +90,7 @@ async def addToWhiteList(channel_id: int, guild_id: int):
 
 async def getWhiteChannel(channel_id, guild_id):
     async with async_session() as session :
-        result = await session.get(WhiteList, (channel_id, guild_id))
-        return result
+        return await session.get(WhiteList, (channel_id, guild_id))
 
 async def getWhiteListByGuildId(guild_id: int):
     async with async_session() as session :
@@ -115,8 +111,7 @@ async def getTempRolesByGuildId(guild_id: int):
 
 async def getTempRole(role_id: int):
     async with async_session() as session :
-        result = await session.get(Role, role_id)
-        return result
+        return await session.get(Role, role_id)
 
 async def addTempRole(role_id: int, guild_id: int, name: str, duree: str):
     async with async_session() as session :
@@ -139,8 +134,7 @@ async def getTriggerChannelByGuildId(guild_id: int):
 
 async def getTriggerChannel(channel_id: int, guild_id: int):
     async with async_session() as session :
-        result = await session.get(TriggerChannel, (channel_id, guild_id))
-        return result
+        return await session.get(TriggerChannel, (channel_id, guild_id))
 
 async def addTriggerChannel(channel_id: int, guild_id: int):
     async with async_session() as session :
@@ -212,8 +206,7 @@ async def addSeance(guild_id: int, title: str, date: str):
 
 async def getSeance(id: int):
     async with async_session() as session :
-        response = await session.get(Seance, id)
-        return response
+        return await session.get(Seance, id)
 
 async def getSeances(guild_id):
     async with async_session() as session :
@@ -233,6 +226,10 @@ async def addMovie(seance_id: int, tmdb_id: int, title: str, description: str, i
         movie = Movie(seance_id=seance_id, tmdb_id=tmdb_id, title=title, description=description, image=image, proposed_by=proposed_by, notes=notes)
         session.add(movie)
         await session.commit()
+
+async def getMovie(movie_id: int):
+    async with async_session() as session:
+        return await session.get(Movie, movie_id)
 
 async def getMoviesBySeance(seance_id: int):
     async with async_session() as session:

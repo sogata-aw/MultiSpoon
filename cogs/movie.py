@@ -7,6 +7,7 @@ from discord.ext import commands
 import newBDD
 from bot import MultiSpoon
 from utilities.embeds import embed_movie, embed_search
+from utilities.permissions import is_admin
 from view.suggestView import SuggestView
 
 
@@ -52,6 +53,14 @@ class MovieCog(commands.GroupCog, group_name="film"):
         embed=embed_movie(movie["title"], movie["poster_path"], movie["overview"], movie["genres"], interaction.user, notes)
         await interaction.response.send_message(embed=embed, view=SuggestView(self.bot, embed, seance, movie, notes), ephemeral=True)
 
+    @discord.app_commands.guild_only()
+    @is_admin()
+    @discord.app_commands.command(name="supprimer", description="Supprime le film suggéré pour la séance")
+    async def delete_movie(self, interaction: discord.Interaction, movie: int):
+        movie_data = await newBDD.getMovie(movie)
+        await newBDD.deleteMovie(movie_data)
+        await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Le film a bien été supprimé"))
+
 
     @suggest.autocomplete("titre")
     async def autocomplete_titre(self, interaction: discord.Interaction, film: str) -> list[discord.app_commands.Choice[int]]:
@@ -79,6 +88,16 @@ class MovieCog(commands.GroupCog, group_name="film"):
             liste.append(discord.app_commands.Choice(name=s.title, value=s.id))
         return liste
 
+
+    @delete_movie.autocomplete("movie")
+    async def autocomplete_movie(self, interaction: discord.Interaction, movie: str) -> list[discord.app_commands.Choice[int]]:
+        liste = []
+        seances = await newBDD.getSeances(interaction.guild_id)
+        for seance in seances:
+            movies = await newBDD.getMoviesBySeance(seance.id)
+            for m in movies:
+                liste.append(discord.app_commands.Choice(name=f"{m.title} - {seance.title}", value=m.id))
+        return liste
 
 async def setup(bot: MultiSpoon):
     await bot.add_cog(MovieCog(bot))
