@@ -37,8 +37,9 @@ class MovieCog(commands.GroupCog, group_name="film"):
     @discord.app_commands.guild_only()
     @discord.app_commands.command(name="suggérer", description="Suggère un film")
     async def suggest(self, interaction: discord.Interaction, titre: int, seance: int, notes: str=""):
-        movie = await newBDD.getMovieBySeanceAndUser(seance, interaction.user.id)
-        if movie:
+        movies = await newBDD.getMoviesBySeanceAndUser(seance, interaction.user.id)
+        seance_data = await newBDD.getSeance(seance)
+        if len(movies) >= seance_data.nb_proposal:
             await interaction.response.send_message(embed=discord.Embed(title=":x: Vous avez déjà proposé un film", color=discord.Color.red()), ephemeral=True)
             return
         url = f"https://api.themoviedb.org/3/movie/{titre}?language=fr-FR"

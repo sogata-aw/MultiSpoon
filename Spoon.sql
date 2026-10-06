@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS Seance
     guild_id           INTEGER NOT NULL,
     title              VARCHAR(255) NOT NULL,
     date               VARCHAR(255) NOT NULL,
+    nb_proposal        INTEGER,
     FOREIGN KEY (guild_id) REFERENCES Guild (id) ON DELETE CASCADE
 );
 

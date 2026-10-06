@@ -6,3 +6,4 @@ class Seance(SQLModel, table=True):
     guild_id: int = Field(default=None, foreign_key='guild.id')
     title: str
     date: str
+    nb_proposal: int

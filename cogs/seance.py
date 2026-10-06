@@ -17,8 +17,8 @@ class SeanceCog(commands.GroupCog, group_name="seance"):
     @discord.app_commands.guild_only()
     @is_admin()
     @discord.app_commands.command(name="créer", description="Créé une séance pour un film")
-    async def create(self, interaction: discord.Interaction, titre:str, date: str):
-        await newBDD.addSeance(interaction.guild_id, titre, date)
+    async def create(self, interaction: discord.Interaction, titre:str, date: str, nb_propositions: int=1):
+        await newBDD.addSeance(interaction.guild_id, titre, date, nb_propositions)
         await interaction.response.send_message(embed=discord.Embed(title=f":white_check_mark: La séance a été créé pour le {date}", color=discord.Color.green()))
 
     @discord.app_commands.guild_only()

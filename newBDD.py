@@ -198,9 +198,9 @@ async def deleteLink(link: Link):
 
 #----------------------SEANCE-----------------------------
 
-async def addSeance(guild_id: int, title: str, date: str):
+async def addSeance(guild_id: int, title: str, date: str, nb_proposal: int):
     async with async_session() as session:
-        seance = Seance(guild_id=guild_id, title=title, date=date)
+        seance = Seance(guild_id=guild_id, title=title, date=date, nb_proposal=nb_proposal)
         session.add(seance)
         await session.commit()
 
@@ -221,9 +221,9 @@ async def deleteSeance(seance: Seance):
 
 #----------------------MOVIE-----------------------------
 
-async def addMovie(seance_id: int, tmdb_id: int, title: str, description: str, image: str, proposed_by: int, notes: str = ""):
+async def addMovie(seance_id: int, tmdb_id: int, title: str, description: str, image: str, proposed_by: int, note: str = ""):
     async with async_session() as session:
-        movie = Movie(seance_id=seance_id, tmdb_id=tmdb_id, title=title, description=description, image=image, proposed_by=proposed_by, notes=notes)
+        movie = Movie(seance_id=seance_id, tmdb_id=tmdb_id, title=title, description=description, image=image, proposed_by=proposed_by, note=note)
         session.add(movie)
         await session.commit()
 
@@ -236,10 +236,10 @@ async def getMoviesBySeance(seance_id: int):
         response = await session.exec(select(Movie).where(Movie.seance_id == seance_id))
         return response.all()
 
-async def getMovieBySeanceAndUser(seance_id: int, user: int):
+async def getMoviesBySeanceAndUser(seance_id: int, user: int):
     async with async_session() as session:
         response = await session.exec(select(Movie).where(Movie.seance_id == seance_id).where(Movie.proposed_by == user))
-        return response.first()
+        return response.all()
 
 async def deleteMovie(movie: Movie):
     async with async_session() as session :
