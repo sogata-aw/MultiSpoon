@@ -26,6 +26,9 @@ class SeanceCog(commands.GroupCog, group_name="seance"):
     @discord.app_commands.command(name="supprimer", description="Supprime une séance et les films qui vont avec")
     async def delete(self, interaction: discord.Interaction, seance: int):
         s = await newBDD.getSeance(seance)
+        movies = await newBDD.getMoviesBySeance(seance)
+        for movie in movies:
+            await newBDD.deleteMovie(movie)
         await newBDD.deleteSeance(s)
 
         await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: La séance a bien été supprimé"))

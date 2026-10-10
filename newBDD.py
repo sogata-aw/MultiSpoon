@@ -241,6 +241,11 @@ async def getMoviesBySeanceAndUser(seance_id: int, user: int):
         response = await session.exec(select(Movie).where(Movie.seance_id == seance_id).where(Movie.proposed_by == user))
         return response.all()
 
+async def getMovieByTmdbId(tmbd_id: int):
+    async with async_session() as session:
+        response = await session.exec(select(Movie).where(Movie.tmdb_id == tmbd_id))
+        return response.first()
+
 async def deleteMovie(movie: Movie):
     async with async_session() as session :
         await session.delete(movie)
