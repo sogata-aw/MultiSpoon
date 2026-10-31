@@ -3,16 +3,18 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from models.Guild import Guild
-from models.Link import Link
-from models.Movie import Movie
-from models.Role import Role
-from models.Seance import Seance
-from models.TempChannel import TempChannel
-from models.TriggerChannel import TriggerChannel
-from models.TriggeredChannel import TriggeredChannel
-from models.Verified import Verified
-from models.WhiteList import WhiteList
+from models import (
+    Guild,
+    Link,
+    Movie,
+    Role,
+    Seance,
+    TempChannel,
+    TriggerChannel,
+    TriggeredChannel,
+    Verified,
+    WhiteList,
+)
 
 engine = create_async_engine("sqlite+aiosqlite:///spoon.db")
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
