@@ -62,7 +62,7 @@ async def add_verified(user_id: int, guild_id: int):
 
 #----------------------TEMP_CHANNELS-----------------------------
 
-async def get_temp_channel_by_guild_id(guild_id: int):
+async def get_temp_channels_by_guild_id(guild_id: int):
     async with async_session() as session :
         result = await session.exec(select(TempChannel).where(TempChannel.guild_id == guild_id))
         return result.all()
@@ -162,7 +162,7 @@ async def get_triggered_channel_by_guild_id(guild_id: int):
         result = await session.exec(select(TriggeredChannel).where(TriggeredChannel.guild_id == guild_id))
         return result.all()
 
-async def delete_trigger_voice_channel(channel_id: int):
+async def delete_triggered_voice_channel(channel_id: int):
     async with async_session() as session :
         result = await session.exec(select(TriggeredChannel).where(TriggeredChannel.voice_channel_id == channel_id))
         channel_to_remove = result.one()

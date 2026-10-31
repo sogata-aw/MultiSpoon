@@ -187,14 +187,14 @@ class MultiSpoon(commands.Bot):
     # Suppression automatique du salon dans les données du bot s'il était temporaire
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
         guild = await newBDD.get_guild_by_id(channel.guild.id)
-        temp_channel = await newBDD.getTempChannel(channel.id)
-        white_channel = await newBDD.getWhiteChannel(channel.id, guild.id)
+        temp_channel = await newBDD.get_temp_channel(channel.id)
+        white_channel = await newBDD.get_white_channel(channel.id, guild.id)
 
         if temp_channel:
-            await newBDD.deleteTempChannel(temp_channel)
+            await newBDD.delete_temp_channel(temp_channel)
 
         if guild.white_list_active and white_channel:
-            await newBDD.deleteChannelFromWhiteList(white_channel)
+            await newBDD.delete_channel_from_whitelist(white_channel)
 
             log_channel = channel.guild.get_channel(guild.log_channel)
 
@@ -205,13 +205,13 @@ class MultiSpoon(commands.Bot):
 
     # Suppression automatique du rôle dans les données du bot s'il était temporaire
     async def on_guild_role_delete(self, role: discord.Role):
-        temp_role = await newBDD.getTempRole(role.id)
+        temp_role = await newBDD.get_temp_role(role.id)
         if temp_role:
-            await newBDD.deleteTempRole(temp_role)
+            await newBDD.delete_temp_role(temp_role)
 
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         if after.channel is not None:
-            trigger_channel = await newBDD.getTriggerChannel(after.channel.id, member.guild.id)
+            trigger_channel = await newBDD.get_trigger_channel(after.channel.id, member.guild.id)
             if trigger_channel:
                     temp_channel = await member.guild.create_voice_channel(
                         name=f"Salon de {member.display_name}",
@@ -225,7 +225,7 @@ class MultiSpoon(commands.Bot):
                     await member.move_to(temp_channel)
 
                     print(f"{member} a été déplacé dans {temp_channel.name}")
-                    await newBDD.addTriggeredChannel(temp_channel.id, member.guild.id)
+                    await newBDD.add_triggered_channel(temp_channel.id, member.guild.id)
 
     async def on_message(self, message: discord.Message):
         if message.author.bot:
@@ -244,7 +244,7 @@ class MultiSpoon(commands.Bot):
                 await log_channel.send(embed=embed)
 
         if guild_data.white_list_active:
-            white_channel = await newBDD.getWhiteChannel(message.channel.id, guild_data.id)
+            white_channel = await newBDD.get_white_channel(message.channel.id, guild_data.id)
             if not white_channel:
                 role = message.guild.get_role(guild_data.role_after)
                 if role not in message.author.roles:
@@ -254,7 +254,7 @@ class MultiSpoon(commands.Bot):
                         title=f":warning: Vous n'avez pas les droits pour écrire ici, veuillez passer la vérification dans {channel.mention}",
                         color=discord.Colour.yellow()))
         else:
-            linked_channels = await newBDD.getLinks(message.channel.id, guild_data.id)
+            linked_channels = await newBDD.get_links(message.channel.id, guild_data.id)
             for linked_channel in linked_channels:
                 linked_guild = self.get_guild(linked_channel.linked_guild_id)
                 channel = linked_guild.get_channel(linked_channel.linked_channel_id)
@@ -264,7 +264,7 @@ class MultiSpoon(commands.Bot):
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
         guild = await newBDD.get_guild_by_id(channel.guild.id)
         if guild.on_create_channel:
-            await newBDD.addToWhiteList(channel.id, guild.id)
+            await newBDD.add_to_whitelist(channel.id, guild.id)
 
             log_channel = channel.guild.get_channel(guild.log_channel)
 
@@ -294,9 +294,9 @@ class MultiSpoon(commands.Bot):
             serveur = self.get_guild(guild.id)
 
             # Récupération des rôles et salons temporaire
-            temp_salons = await newBDD.getTempChannelsByGuildId(guild.id)
-            temp_roles = await newBDD.getTempRolesByGuildId(guild.id)
-            temp_vocs = await newBDD.getTriggeredChannelByGuildId(guild.id)
+            temp_salons = await newBDD.get_temp_channels_by_guild_id(guild.id)
+            temp_roles = await newBDD.get_temp_roles_by_guild_id(guild.id)
+            temp_vocs = await newBDD.get_triggered_channel_by_guild_id(guild.id)
             # await asyncio.sleep(0.5)
 
             for salon in temp_salons:
@@ -317,7 +317,7 @@ class MultiSpoon(commands.Bot):
                 channel = serveur.get_channel(temp_voc.voice_channel_id)
                 if channel and len(channel.members) == 0:
                     await channel.delete()
-                    await newBDD.deleteTriggeredVoiceChannel(channel.id)
+                    await newBDD.delete_triggered_voice_channel(channel.id)
 
         self.logger.info("-----Fin de la vérification-----")
         # await asyncio.sleep(0.5)
