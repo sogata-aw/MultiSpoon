@@ -1,10 +1,9 @@
-import asyncio
-import datetime as d
 import json
 import logging
 import os
 import sys
 import traceback
+from datetime import datetime
 
 import colorlog
 import discord
@@ -13,10 +12,9 @@ from dotenv import load_dotenv
 
 import bdd
 import newBDD
-from utilities import embeds as e
-from utilities.embeds import embed_log
+from utilities.embeds import embed_add, embed_log
 from utilities.webhook import get_webhook
-from view.verify_view import VerifyView
+from views import VerifyView
 
 
 class MultiSpoon(commands.Bot):
@@ -87,7 +85,7 @@ class MultiSpoon(commands.Bot):
 
         # Formattage des données
 
-        error_time = d.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        error_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
 
         # Notification au développeur
@@ -132,7 +130,7 @@ class MultiSpoon(commands.Bot):
 
         user = await self.fetch_user(self.createur)
         dm_channel = await user.create_dm()
-        await dm_channel.send(embed=await e.embed_add("Un serveur a ajouté le bot", guild))
+        await dm_channel.send(embed=await embed_add("Un serveur a ajouté le bot", guild))
 
     async def on_guild_remove(self, guild: discord.Guild):
         await newBDD.delete_guild(guild.id)
@@ -140,7 +138,7 @@ class MultiSpoon(commands.Bot):
 
         user = await bot.fetch_user(self.createur)
         dm_channel = await user.create_dm()
-        await dm_channel.send(embed=await e.embed_add("Un serveur a supprimé le bot", guild))
+        await dm_channel.send(embed=await embed_add("Un serveur a supprimé le bot", guild))
 
     async def on_member_join(self, member: discord.Member):
         guild = await newBDD.get_guild_by_id(member.guild.id)
@@ -303,14 +301,14 @@ class MultiSpoon(commands.Bot):
 
             for salon in temp_salons:
                 # Si la date est dépassé, alors on récupère le salon pour le supprimer
-                if d.datetime.now().isoformat() > salon.duree:
+                if datetime.now().isoformat() > salon.duree:
                     channel = serveur.get_channel(salon.id)
                     await channel.delete()
                 # await asyncio.sleep(0.5)
 
             for temp_role in temp_roles:
                 # Si la date est dépassé, alors on récupère le rôle pour le supprimer
-                if d.datetime.now().isoformat() > temp_role.duree:
+                if datetime.now().isoformat() > temp_role.duree:
                     role = serveur.get_role(temp_role.id)
                     await role.delete()
                 # await asyncio.sleep(0.5)
