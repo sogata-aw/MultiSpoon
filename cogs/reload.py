@@ -39,9 +39,9 @@ class ReloadCog(commands.GroupCog, group_name="reload"):
     async def reload_guilds(self, interaction: discord.Interaction):
         count = 0
         for guild in self.bot.guilds:
-            guild_data = await newBDD.getGuildById(guild.id)
+            guild_data = await newBDD.get_guild_by_id(guild.id)
             if not guild_data:
-                await newBDD.addGuild(guild)
+                await newBDD.add_guild(guild)
                 count += 1
         await interaction.response.send_message(f"{count} serveurs étaient manquants!")
 

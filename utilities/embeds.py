@@ -1,7 +1,6 @@
 import discord
 
-from models.Movie import Movie
-from models.Seance import Seance
+from models import Movie, Seance
 
 
 async def embed_aide(option: str, dico: dict[str, str]):

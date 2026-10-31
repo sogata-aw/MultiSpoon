@@ -8,7 +8,7 @@ import newBDD
 from bot import MultiSpoon
 from utilities.embeds import embed_movie, embed_search
 from utilities.permissions import is_admin
-from view.suggestView import SuggestView
+from views import SuggestView
 
 
 class MovieCog(commands.GroupCog, group_name="film"):

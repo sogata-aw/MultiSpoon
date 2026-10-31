@@ -23,7 +23,7 @@ class SettingsCog(commands.GroupCog, group_name="set"):
     @is_admin()
     @discord.app_commands.guild_only()
     async def set_role(self, interaction: discord.Interaction, option: str, role: discord.Role):
-        guild = await newBDD.getGuildById(interaction.guild.id)
+        guild = await newBDD.get_guild_by_id(interaction.guild.id)
 
         if option == "arrivée":
             guild.role_before = role.id
@@ -31,7 +31,7 @@ class SettingsCog(commands.GroupCog, group_name="set"):
         elif option == "vérifié":
             guild.role_after = role.id
 
-        await newBDD.updateGuild(guild)
+        await newBDD.update_guild(guild)
         await interaction.response.send_message(
             embed=discord.Embed(title=f"✅ Le rôle {"d'arrivée" if option == "arrivée" else "après vérification"} a été mis à jour", color=discord.Color.green()))
 
@@ -41,9 +41,9 @@ class SettingsCog(commands.GroupCog, group_name="set"):
     @is_admin()
     @discord.app_commands.guild_only()
     async def set_channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
-        guild = await newBDD.getGuildById(interaction.guild.id)
+        guild = await newBDD.get_guild_by_id(interaction.guild.id)
         guild.verificationChannel = channel.id
-        await newBDD.updateGuild(guild)
+        await newBDD.update_guild(guild)
 
         await interaction.response.send_message(
             embed=discord.Embed(title="✅ Le salon des vérifications a été mis à jour", color=discord.Color.green()))
@@ -60,9 +60,9 @@ class SettingsCog(commands.GroupCog, group_name="set"):
                                     color=discord.Colour.yellow()))
             return
 
-        guild = await newBDD.getGuildById(interaction.guild.id)
+        guild = await newBDD.get_guild_by_id(interaction.guild.id)
         guild.timeout = time
-        await newBDD.updateGuild(guild)
+        await newBDD.update_guild(guild)
 
         await interaction.response.send_message(
             embed=discord.Embed(title="✅ Le temps avant expiration du captcha a été mis à jour",
@@ -77,9 +77,9 @@ class SettingsCog(commands.GroupCog, group_name="set"):
         if channel is None:
             self.bot.guilds_data[interaction.guild.id].logChannel = 0
             return
-        guild = await newBDD.getGuildById(interaction.guild.id)
+        guild = await newBDD.get_guild_by_id(interaction.guild.id)
         guild.log_channel = channel.id
-        await newBDD.updateGuild(guild)
+        await newBDD.update_guild(guild)
 
         await interaction.response.send_message(
             embed=discord.Embed(title="✅ Le salon des log a été mis à jour", color=discord.Color.green()))

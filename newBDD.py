@@ -21,40 +21,40 @@ async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit
 
 #----------------------GUILD-----------------------------
 
-async def addGuild(guild: discord.Guild):
+async def add_guild(guild: discord.Guild):
     async with async_session() as session :
         new_guild = Guild(id=guild.id, name=guild.name)
         session.add(new_guild)
         await session.commit()
 
-async def updateGuild(guild: Guild):
+async def update_guild(guild: Guild):
     async with async_session() as session :
         session.add(guild)
         await session.commit()
         await session.refresh(guild)
 
-async def deleteGuild(guild_id: int):
+async def delete_guild(guild_id: int):
     async with async_session() as session :
         guild_to_remove = await session.get(Guild, guild_id)
         await session.delete(guild_to_remove)
         await session.commit()
 
-async def getAllGuilds():
+async def get_all_guilds():
     async with async_session() as session :
         result = await session.exec(select(Guild))
         return result.all()
 
-async def getGuildById(id: int):
+async def get_guild_by_id(id: int):
     async with async_session() as session :
         return await session.get(Guild, id)
 
 #----------------------VERIFIED-----------------------------
 
-async def isUserVerified(user_id: int, guild_id: int):
+async def is_user_verified(user_id: int, guild_id: int):
     async with async_session() as session :
         return await session.get(Verified, (user_id,guild_id))
 
-async def addVerified(user_id: int, guild_id: int):
+async def add_verified(user_id: int, guild_id: int):
     async with async_session() as session :
         verified = Verified(user_id=user_id, guild_id=guild_id)
         session.add(verified)
@@ -62,107 +62,107 @@ async def addVerified(user_id: int, guild_id: int):
 
 #----------------------TEMP_CHANNELS-----------------------------
 
-async def getTempChannelsByGuildId(guild_id: int):
+async def get_temp_channel_by_guild_id(guild_id: int):
     async with async_session() as session :
         result = await session.exec(select(TempChannel).where(TempChannel.guild_id == guild_id))
         return result.all()
 
-async def getTempChannel(channel_id: int):
+async def get_temp_channel(channel_id: int):
     async with async_session() as session :
         return await session.get(TempChannel, channel_id)
 
-async def addTempChannel(channel_id: int, guild_id: int, name: str, category: str, type: str, duree: str):
+async def add_temp_channel(channel_id: int, guild_id: int, name: str, category: str, type: str, duree: str):
     async with async_session() as session :
         channel = TempChannel(id=channel_id, guild_id=guild_id, name=name, category=category, type=type, duree=duree)
         session.add(channel)
         await session.commit()
 
-async def deleteTempChannel(channel: TempChannel):
+async def delete_temp_channel(channel: TempChannel):
     async with async_session() as session :
         await session.delete(channel)
         await session.commit()
 
 #----------------------WHITE_LIST-----------------------------
 
-async def addToWhiteList(channel_id: int, guild_id: int):
+async def add_to_whitelist(channel_id: int, guild_id: int):
     async with async_session() as session :
         new_channel = WhiteList(channel_id=channel_id, guild_id=guild_id)
         session.add(new_channel)
         await session.commit()
 
-async def getWhiteChannel(channel_id, guild_id):
+async def get_white_channel(channel_id, guild_id):
     async with async_session() as session :
         return await session.get(WhiteList, (channel_id, guild_id))
 
-async def getWhiteListByGuildId(guild_id: int):
+async def get_whitelist_by_guild_id(guild_id: int):
     async with async_session() as session :
         result = await session.exec(select(WhiteList).where(WhiteList.guild_id == guild_id))
         return result.all()
 
-async def deleteChannelFromWhiteList(channel: WhiteList):
+async def delete_channel_from_whitelist(channel: WhiteList):
     async with async_session() as session :
         await session.delete(channel)
         await session.commit()
 
 #----------------------TEMP_ROLES-----------------------------
 
-async def getTempRolesByGuildId(guild_id: int):
+async def get_temp_roles_by_guild_id(guild_id: int):
     async with async_session() as session :
         result = await session.exec(select(Role).where(Role.guild_id == guild_id))
         return result.all()
 
-async def getTempRole(role_id: int):
+async def get_temp_role(role_id: int):
     async with async_session() as session :
         return await session.get(Role, role_id)
 
-async def addTempRole(role_id: int, guild_id: int, name: str, duree: str):
+async def add_temp_role(role_id: int, guild_id: int, name: str, duree: str):
     async with async_session() as session :
         role = Role(id=role_id, guild_id=guild_id, name=name, duree=duree)
         session.add(role)
         await session.commit()
 
 
-async def deleteTempRole(role: Role):
+async def delete_temp_role(role: Role):
     async with async_session() as session :
         await session.delete(role)
         await session.commit()
 
 #----------------------TRIGGER_CHANNELS-----------------------------
 
-async def getTriggerChannelByGuildId(guild_id: int):
+async def get_trigger_channel_by_guild_id(guild_id: int):
     async with async_session() as session :
         result = await session.exec(select(TriggerChannel).where(TriggerChannel.guild_id == guild_id))
         return result.all()
 
-async def getTriggerChannel(channel_id: int, guild_id: int):
+async def get_trigger_channel(channel_id: int, guild_id: int):
     async with async_session() as session :
         return await session.get(TriggerChannel, (channel_id, guild_id))
 
-async def addTriggerChannel(channel_id: int, guild_id: int):
+async def add_trigger_channel(channel_id: int, guild_id: int):
     async with async_session() as session :
         new_channel = TriggerChannel(channel_id=channel_id, guild_id=guild_id)
         session.add(new_channel)
         await session.commit()
 
-async def deleteTriggerChannel(channel: TriggerChannel):
+async def delete_trigger_channel(channel: TriggerChannel):
     async with async_session() as session :
         await session.delete(channel)
         await session.commit()
 
 #----------------------TRIGGERED_CHANNELS-----------------------------
 
-async def addTriggeredChannel(channel_id: int, guild_id: int):
+async def add_triggered_channel(channel_id: int, guild_id: int):
     async with async_session() as session :
         new_channel = TriggeredChannel(voice_channel_id=channel_id, guild_id=guild_id)
         session.add(new_channel)
         await session.commit()
 
-async def getTriggeredChannelByGuildId(guild_id: int):
+async def get_triggered_channel_by_guild_id(guild_id: int):
     async with async_session() as session :
         result = await session.exec(select(TriggeredChannel).where(TriggeredChannel.guild_id == guild_id))
         return result.all()
 
-async def deleteTriggeredVoiceChannel(channel_id: int):
+async def delete_trigger_voice_channel(channel_id: int):
     async with async_session() as session :
         result = await session.exec(select(TriggeredChannel).where(TriggeredChannel.voice_channel_id == channel_id))
         channel_to_remove = result.one()
@@ -171,28 +171,28 @@ async def deleteTriggeredVoiceChannel(channel_id: int):
 
 #----------------------LINK-----------------------------
 
-async def addLink(channel_id: int, guild_id: int, linked_channel_id: int, linked_guild_id: int):
+async def add_link(channel_id: int, guild_id: int, linked_channel_id: int, linked_guild_id: int):
     async with async_session() as session :
         new_link = Link(channel_id=channel_id, guild_id=guild_id, linked_channel_id=linked_channel_id, linked_guild_id=linked_guild_id)
         session.add(new_link)
         await session.commit()
 
-async def getLink(channel_id: int, guild_id: int, linked_channel_id: int, linked_guild_id):
+async def get_link(channel_id: int, guild_id: int, linked_channel_id: int, linked_guild_id):
     async with async_session() as session :
         result = await session.exec(select(Link).where(Link.guild_id == guild_id).where(Link.channel_id == channel_id).where(Link.linked_channel_id == channel_id).where(Link.linked_guild_id == linked_guild_id))
         return result.first()
 
-async def getLinks(channel_id: int, guild_id: int):
+async def get_links(channel_id: int, guild_id: int):
     async with async_session() as session :
         result = await session.exec(select(Link).where(Link.guild_id == guild_id).where(Link.channel_id == channel_id))
         return result.all()
 
-async def getLinksByGuildId(guild_id: int):
+async def get_links_by_guild_id(guild_id: int):
     async with async_session() as session :
         result = await session.exec(select(Link).where(Link.guild_id == guild_id))
         return result.all()
 
-async def deleteLink(link: Link):
+async def delete_link(link: Link):
     async with async_session() as session :
         await session.delete(link)
         await session.commit()
@@ -200,22 +200,22 @@ async def deleteLink(link: Link):
 
 #----------------------SEANCE-----------------------------
 
-async def addSeance(guild_id: int, title: str, date: str, nb_proposal: int):
+async def add_seance(guild_id: int, title: str, date: str, nb_proposal: int):
     async with async_session() as session:
         seance = Seance(guild_id=guild_id, title=title, date=date, nb_proposal=nb_proposal)
         session.add(seance)
         await session.commit()
 
-async def getSeance(id: int):
+async def get_seance(id: int):
     async with async_session() as session :
         return await session.get(Seance, id)
 
-async def getSeances(guild_id):
+async def get_seances(guild_id):
     async with async_session() as session :
         response = await session.exec(select(Seance).where(Seance.guild_id == guild_id))
         return response.all()
 
-async def deleteSeance(seance: Seance):
+async def delete_seance(seance: Seance):
     async with async_session() as session :
         await session.delete(seance)
         await session.commit()
@@ -223,32 +223,32 @@ async def deleteSeance(seance: Seance):
 
 #----------------------MOVIE-----------------------------
 
-async def addMovie(seance_id: int, tmdb_id: int, title: str, description: str, image: str, proposed_by: int, note: str = ""):
+async def add_movie(seance_id: int, tmdb_id: int, title: str, description: str, image: str, proposed_by: int, note: str = ""):
     async with async_session() as session:
         movie = Movie(seance_id=seance_id, tmdb_id=tmdb_id, title=title, description=description, image=image, proposed_by=proposed_by, note=note)
         session.add(movie)
         await session.commit()
 
-async def getMovie(movie_id: int):
+async def get_movie(movie_id: int):
     async with async_session() as session:
         return await session.get(Movie, movie_id)
 
-async def getMoviesBySeance(seance_id: int):
+async def get_movies_by_seance(seance_id: int):
     async with async_session() as session:
         response = await session.exec(select(Movie).where(Movie.seance_id == seance_id))
         return response.all()
 
-async def getMoviesBySeanceAndUser(seance_id: int, user: int):
+async def get_movies_by_seance_and_user(seance_id: int, user: int):
     async with async_session() as session:
         response = await session.exec(select(Movie).where(Movie.seance_id == seance_id).where(Movie.proposed_by == user))
         return response.all()
 
-async def getMovieByTmdbId(tmbd_id: int):
+async def get_movie_by_tmdb_id(tmbd_id: int):
     async with async_session() as session:
         response = await session.exec(select(Movie).where(Movie.tmdb_id == tmbd_id))
         return response.first()
 
-async def deleteMovie(movie: Movie):
+async def delete_movie(movie: Movie):
     async with async_session() as session :
         await session.delete(movie)
         await session.commit()

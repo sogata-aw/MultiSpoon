@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands
 
-from bot import MultiSpoon
 import newBDD
+from bot import MultiSpoon
 from utilities.embeds import embed_link
-from view.linkView import LinkView
+from views import LinkView
 
 
 def is_admin():
@@ -47,7 +47,7 @@ class LinkCog(commands.GroupCog, group_name="interserveurs"):
                     color=discord.Colour.red()))
             return
 
-        link = await newBDD.getLink(interaction.channel.id, guild.id, int(channel_id), int(server_id))
+        link = await newBDD.get_link(interaction.channel.id, guild.id, int(channel_id), int(server_id))
 
         if link:
             await interaction.response.send_message(
@@ -79,13 +79,13 @@ class LinkCog(commands.GroupCog, group_name="interserveurs"):
                                     color=discord.Colour.red()))
             return
 
-        link = await newBDD.getLink(interaction.channel.id, guild.id, int(channel_id), int(server_id))
+        link = await newBDD.get_link(interaction.channel.id, guild.id, int(channel_id), int(server_id))
         if link:
-            await newBDD.deleteLink(link)
+            await newBDD.delete_link(link)
 
-        reversed_link = await newBDD.getLink(int(channel_id), int(server_id), interaction.channel.id, guild.id)
+        reversed_link = await newBDD.get_link(int(channel_id), int(server_id), interaction.channel.id, guild.id)
         if reversed_link:
-            await newBDD.deleteLink(reversed_link)
+            await newBDD.delete_link(reversed_link)
         await interaction.response.send_message(
             embed=discord.Embed(title=":white_check_mark: Les salons ont été dissociés",
                                 color=discord.Colour.green()))

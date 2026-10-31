@@ -1,11 +1,9 @@
-import datetime as d
-
 import discord
 from discord.ext import commands
 
 import newBDD
 from bot import MultiSpoon
-from utilities import dater as dat
+from utilities.dater import est_couleur_hexa, get_expiration_time
 
 
 def is_admin():
@@ -35,9 +33,9 @@ class RolesCog(commands.GroupCog, group_name="role"):
                 embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide", color=discord.Colour.yellow()))
             return
 
-        expiration = dat.get_expiration_time(minutes, heures, jours, semaines, mois, annees)
+        expiration = get_expiration_time(minutes, heures, jours, semaines, mois, annees)
 
-        if not dat.est_couleur_hexa(couleur):
+        if not est_couleur_hexa(couleur):
             await interaction.channel.send(
                 embed=discord.Embed(title=":warning: Vous n'avez pas rentré une couleur au format RGB ou RRGGBB"))
             return
@@ -45,7 +43,7 @@ class RolesCog(commands.GroupCog, group_name="role"):
         role = await interaction.guild.create_role(name=nom, colour=discord.Colour.from_str(couleur), hoist=separe,
                                                    mentionable=mentionable)
 
-        await newBDD.addTempRole(role.id, interaction.guild_id, role.name, expiration.isoformat())
+        await newBDD.add_temp_role(role.id, interaction.guild_id, role.name, expiration.isoformat())
         await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Le rôle a été crée", colour=discord.Color.green()))
 
     # @commands.hybrid_command(name="afficher", description="Affiche les salons temporaires crées")
@@ -73,7 +71,7 @@ class RolesCog(commands.GroupCog, group_name="role"):
     @is_admin()
     async def supprimer_role_temporaire(self, interaction: discord.Interaction, role: discord.Role):
         suppr = False
-        temp_role = await newBDD.getTempRole(role.id)
+        temp_role = await newBDD.get_temp_role(role.id)
         if temp_role:
             await role.delete()
             await interaction.response.send_message(

@@ -15,8 +15,8 @@ class LinkView(discord.ui.View):
             await interaction.response.send_message(embed=discord.Embed(title=":x: Vous devez être administrateur pour accepter la demande", color=discord.Colour.red()), ephemeral=True)
             return
 
-        await newBDD.addLink(interaction.channel_id, interaction.guild_id, self.channel.id, self.channel.id)
-        await newBDD.addLink(self.channel.id, self.channel.id, interaction.channel_id, interaction.guild_id,)
+        await newBDD.add_link(interaction.channel_id, interaction.guild_id, self.channel.id, self.channel.id)
+        await newBDD.add_link(self.channel.id, self.channel.id, interaction.channel_id, interaction.guild_id,)
 
         await interaction.response.edit_message(
             embed=discord.Embed(

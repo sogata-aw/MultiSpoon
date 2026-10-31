@@ -16,7 +16,7 @@ import newBDD
 from utilities import embeds as e
 from utilities.embeds import embed_log
 from utilities.webhook import get_webhook
-from view.verifyView import VerifyView
+from view.verify_view import VerifyView
 
 
 class MultiSpoon(commands.Bot):
@@ -127,7 +127,7 @@ class MultiSpoon(commands.Bot):
     # -----Event-----
 
     async def on_guild_join(self, guild: discord.Guild):
-        await newBDD.addGuild(guild)
+        await newBDD.add_guild(guild)
         self.logger.info(f"Le serveur {guild.name} a été ajouté à la configuration")
 
         user = await self.fetch_user(self.createur)
@@ -135,7 +135,7 @@ class MultiSpoon(commands.Bot):
         await dm_channel.send(embed=await e.embed_add("Un serveur a ajouté le bot", guild))
 
     async def on_guild_remove(self, guild: discord.Guild):
-        await newBDD.deleteGuild(guild.id)
+        await newBDD.delete_guild(guild.id)
         self.logger.info(f"Le serveur {guild.name} a été supprimé de la configuration")
 
         user = await bot.fetch_user(self.createur)
@@ -143,8 +143,8 @@ class MultiSpoon(commands.Bot):
         await dm_channel.send(embed=await e.embed_add("Un serveur a supprimé le bot", guild))
 
     async def on_member_join(self, member: discord.Member):
-        guild = await newBDD.getGuildById(member.guild.id)
-        user_verified = await newBDD.isUserVerified(member.id, guild.id)
+        guild = await newBDD.get_guild_by_id(member.guild.id)
+        user_verified = await newBDD.is_user_verified(member.id, guild.id)
         if user_verified:
             await member.add_roles(member.guild.get_role(guild.role_after))
         else:
@@ -171,8 +171,8 @@ class MultiSpoon(commands.Bot):
                                                        color=discord.Colour.yellow()))
 
     async def on_member_remove(self, member: discord.Member):
-        guild_data = await newBDD.getGuildById(member.guild.id)
-        user_verified = await newBDD.isUserVerified(member.id, guild_data.id)
+        guild_data = await newBDD.get_guild_by_id(member.guild.id)
+        user_verified = await newBDD.is_user_verified(member.id, guild_data.id)
         if not user_verified and guild_data.verification_channel:
             guild = self.get_guild(member.guild.id)
             channel = guild.get_channel(guild_data.verificationChannel)
@@ -188,7 +188,7 @@ class MultiSpoon(commands.Bot):
 
     # Suppression automatique du salon dans les données du bot s'il était temporaire
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
-        guild = await newBDD.getGuildById(channel.guild.id)
+        guild = await newBDD.get_guild_by_id(channel.guild.id)
         temp_channel = await newBDD.getTempChannel(channel.id)
         white_channel = await newBDD.getWhiteChannel(channel.id, guild.id)
 
@@ -233,7 +233,7 @@ class MultiSpoon(commands.Bot):
         if message.author.bot:
             return
 
-        guild_data = await newBDD.getGuildById(message.guild.id)
+        guild_data = await newBDD.get_guild_by_id(message.guild.id)
 
         if guild_data.spoon_pot != 0 and message.channel.id == guild_data.spoon_pot:
             await message.guild.ban(user=message.author, delete_message_seconds=60, reason="Tombé dans le pot de cuillère")
@@ -264,7 +264,7 @@ class MultiSpoon(commands.Bot):
                 await webhook.send(content=message.content, username=message.author.display_name, avatar_url=message.author.display_avatar.url)
 
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
-        guild = await newBDD.getGuildById(channel.guild.id)
+        guild = await newBDD.get_guild_by_id(channel.guild.id)
         if guild.on_create_channel:
             await newBDD.addToWhiteList(channel.id, guild.id)
 
@@ -290,7 +290,7 @@ class MultiSpoon(commands.Bot):
     @tasks.loop(seconds=1)
     async def verif_temps(self):
         self.logger.info("-----Début de la vérification-----")
-        guilds = await newBDD.getAllGuilds()
+        guilds = await newBDD.get_all_guilds()
         for guild in guilds:
             # Récupération du serveur
             serveur = self.get_guild(guild.id)

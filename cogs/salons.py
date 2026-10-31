@@ -1,4 +1,3 @@
-import datetime as d
 import typing
 
 import discord
@@ -6,7 +5,7 @@ from discord.ext import commands
 
 import newBDD
 from bot import MultiSpoon
-from utilities import dater as dat
+from utilities.dater import get_expiration_time
 
 
 def is_admin():
@@ -38,7 +37,7 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
                 embed=discord.Embed(title=":warning: Vous n'avez pas rentré de durée valide", color=discord.Colour.yellow()))
             return
 
-        expiration = dat.get_expiration_time(minutes, heures, jours, semaines, mois, annees)
+        expiration = get_expiration_time(minutes, heures, jours, semaines, mois, annees)
 
         if typesalon == "textuel":
             salon_temp = await interaction.guild.create_text_channel(name=nom.lower(), category=categorie)
@@ -49,7 +48,7 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
             return
 
         category_name = categorie.name if categorie else "None"
-        await newBDD.addTempChannel(salon_temp.id, interaction.guild_id, nom.lower(), category_name, typesalon, expiration.isoformat())
+        await newBDD.add_temp_channel(salon_temp.id, interaction.guild_id, nom.lower(), category_name, typesalon, expiration.isoformat())
 
         await interaction.response.send_message(
             embed=discord.Embed(title=":white_check_mark: Le salon a été crée", colour=discord.Color.green()))
@@ -81,7 +80,7 @@ class SalonsCog(commands.GroupCog, group_name="salon"):
     @is_admin()
     async def supprimer_salon_temporaire(self, interaction: discord.Interaction, salon: discord.abc.GuildChannel):
         suppr = False
-        channel = await newBDD.getTempChannel(salon.id)
+        channel = await newBDD.get_temp_channel(salon.id)
         if channel:
             await salon.delete()
             await interaction.response.send_message(

@@ -21,7 +21,7 @@ class VoiceChannelCogs(commands.GroupCog, group_name="vocal"):
                         description="Permet d'ajouter un déclencheur sur un vocal pour créer des vocaux temporaires")
     @discord.app_commands.describe(salon="Sélectionnez le vocal pour lequel vous voulez ajouter un déclencheur")
     async def ajouter(self, interaction: discord.Interaction, salon: discord.VoiceChannel):
-        await newBDD.addTriggerChannel(salon.id, interaction.guild.id)
+        await newBDD.add_trigger_channel(salon.id, interaction.guild.id)
         await interaction.response.send_message(embed=discord.Embed(colour=discord.Colour.from_str("#68cd67"),
                                                                     title=":white_check_mark: Le salon a été ajouté à la liste des salons déclencheurs."))
 
@@ -35,7 +35,7 @@ class VoiceChannelCogs(commands.GroupCog, group_name="vocal"):
                                    categorie="Sélectionnez dans quelle catégorie votre nouveau salon sera crée")
     async def creer(self, interaction: discord.Interaction, nom: str = None, capacite: int = None,categorie: discord.CategoryChannel = None):
         channel = await interaction.guild.create_voice_channel(name=nom, category=categorie, user_limit=capacite)
-        await newBDD.addTriggerChannel(channel.id, interaction.guild.id)
+        await newBDD.add_trigger_channel(channel.id, interaction.guild.id)
         await interaction.response.send_message(embed=discord.Embed(colour=discord.Colour.from_str("#68cd67"),
                                                                     title=":white_check_mark: Le salon a été ajouté à la liste des salons déclencheurs."))
 
@@ -44,9 +44,9 @@ class VoiceChannelCogs(commands.GroupCog, group_name="vocal"):
     @temp_group.command(name="supprimer",
                         description="Supprime l'écoute d'un salon permettant d'en créer des temporaires")
     async def supprimer(self, interaction: discord.Interaction, salon: discord.VoiceChannel):
-        channel = await newBDD.getTriggerChannel(salon.id, interaction.guild.id)
+        channel = await newBDD.get_trigger_channel(salon.id, interaction.guild.id)
         if channel:
-            await newBDD.deleteTriggerChannel(channel)
+            await newBDD.delete_trigger_channel(channel)
             await interaction.response.send_message(embed=discord.Embed(colour=discord.Colour.from_str("#68cd67"),
                                                                         title=":white_check_mark: Ce salon ne déclenchera plus la création automatique de salons vocaux."))
             return
@@ -61,7 +61,7 @@ class VoiceChannelCogs(commands.GroupCog, group_name="vocal"):
     async def afficher(self, interaction: discord.Interaction):
         embed = discord.Embed(title="Liste des salons vocaux avec un déclencheur",
                               description="Cliquez sur un vocal pour le rejoindre")
-        channels = await newBDD.getTriggerChannelByGuildId(interaction.guild.id)
+        channels = await newBDD.get_trigger_channel_by_guild_id(interaction.guild.id)
         for vocal in channels:
             embed.add_field(name=f"{interaction.guild.get_channel(vocal.channel_id).mention}", value="")
 

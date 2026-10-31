@@ -8,14 +8,10 @@ from discord.ext import commands
 
 import newBDD
 from bot import MultiSpoon
-from utilities import captchas as c
-from utilities import embeds as e
-from utilities.embeds import embed_log
+from utilities.captchas import generer_code, generer_image
+from utilities.embeds import embed_aide, embed_log
 from utilities.permissions import is_admin
-from view.aideView import AideSelectView
-from view.supportView import SupportView
-from view.verifyView import VerifyView
-from view.voteView import VoteView
+from views import AideSelectView, SupportView, VerifyView, VoteView
 
 
 class ModerationCog(commands.Cog):
@@ -72,7 +68,7 @@ class ModerationCog(commands.Cog):
 
         elif commande == "Mod\u00e9ration":
             await interaction.response.send_message(
-                embed=await e.embed_aide(
+                embed=await embed_aide(
                     commande, self.bot.commands_data["Mod\u00e9ration"]
                 ),
                 view=AideSelectView(),
@@ -80,13 +76,13 @@ class ModerationCog(commands.Cog):
 
         elif commande == "Captcha":
             await interaction.response.send_message(
-                embed=await e.embed_aide(commande, self.bot.commands_data["captcha"]),
+                embed=await embed_aide(commande, self.bot.commands_data["captcha"]),
                 view=AideSelectView(),
             )
 
         elif commande == "Salon/R\u00f4le":
             await interaction.response.send_message(
-                embed=await e.embed_aide(
+                embed=await embed_aide(
                     commande, self.bot.commands_data["Salon/R\u00f4le"]
                 ),
                 view=AideSelectView(),
@@ -99,7 +95,7 @@ class ModerationCog(commands.Cog):
     @is_admin()
     @discord.app_commands.guild_only()
     async def settings(self, interaction: discord.Interaction):
-        guild = await newBDD.getGuildById(interaction.guild_id)
+        guild = await newBDD.get_guild_by_id(interaction.guild_id)
         salon = interaction.guild.get_channel(guild.verification_channel)
         role_before = interaction.guild.get_role(guild.role_before)
         role_after = interaction.guild.get_role(guild.role_after)
@@ -121,7 +117,7 @@ class ModerationCog(commands.Cog):
     @discord.app_commands.guild_only()
     async def verify(self, interaction: discord.Interaction):
         guild = interaction.guild
-        guild_data = await newBDD.getGuildById(guild.id)
+        guild_data = await newBDD.get_guild_by_id(guild.id)
         roleBefore = guild_data.role_before
         roleAfter = guild_data.role_after
 
@@ -171,8 +167,8 @@ class ModerationCog(commands.Cog):
         message = None
 
         while valid:
-            code = c.generer_code()
-            c.generer_image(code)
+            code = generer_code()
+            generer_image(code)
             attachement = discord.File("img/captcha.png", filename="captcha.png")
             name = interaction.user.global_name
 
@@ -221,7 +217,7 @@ class ModerationCog(commands.Cog):
                         )
                         await log_channel.send(embed=embed)
 
-                    await newBDD.addVerified(interaction.user.id, guild.id)
+                    await newBDD.add_verified(interaction.user.id, guild.id)
                     await interaction.channel.purge(limit=50, check=msg_check)
                 else:
                     if log_channel:
