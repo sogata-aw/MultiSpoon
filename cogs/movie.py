@@ -37,13 +37,13 @@ class MovieCog(commands.GroupCog, group_name="film"):
     @discord.app_commands.guild_only()
     @discord.app_commands.command(name="suggérer", description="Suggère un film")
     async def suggest(self, interaction: discord.Interaction, titre: int, seance: int, notes: str=""):
-        movie = await newBDD.getMovie(titre)
+        movie = await newBDD.get_movie(titre)
         if movie:
             await interaction.response.send_message(embed=discord.Embed(title=f":x: Ce film a déjà été proposé par {interaction.guild.get_member(movie.proposed_by).mention}", color=discord.Colour.orange()), ephemeral=True)
             return
 
-        movies = await newBDD.getMoviesBySeanceAndUser(seance, interaction.user.id)
-        seance_data = await newBDD.getSeance(seance)
+        movies = await newBDD.get_movies_by_seance_and_user(seance, interaction.user.id)
+        seance_data = await newBDD.get_seance(seance)
         if len(movies) >= seance_data.nb_proposal:
             await interaction.response.send_message(embed=discord.Embed(title=":x: Vous avez déjà proposé un film", color=discord.Color.red()), ephemeral=True)
             return
@@ -64,8 +64,8 @@ class MovieCog(commands.GroupCog, group_name="film"):
     @is_admin()
     @discord.app_commands.command(name="supprimer", description="Supprime le film suggéré pour la séance")
     async def delete_movie(self, interaction: discord.Interaction, movie: int):
-        movie_data = await newBDD.getMovie(movie)
-        await newBDD.deleteMovie(movie_data)
+        movie_data = await newBDD.get_movie(movie)
+        await newBDD.delete_movie(movie_data)
         await interaction.response.send_message(embed=discord.Embed(title=":white_check_mark: Le film a bien été supprimé"))
 
 
@@ -90,7 +90,7 @@ class MovieCog(commands.GroupCog, group_name="film"):
     @suggest.autocomplete("seance")
     async def autocomplete_seance(self, interaction: discord.Interaction, seance: str) -> list[discord.app_commands.Choice[int]]:
         liste = []
-        seances = await newBDD.getSeances(interaction.guild_id)
+        seances = await newBDD.get_seances(interaction.guild_id)
         for s in seances:
             liste.append(discord.app_commands.Choice(name=s.title, value=s.id))
         return liste
@@ -99,9 +99,9 @@ class MovieCog(commands.GroupCog, group_name="film"):
     @delete_movie.autocomplete("movie")
     async def autocomplete_movie(self, interaction: discord.Interaction, movie: str) -> list[discord.app_commands.Choice[int]]:
         liste = []
-        seances = await newBDD.getSeances(interaction.guild_id)
+        seances = await newBDD.get_seances(interaction.guild_id)
         for seance in seances:
-            movies = await newBDD.getMoviesBySeance(seance.id)
+            movies = await newBDD.get_movies_by_seance(seance.id)
             for m in movies:
                 liste.append(discord.app_commands.Choice(name=f"{m.title} - {seance.title}", value=m.id))
         return liste
