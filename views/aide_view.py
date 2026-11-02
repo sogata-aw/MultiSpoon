@@ -3,7 +3,8 @@ from typing import Any
 import discord
 
 import bdd
-from utilities import embeds as e
+from utilities.embeds import embed_aide
+
 
 class AideSelect(discord.ui.Select):
     def __init__(self):
@@ -18,11 +19,11 @@ class AideSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> Any:
         embed = None
         if self.values[0] == "Modération":
-            embed = await e.embed_aide(self.values[0], self.commands["Mod\u00e9ration"])
+            embed = await embed_aide(self.values[0], self.commands["Mod\u00e9ration"])
         elif self.values[0] == "Captcha":
-            embed = await e.embed_aide(self.values[0], self.commands["Captcha"])
+            embed = await embed_aide(self.values[0], self.commands["Captcha"])
         elif self.values[0] == "Salon/Rôle":
-            embed = await e.embed_aide(self.values[0], self.commands["Salon/R\u00F4le"])
+            embed = await embed_aide(self.values[0], self.commands["Salon/R\u00F4le"])
 
         await interaction.response.edit_message(embed=embed)
 
