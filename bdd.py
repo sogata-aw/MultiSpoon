@@ -1,7 +1,8 @@
 import json
+from typing import Optional
 
 from pydantic import BaseModel
-from typing import Optional
+
 
 class LoggerData(BaseModel):
     level: str
