@@ -1,14 +1,12 @@
 import json
 import logging
 import os
-import sys
 import traceback
 from datetime import datetime
 
 import colorlog
 import discord
 from discord.ext import commands, tasks
-from dotenv import load_dotenv
 
 import bdd
 import newBDD
@@ -19,9 +17,8 @@ from views import VerifyView
 
 class MultiSpoon(commands.Bot):
 
-    def __init__(self, intents: discord.Intents, token: str, update: bool):
+    def __init__(self, intents: discord.Intents, update: bool):
         super().__init__(command_prefix="!", intents=intents)
-        self.token: str = token
         self.commands_data: dict[str, dict[str, str]] = bdd.load_commands()
         self.createur: int = 649268058652672051
         self.update = update
@@ -51,13 +48,13 @@ class MultiSpoon(commands.Bot):
 
         # Affichage des serveurs
 
-        for server in bot.guilds:
+        for server in self.guilds:
             self.logger.debug(f'{server.name}(id: {server.id})')
 
         # Synchronisation des commandes
 
         self.logger.info("-----Début de la synchronisation-----")
-        await bot.tree.sync()
+        await self.tree.sync()
         self.logger.info("-----Synchronisation terminée-----")
 
         commandes = self.tree.get_commands()
@@ -136,7 +133,7 @@ class MultiSpoon(commands.Bot):
         await newBDD.delete_guild(guild.id)
         self.logger.info(f"Le serveur {guild.name} a été supprimé de la configuration")
 
-        user = await bot.fetch_user(self.createur)
+        user = await self.fetch_user(self.createur)
         dm_channel = await user.create_dm()
         await dm_channel.send(embed=await embed_add("Un serveur a supprimé le bot", guild))
 
@@ -324,25 +321,4 @@ class MultiSpoon(commands.Bot):
 
     @verif_temps.before_loop
     async def before_looping(self):
-        await bot.wait_until_ready()
-
-
-if __name__ == "__main__":
-
-    # Chargement de l'env
-
-    load_dotenv('.env')
-
-    mode = os.getenv('DEFAULT_TOKEN')
-
-    token_base = os.getenv('DT')
-    token_beta = os.getenv('DTB')
-
-    updated = sys.argv and sys.argv[1] == "updated"
-
-    if mode == "beta":
-        bot = MultiSpoon(discord.Intents.all(), token_beta, updated)
-    else:
-        bot = MultiSpoon(discord.Intents.all(), token_base, updated)
-
-    bot.run(bot.token)
+        await self.wait_until_ready()
