@@ -14,7 +14,7 @@ class SuggestView(discord.ui.View):
 
     @discord.ui.button(label="Proposer ce film", style=discord.ButtonStyle.green, emoji="✅", disabled=False)
     async def suggest(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await newBDD.addMovie(self.seance, self.movie["id"], self.movie["title"], self.movie["overview"], self.movie["poster_path"], interaction.user.id, self.notes)
+        await newBDD.add_movie(self.seance, self.movie["id"], self.movie["title"], self.movie["overview"], self.movie["poster_path"], interaction.user.id, self.notes)
         await interaction.response.send_message(embed=self.embed)
 
     @discord.ui.button(label="Annuler", style=discord.ButtonStyle.green, emoji="❌", disabled=False)
