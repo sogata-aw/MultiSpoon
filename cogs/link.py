@@ -3,15 +3,9 @@ from discord.ext import commands
 
 import newBDD
 from bot import MultiSpoon
+from utilities import permissions
 from utilities.embeds import embed_link
 from views import LinkView
-
-
-def is_admin():
-    async def predicate(interaction: discord.Interaction) -> bool:
-        return interaction.user.guild_permissions.administrator
-
-    return discord.app_commands.check(predicate)
 
 
 class LinkCog(commands.GroupCog, group_name="interserveurs"):
@@ -19,7 +13,7 @@ class LinkCog(commands.GroupCog, group_name="interserveurs"):
         self.bot = bot
         self.bot.tree.error(coro=self.bot.on_app_command_error)
 
-    @is_admin()
+    @permissions.is_admin()
     @discord.app_commands.command(name="link", description="Permet de lier des salons entre eux")
     @discord.app_commands.describe(server_id="L'id du serveur du salon qui va recevoir les messages",
                                    channel_id="L'id du salon qui va recevoir les messages")
@@ -61,7 +55,7 @@ class LinkCog(commands.GroupCog, group_name="interserveurs"):
         return
 
 
-    @is_admin()
+    @permissions.is_admin()
     @discord.app_commands.command(name="unlink")
     async def unlink(self, interaction: discord.Interaction, server_id: str, channel_id: str):
         guild = self.bot.get_guild(int(server_id))

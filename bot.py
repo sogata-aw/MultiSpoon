@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import traceback
 from datetime import datetime
 
@@ -99,7 +100,7 @@ class MultiSpoon(commands.Bot):
             f"[{error_time}] ERREUR Slash Command (COG)\n"
             f"Auteur: {interaction.user} (ID: {interaction.user.id})\n"
             f"Guild: {interaction.guild} | Channel: {interaction.channel}\n"
-            f"Erreur: {repr(error)}\n"
+            f"Erreur: {error!r}\n"
             f"\n{tb}\n"
             f"{'-' * 60}\n"
         )
@@ -250,6 +251,43 @@ class MultiSpoon(commands.Bot):
                     await message.channel.send(content=message.author.mention, embed=discord.Embed(
                         title=f":warning: Vous n'avez pas les droits pour écrire ici, veuillez passer la vérification dans {channel.mention}",
                         color=discord.Colour.yellow()))
+
+        elif guild_data.ows_activated and guild_data.ows_channel and guild_data.ows_channel == message.channel.id:
+            content = message.content.strip()
+            if not(content[0] == "(" and content[len(content) - 1] == ")"):
+                if message.author.id == guild_data.last_user_words:
+                   await message.delete()
+                   await message.channel.send(embed=discord.Embed(
+                       title=":warning: Vous avez déjà donné le dernier mot ! Attendez que quelqu'un en donne un nouveau",
+                       color=discord.Colour.yellow()), mention_author=True, delete_after=30)
+                else:
+                    if len(content.split()) > 1:
+                        await message.channel.send(embed=discord.Embed(
+                            title=":warning: Vous avez donné plus d'un mot",
+                            color=discord.Colour.yellow()), mention_author=True, delete_after=30)
+
+                    elif re.search(
+                        "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$",
+                        content
+                    ):
+                        await message.delete()
+                        await message.channel.send(embed=discord.Embed(
+                            title=":warning: Vous ne pouvez pas fournir de liens !",
+                            color=discord.Colour.yellow()), mention_author=True, delete_after=30)
+
+                    else:
+                        await message.add_reaction("\U00002705")
+                        guild_data.story = f"{guild_data.story} {content}" if guild_data.story else content
+                        print(guild_data.story)
+                        guild_data.last_user_words = message.author.id
+                        if content[len(content) - 1] in (".", "?", "!"):
+                            await message.channel.send(
+                                content=f"{message.author.mention} a terminé la phrase ! Voici le résultat: \n\n {guild_data.story}"
+                            )
+                            guild_data.story = ""
+                        await newBDD.update_guild(guild_data)
+
+
         else:
             linked_channels = await newBDD.get_links(message.channel.id, guild_data.id)
             for linked_channel in linked_channels:

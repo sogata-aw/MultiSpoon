@@ -1,0 +1,4 @@
+ALTER TABLE Guild ADD ows_activated BOOL DEFAULT false;
+ALTER TABLE Guild ADD ows_channel INTEGER DEFAULT 0;
+ALTER TABLE Guild ADD story TEXT DEFAULT "";
+ALTER TABLE Guild ADD last_user_words INTEGER DEFAULT 0;

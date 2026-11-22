@@ -9,7 +9,10 @@ CREATE TABLE IF NOT EXISTS Guild
     log_channel          INTEGER DEFAULT 0,
     white_list_active    BOOL    DEFAULT false,
     on_create_channel    BOOL    DEFAULT false,
-    spoon_pot            INTEGER DEFAULT 0
+    spoon_pot            INTEGER DEFAULT 0,
+    ows_activated        BOOL    DEFAULT false,
+    story                TEXT    DEFAULT "",
+    last_user_words      INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS Verified

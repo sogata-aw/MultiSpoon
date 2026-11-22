@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import Field, SQLModel
 
 
 class Guild(SQLModel, table=True):
@@ -12,3 +12,7 @@ class Guild(SQLModel, table=True):
     white_list_active: bool = False
     on_create_channel: bool = False
     spoon_pot: int = 0
+    ows_activated: bool = False
+    ows_channel: int = 0
+    story: str = ""
+    last_user_words: int
