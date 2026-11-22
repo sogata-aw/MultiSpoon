@@ -251,8 +251,9 @@ class MultiSpoon(commands.Bot):
                     await message.channel.send(content=message.author.mention, embed=discord.Embed(
                         title=f":warning: Vous n'avez pas les droits pour écrire ici, veuillez passer la vérification dans {channel.mention}",
                         color=discord.Colour.yellow()))
+                    return
 
-        elif guild_data.ows_activated and guild_data.ows_channel and guild_data.ows_channel == message.channel.id:
+        if guild_data.ows_activated and guild_data.ows_channel and guild_data.ows_channel == message.channel.id:
             content = message.content.strip()
             if not(content[0] == "(" and content[len(content) - 1] == ")"):
                 if message.author.id == guild_data.last_user_words:
