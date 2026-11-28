@@ -5,9 +5,9 @@ import re
 import traceback
 from datetime import datetime
 
-import colorlog
 import discord
 from discord.ext import commands, tasks
+from rich.logging import RichHandler
 
 import bdd
 import newBDD
@@ -26,20 +26,14 @@ class MultiSpoon(commands.Bot):
 
         # Initialisation du logger
 
-        self.logger = logging.getLogger("BOT_DISCORD")
-
-        if self.logger.hasHandlers():
-            self.logger.handlers.clear()
-
         with open("data/logger.json", 'r') as file:
             logger_settings = json.load(file)
 
-        handler = colorlog.StreamHandler()
-        handler.setFormatter(
-            colorlog.ColoredFormatter(logger_settings["format"], log_colors=logger_settings["logColors"]))
+        logging.basicConfig(
+            level=logger_settings["level"], format=logger_settings["format"], datefmt="[%X]", handlers=[RichHandler()]
+        )
 
-        self.logger.addHandler(handler)
-        self.logger.setLevel(logger_settings["level"])
+        self.logger = logging.getLogger("BOT_DISCORD")
 
     async def on_ready(self):
 
@@ -54,9 +48,9 @@ class MultiSpoon(commands.Bot):
 
         # Synchronisation des commandes
 
-        self.logger.info("-----Début de la synchronisation-----")
+        self.logger.info("Début de la synchronisation")
         await self.tree.sync()
-        self.logger.info("-----Synchronisation terminée-----")
+        self.logger.info("Synchronisation terminée")
 
         commandes = self.tree.get_commands()
 
@@ -104,6 +98,8 @@ class MultiSpoon(commands.Bot):
             f"\n{tb}\n"
             f"{'-' * 60}\n"
         )
+
+        self.logger.error(log_entry)
 
         # Ajout de l'erreur au fichier
 
@@ -222,7 +218,6 @@ class MultiSpoon(commands.Bot):
                     # Déplacer l’utilisateur dans le nouveau salon
                     await member.move_to(temp_channel)
 
-                    print(f"{member} a été déplacé dans {temp_channel.name}")
                     await newBDD.add_triggered_channel(temp_channel.id, member.guild.id)
 
     async def on_message(self, message: discord.Message):
@@ -311,19 +306,19 @@ class MultiSpoon(commands.Bot):
 
     # Synchronisation avec les cogs
     async def setup_hook(self):
-        self.logger.info("-----Début de l'ajout des commandes-----")
+        self.logger.info("Début de l'ajout des commandes")
         for extension in os.listdir("./cogs"):
             if extension.endswith(".py") and not extension.startswith("__"):
                 await self.load_extension(f'cogs.{extension[:-3]}')
-                self.logger.info(f"cogs.{extension[:-3]} chargé avec succès !")
+                self.logger.debug(f"cogs.{extension[:-3]} chargé avec succès !")
 
-        self.logger.info("-----Ajout des commandes terminée-----")
+        self.logger.info("Ajout des commandes terminée")
 
     # -----Tasks-----
 
     @tasks.loop(seconds=1)
     async def verif_temps(self):
-        self.logger.info("-----Début de la vérification-----")
+        self.logger.debug("Début de la vérification")
         guilds = await newBDD.get_all_guilds()
         for guild in guilds:
             # Récupération du serveur
@@ -333,21 +328,18 @@ class MultiSpoon(commands.Bot):
             temp_salons = await newBDD.get_temp_channels_by_guild_id(guild.id)
             temp_roles = await newBDD.get_temp_roles_by_guild_id(guild.id)
             temp_vocs = await newBDD.get_triggered_channel_by_guild_id(guild.id)
-            # await asyncio.sleep(0.5)
 
             for salon in temp_salons:
                 # Si la date est dépassé, alors on récupère le salon pour le supprimer
                 if datetime.now().isoformat() > salon.duree:
                     channel = serveur.get_channel(salon.id)
                     await channel.delete()
-                # await asyncio.sleep(0.5)
 
             for temp_role in temp_roles:
                 # Si la date est dépassé, alors on récupère le rôle pour le supprimer
                 if datetime.now().isoformat() > temp_role.duree:
                     role = serveur.get_role(temp_role.id)
                     await role.delete()
-                # await asyncio.sleep(0.5)
 
             for temp_voc in temp_vocs:
                 channel = serveur.get_channel(temp_voc.voice_channel_id)
@@ -355,8 +347,7 @@ class MultiSpoon(commands.Bot):
                     await channel.delete()
                     await newBDD.delete_triggered_voice_channel(channel.id)
 
-        self.logger.info("-----Fin de la vérification-----")
-        # await asyncio.sleep(0.5)
+        self.logger.debug("Fin de la vérification")
 
     @verif_temps.before_loop
     async def before_looping(self):
